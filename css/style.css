@@ -1624,3 +1624,22 @@ p {
     letter-spacing: 2.5px;
   }
 }
+.form-message {
+  min-height: 22px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.form-message.success {
+  color: #3f6f4e;
+}
+
+.form-message.error {
+  color: #9f3a38;
+}
+
+.booking-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}

@@ -1,9 +1,80 @@
 const bookingForm = document.querySelector(".booking-form");
 
 if (bookingForm) {
-  bookingForm.addEventListener("submit", function (event) {
+  const submitButton = bookingForm.querySelector("button[type='submit']");
+
+  const formMessage = document.createElement("p");
+  formMessage.className = "form-message";
+  bookingForm.insertBefore(formMessage, submitButton);
+
+  bookingForm.addEventListener("submit", async function (event) {
     event.preventDefault();
-    alert("Your enquiry has been received. Database connection will be added later.");
+
+    const fullNameInput = bookingForm.querySelector("input[type='text']");
+    const phoneInput = bookingForm.querySelector("input[type='tel']");
+    const emailInput = bookingForm.querySelector("input[type='email']");
+    const serviceInput = bookingForm.querySelector("select");
+    const dateInput = bookingForm.querySelector("input[type='date']");
+    const messageInput = bookingForm.querySelector("textarea");
+
+    const booking = {
+      full_name: fullNameInput.value.trim(),
+      phone: phoneInput.value.trim() || null,
+      email: emailInput.value.trim() || null,
+      service_type: serviceInput.value,
+      preferred_date: dateInput.value || null,
+      location: null,
+      message: messageInput.value.trim() || null,
+      status: "new"
+    };
+
+    formMessage.textContent = "";
+    formMessage.classList.remove("success", "error");
+
+    if (!booking.full_name) {
+      formMessage.textContent = "Please enter your name.";
+      formMessage.classList.add("error");
+      return;
+    }
+
+    if (!booking.phone && !booking.email) {
+      formMessage.textContent = "Please enter either your phone number or email address.";
+      formMessage.classList.add("error");
+      return;
+    }
+
+    if (!booking.service_type) {
+      formMessage.textContent = "Please select a session type.";
+      formMessage.classList.add("error");
+      return;
+    }
+
+    if (typeof supabaseClient === "undefined") {
+      formMessage.textContent = "Booking system is not connected yet. Please try again later.";
+      formMessage.classList.add("error");
+      return;
+    }
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Sending...";
+
+    const { error } = await supabaseClient
+      .from("bookings")
+      .insert([booking]);
+
+    submitButton.disabled = false;
+    submitButton.textContent = "Send Enquiry";
+
+    if (error) {
+      console.error(error);
+      formMessage.textContent = "Sorry, something went wrong. Please try again.";
+      formMessage.classList.add("error");
+      return;
+    }
+
+    bookingForm.reset();
+    formMessage.textContent = "Thank you. Your enquiry has been sent.";
+    formMessage.classList.add("success");
   });
 }
 
