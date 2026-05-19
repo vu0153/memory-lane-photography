@@ -1581,3 +1581,46 @@ p {
 .logo-mark {
   display: none !important;
 }
+.site-header .logo strong,
+.footer-logo strong {
+  font-family: "Allura", cursive;
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 0.82;
+  letter-spacing: 0;
+}
+
+.site-header .logo span,
+.footer-logo span {
+  margin-top: 8px;
+  letter-spacing: 3.5px;
+}
+
+.site-header .logo {
+  gap: 14px;
+  min-width: 260px;
+}
+
+@media (max-width: 900px) {
+  .site-header .logo strong,
+  .footer-logo strong {
+    font-size: 36px;
+  }
+
+  .site-header .logo {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 620px) {
+  .site-header .logo strong,
+  .footer-logo strong {
+    font-size: 32px;
+  }
+
+  .site-header .logo span,
+  .footer-logo span {
+    font-size: 9px;
+    letter-spacing: 2.5px;
+  }
+}
