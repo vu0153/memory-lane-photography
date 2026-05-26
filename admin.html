@@ -118,7 +118,8 @@
     }
 
     .admin-field input,
-    .admin-field select {
+    .admin-field select,
+    .admin-field textarea {
       width: 100%;
       border: 1px solid rgba(81, 65, 56, 0.2);
       border-radius: 14px;
@@ -129,8 +130,15 @@
       outline: none;
     }
 
+    .admin-field textarea {
+      min-height: 180px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
     .admin-field input:focus,
-    .admin-field select:focus {
+    .admin-field select:focus,
+    .admin-field textarea:focus {
       border-color: #9b765f;
       box-shadow: 0 0 0 4px rgba(155, 118, 95, 0.16);
     }
@@ -161,6 +169,24 @@
 
     .admin-button.secondary:hover {
       background: rgba(255, 250, 245, 0.26);
+    }
+
+    .admin-button.light {
+      background: rgba(93, 68, 54, 0.1);
+      color: #5d4436;
+    }
+
+    .admin-button.light:hover {
+      background: rgba(93, 68, 54, 0.18);
+      box-shadow: none;
+    }
+
+    .admin-button.danger {
+      background: #8b4f45;
+    }
+
+    .admin-button.danger:hover {
+      background: #733c34;
     }
 
     .admin-button.small {
@@ -211,6 +237,43 @@
       padding: 8px 12px;
       font-size: 13px;
       font-weight: 600;
+    }
+
+    .admin-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 24px 0 26px;
+      padding: 8px;
+      border-radius: 999px;
+      background: rgba(93, 68, 54, 0.08);
+      width: fit-content;
+    }
+
+    .admin-tab-button {
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: #5d4436;
+      padding: 11px 18px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .admin-tab-button.active {
+      background: #5d4436;
+      color: #fffaf5;
+      box-shadow: 0 8px 20px rgba(93, 68, 54, 0.22);
+    }
+
+    .admin-panel {
+      display: none;
+    }
+
+    .admin-panel.active {
+      display: block;
     }
 
     .stats-section {
@@ -283,7 +346,8 @@
       height: 250px;
     }
 
-    .bookings-toolbar {
+    .bookings-toolbar,
+    .posts-toolbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -291,10 +355,30 @@
       margin: 26px 0 16px;
     }
 
-    .bookings-toolbar h2 {
+    .bookings-toolbar h2,
+    .posts-toolbar h2 {
       margin: 0;
       font-size: 20px;
       color: #2d241f;
+    }
+
+    .posts-toolbar-title {
+      display: grid;
+      gap: 4px;
+    }
+
+    .posts-toolbar-title p {
+      margin: 0;
+      color: #77665b;
+      line-height: 1.5;
+    }
+
+    .posts-toolbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+      align-items: center;
     }
 
     .admin-filters {
@@ -327,21 +411,32 @@
       box-shadow: 0 0 0 4px rgba(155, 118, 95, 0.16);
     }
 
-    .bookings-table-wrap {
+    .bookings-table-wrap,
+    .posts-table-wrap {
       overflow-x: auto;
       border-radius: 18px;
       border: 1px solid rgba(81, 65, 56, 0.12);
       background: #fff;
     }
 
-    .bookings-table {
+    .bookings-table,
+    .posts-table {
       width: 100%;
-      min-width: 1080px;
       border-collapse: collapse;
     }
 
+    .bookings-table {
+      min-width: 1080px;
+    }
+
+    .posts-table {
+      min-width: 920px;
+    }
+
     .bookings-table th,
-    .bookings-table td {
+    .bookings-table td,
+    .posts-table th,
+    .posts-table td {
       padding: 14px 16px;
       border-bottom: 1px solid rgba(81, 65, 56, 0.1);
       text-align: left;
@@ -349,7 +444,8 @@
       font-size: 14px;
     }
 
-    .bookings-table th {
+    .bookings-table th,
+    .posts-table th {
       background: #f8f0ea;
       color: #5d4436;
       font-size: 12px;
@@ -357,22 +453,26 @@
       text-transform: uppercase;
     }
 
-    .bookings-table tbody tr:last-child td {
+    .bookings-table tbody tr:last-child td,
+    .posts-table tbody tr:last-child td {
       border-bottom: 0;
     }
 
-    .booking-name {
+    .booking-name,
+    .post-title {
       font-weight: 700;
       color: #2d241f;
     }
 
-    .booking-contact {
+    .booking-contact,
+    .post-meta {
       display: grid;
       gap: 4px;
       color: #6e5c50;
     }
 
-    .booking-message {
+    .booking-message,
+    .post-excerpt {
       max-width: 260px;
       color: #6e5c50;
       line-height: 1.5;
@@ -403,6 +503,141 @@
       text-align: center;
     }
 
+    .post-list-card {
+      padding: 22px;
+      border: 1px solid rgba(81, 65, 56, 0.1);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.82);
+      margin-top: 18px;
+    }
+
+    .post-list-card h2 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      color: #2d241f;
+    }
+
+    .post-list-card p {
+      margin: 0;
+      color: #77665b;
+      line-height: 1.6;
+    }
+
+    .post-status-pill {
+      display: inline-flex;
+      width: fit-content;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .post-status-pill.published {
+      background: rgba(47, 109, 60, 0.12);
+      color: #2f6d3c;
+    }
+
+    .post-status-pill.draft {
+      background: rgba(124, 63, 49, 0.1);
+      color: #7c3f31;
+    }
+
+    .post-editor-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(42, 31, 24, 0.66);
+      backdrop-filter: blur(8px);
+    }
+
+    .post-editor-modal {
+      width: min(860px, 100%);
+      max-height: calc(100vh - 48px);
+      overflow: auto;
+      background: #fffaf5;
+      border: 1px solid rgba(255, 255, 255, 0.54);
+      border-radius: 24px;
+      box-shadow: 0 26px 80px rgba(0, 0, 0, 0.34);
+    }
+
+    .post-editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 26px 28px 18px;
+      border-bottom: 1px solid rgba(81, 65, 56, 0.12);
+    }
+
+    .post-editor-header h2 {
+      margin: 0;
+      color: #2d241f;
+      font-size: 24px;
+    }
+
+    .post-editor-header p {
+      margin: 7px 0 0;
+      color: #77665b;
+      line-height: 1.5;
+    }
+
+    .post-editor-close {
+      width: 40px;
+      height: 40px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(93, 68, 54, 0.1);
+      color: #5d4436;
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .post-editor-close:hover {
+      background: rgba(93, 68, 54, 0.18);
+    }
+
+    .post-editor-body {
+      padding: 24px 28px 28px;
+    }
+
+    .post-form-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .post-form-row {
+      display: grid;
+      grid-template-columns: 1fr 0.55fr;
+      gap: 12px;
+    }
+
+    .checkbox-field {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+      color: #514138;
+      font-weight: 700;
+    }
+
+    .checkbox-field input {
+      width: 18px;
+      height: 18px;
+      accent-color: #5d4436;
+    }
+
+    .post-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
     @media (max-width: 1100px) {
       .stats-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -420,23 +655,36 @@
 
       .admin-topbar,
       .dashboard-header,
-      .bookings-toolbar {
+      .bookings-toolbar,
+      .posts-toolbar {
         flex-direction: column;
         align-items: flex-start;
       }
 
-      .admin-filters {
+      .admin-tabs {
+        width: 100%;
+        border-radius: 18px;
+      }
+
+      .admin-tab-button {
+        flex: 1;
+      }
+
+      .admin-filters,
+      .posts-toolbar-actions {
         width: 100%;
         justify-content: flex-start;
       }
 
       .admin-filters input,
       .admin-filters select,
-      .admin-filters button {
+      .admin-filters button,
+      .posts-toolbar-actions button {
         width: 100%;
       }
 
-      .stats-grid {
+      .stats-grid,
+      .post-form-row {
         grid-template-columns: 1fr;
       }
 
@@ -495,9 +743,9 @@
       <section id="dashboardSection" class="admin-card dashboard-card hidden">
         <div class="dashboard-header">
           <div>
-            <h1>Booking Enquiries</h1>
+            <h1>Memory Lane Admin</h1>
             <p class="dashboard-intro">
-              View enquiries, track booking status, manage quoted prices and monitor monthly revenue.
+              Manage bookings, track revenue and update Helpful Session Advice content.
             </p>
 
             <div class="dashboard-meta">
@@ -512,108 +760,253 @@
           </button>
         </div>
 
-        <section class="stats-section" aria-label="Booking statistics">
-          <div class="stats-grid">
-            <article class="stat-card">
-              <span class="stat-label">Quoted Pipeline</span>
-              <span id="quotedPipelineValue" class="stat-value">A$0</span>
-              <span class="stat-note">Status: quoted</span>
-            </article>
+        <nav class="admin-tabs" aria-label="Admin sections">
+          <button id="bookingsTabButton" class="admin-tab-button active" type="button" data-tab="bookings">
+            Bookings
+          </button>
 
-            <article class="stat-card">
-              <span class="stat-label">Booked Revenue</span>
-              <span id="bookedRevenueValue" class="stat-value">A$0</span>
-              <span class="stat-note">Status: booked + completed</span>
-            </article>
+          <button id="postsTabButton" class="admin-tab-button" type="button" data-tab="posts">
+            Helpful Advice
+          </button>
+        </nav>
 
-            <article class="stat-card">
-              <span class="stat-label">Completed Revenue</span>
-              <span id="completedRevenueValue" class="stat-value">A$0</span>
-              <span class="stat-note">Status: completed</span>
-            </article>
+        <section id="bookingsPanel" class="admin-panel active">
+          <section class="stats-section" aria-label="Booking statistics">
+            <div class="stats-grid">
+              <article class="stat-card">
+                <span class="stat-label">Quoted Pipeline</span>
+                <span id="quotedPipelineValue" class="stat-value">A$0</span>
+                <span class="stat-note">Status: quoted</span>
+              </article>
 
-            <article class="stat-card">
-              <span class="stat-label">Average Deal</span>
-              <span id="averageDealValue" class="stat-value">A$0</span>
-              <span class="stat-note">Booked + completed average</span>
-            </article>
+              <article class="stat-card">
+                <span class="stat-label">Booked Revenue</span>
+                <span id="bookedRevenueValue" class="stat-value">A$0</span>
+                <span class="stat-note">Status: booked + completed</span>
+              </article>
+
+              <article class="stat-card">
+                <span class="stat-label">Completed Revenue</span>
+                <span id="completedRevenueValue" class="stat-value">A$0</span>
+                <span class="stat-note">Status: completed</span>
+              </article>
+
+              <article class="stat-card">
+                <span class="stat-label">Average Deal</span>
+                <span id="averageDealValue" class="stat-value">A$0</span>
+                <span class="stat-note">Booked + completed average</span>
+              </article>
+            </div>
+
+            <div class="chart-grid">
+              <article class="chart-card">
+                <h3>Status Breakdown</h3>
+                <div class="chart-box">
+                  <canvas id="statusChart"></canvas>
+                </div>
+              </article>
+
+              <article class="chart-card">
+                <h3>Monthly Enquiries</h3>
+                <div class="chart-box">
+                  <canvas id="monthlyEnquiriesChart"></canvas>
+                </div>
+              </article>
+
+              <article class="chart-card">
+                <h3>Monthly Income</h3>
+                <div class="chart-box">
+                  <canvas id="monthlyIncomeChart"></canvas>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <div class="bookings-toolbar">
+            <div>
+              <h2>Latest enquiries</h2>
+              <div id="dashboardMessage" class="admin-message"></div>
+            </div>
+
+            <div class="admin-filters">
+              <input id="bookingSearchInput" type="search" placeholder="Search enquiries..." />
+
+              <select id="statusFilterSelect">
+                <option value="all">All status</option>
+                <option value="new">New</option>
+                <option value="contacted">Contacted</option>
+                <option value="quoted">Quoted</option>
+                <option value="booked">Booked</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+
+              <button id="clearFiltersButton" class="admin-button small" type="button">
+                Clear
+              </button>
+            </div>
           </div>
 
-          <div class="chart-grid">
-            <article class="chart-card">
-              <h3>Status Breakdown</h3>
-              <div class="chart-box">
-                <canvas id="statusChart"></canvas>
-              </div>
-            </article>
-
-            <article class="chart-card">
-              <h3>Monthly Enquiries</h3>
-              <div class="chart-box">
-                <canvas id="monthlyEnquiriesChart"></canvas>
-              </div>
-            </article>
-
-            <article class="chart-card">
-              <h3>Monthly Income</h3>
-              <div class="chart-box">
-                <canvas id="monthlyIncomeChart"></canvas>
-              </div>
-            </article>
+          <div class="bookings-table-wrap">
+            <table class="bookings-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Client</th>
+                  <th>Contact</th>
+                  <th>Service</th>
+                  <th>Preferred Date</th>
+                  <th>Quoted Price</th>
+                  <th>Message</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="bookingsTableBody">
+                <tr>
+                  <td colspan="8" class="empty-state">
+                    Login to load bookings.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </section>
 
-        <div class="bookings-toolbar">
-          <div>
-            <h2>Latest enquiries</h2>
-            <div id="dashboardMessage" class="admin-message"></div>
+        <section id="postsPanel" class="admin-panel">
+          <div class="posts-toolbar">
+            <div class="posts-toolbar-title">
+              <h2>Helpful Session Advice</h2>
+              <p>Create, edit and publish advice posts shown on the website.</p>
+              <div id="postsMessage" class="admin-message"></div>
+            </div>
+
+            <div class="posts-toolbar-actions">
+              <div class="admin-filters">
+                <input id="postSearchInput" type="search" placeholder="Search posts..." />
+
+                <select id="postPublishedFilter">
+                  <option value="all">All posts</option>
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                </select>
+
+                <button id="clearPostFiltersButton" class="admin-button small" type="button">
+                  Clear
+                </button>
+              </div>
+
+              <button id="newPostButton" class="admin-button" type="button">
+                New Post
+              </button>
+            </div>
           </div>
 
-          <div class="admin-filters">
-            <input id="bookingSearchInput" type="search" placeholder="Search enquiries..." />
+          <section class="post-list-card">
+            <h2>All posts</h2>
+            <p>Select Edit to open a post in the editor popup.</p>
 
-            <select id="statusFilterSelect">
-              <option value="all">All status</option>
-              <option value="new">New</option>
-              <option value="contacted">Contacted</option>
-              <option value="quoted">Quoted</option>
-              <option value="booked">Booked</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-
-            <button id="clearFiltersButton" class="admin-button small" type="button">
-              Clear
-            </button>
-          </div>
-        </div>
-
-        <div class="bookings-table-wrap">
-          <table class="bookings-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Client</th>
-                <th>Contact</th>
-                <th>Service</th>
-                <th>Preferred Date</th>
-                <th>Quoted Price</th>
-                <th>Message</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="bookingsTableBody">
-              <tr>
-                <td colspan="8" class="empty-state">
-                  Login to load bookings.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+            <div class="posts-table-wrap" style="margin-top: 18px;">
+              <table class="posts-table">
+                <thead>
+                  <tr>
+                    <th>Post</th>
+                    <th>Status</th>
+                    <th>Sort</th>
+                    <th>Updated</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="postsTableBody">
+                  <tr>
+                    <td colspan="5" class="empty-state">
+                      Load posts to begin.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
       </section>
     </div>
   </main>
+
+  <div id="postEditorModal" class="post-editor-overlay hidden">
+    <section class="post-editor-modal" role="dialog" aria-modal="true" aria-labelledby="postFormTitle">
+      <div class="post-editor-header">
+        <div>
+          <h2 id="postFormTitle">New Post</h2>
+          <p>Create or edit advice posts shown in the Helpful Session Advice section.</p>
+        </div>
+
+        <button id="closePostModalButton" class="post-editor-close" type="button" aria-label="Close post editor">
+          ×
+        </button>
+      </div>
+
+      <div class="post-editor-body">
+        <form id="postForm" class="post-form-grid">
+          <input id="postIdInput" type="hidden" />
+
+          <div class="admin-field">
+            <label for="postTitleInput">Title</label>
+            <input id="postTitleInput" type="text" placeholder="Example: What to wear for a couple session" required />
+          </div>
+
+          <div class="admin-field">
+            <label for="postSlugInput">Slug</label>
+            <input id="postSlugInput" type="text" placeholder="what-to-wear-for-a-couple-session" required />
+          </div>
+
+          <div class="admin-field">
+            <label for="postExcerptInput">Excerpt</label>
+            <textarea id="postExcerptInput" placeholder="Short summary shown on the landing page." required></textarea>
+          </div>
+
+          <div class="admin-field">
+            <label for="postContentInput">Content</label>
+            <textarea id="postContentInput" placeholder="Full article content." required></textarea>
+          </div>
+
+          <div class="post-form-row">
+            <div class="admin-field">
+              <label for="postCategoryInput">Category</label>
+              <input id="postCategoryInput" type="text" value="Photography Tips" />
+            </div>
+
+            <div class="admin-field">
+              <label for="postSortOrderInput">Sort Order</label>
+              <input id="postSortOrderInput" type="number" min="0" step="1" value="0" />
+            </div>
+          </div>
+
+          <div class="admin-field">
+            <label for="postThumbnailInput">Thumbnail URL</label>
+            <input id="postThumbnailInput" type="text" placeholder="Optional for now" />
+          </div>
+
+          <label class="checkbox-field" for="postPublishedInput">
+            <input id="postPublishedInput" type="checkbox" />
+            Publish this post
+          </label>
+
+          <div class="post-actions">
+            <button id="savePostButton" class="admin-button" type="submit">
+              Save Post
+            </button>
+
+            <button id="clearPostFormButton" class="admin-button light" type="button">
+              Clear Form
+            </button>
+
+            <button id="deletePostButton" class="admin-button danger hidden" type="button">
+              Delete Post
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

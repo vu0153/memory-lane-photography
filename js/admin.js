@@ -5,6 +5,12 @@ const loginButton = document.getElementById("loginButton");
 const loginMessage = document.getElementById("loginMessage");
 const logoutButton = document.getElementById("logoutButton");
 const refreshBookingsButton = document.getElementById("refreshBookingsButton");
+
+const bookingsTabButton = document.getElementById("bookingsTabButton");
+const postsTabButton = document.getElementById("postsTabButton");
+const bookingsPanel = document.getElementById("bookingsPanel");
+const postsPanel = document.getElementById("postsPanel");
+
 const bookingsTableBody = document.getElementById("bookingsTableBody");
 const dashboardMessage = document.getElementById("dashboardMessage");
 const totalBookings = document.getElementById("totalBookings");
@@ -18,6 +24,30 @@ const quotedPipelineValue = document.getElementById("quotedPipelineValue");
 const bookedRevenueValue = document.getElementById("bookedRevenueValue");
 const completedRevenueValue = document.getElementById("completedRevenueValue");
 const averageDealValue = document.getElementById("averageDealValue");
+
+const postsMessage = document.getElementById("postsMessage");
+const postSearchInput = document.getElementById("postSearchInput");
+const postPublishedFilter = document.getElementById("postPublishedFilter");
+const clearPostFiltersButton = document.getElementById("clearPostFiltersButton");
+const newPostButton = document.getElementById("newPostButton");
+
+const postEditorModal = document.getElementById("postEditorModal");
+const closePostModalButton = document.getElementById("closePostModalButton");
+const postForm = document.getElementById("postForm");
+const postFormTitle = document.getElementById("postFormTitle");
+const postIdInput = document.getElementById("postIdInput");
+const postTitleInput = document.getElementById("postTitleInput");
+const postSlugInput = document.getElementById("postSlugInput");
+const postExcerptInput = document.getElementById("postExcerptInput");
+const postContentInput = document.getElementById("postContentInput");
+const postCategoryInput = document.getElementById("postCategoryInput");
+const postSortOrderInput = document.getElementById("postSortOrderInput");
+const postThumbnailInput = document.getElementById("postThumbnailInput");
+const postPublishedInput = document.getElementById("postPublishedInput");
+const savePostButton = document.getElementById("savePostButton");
+const clearPostFormButton = document.getElementById("clearPostFormButton");
+const deletePostButton = document.getElementById("deletePostButton");
+const postsTableBody = document.getElementById("postsTableBody");
 
 const statusOptions = [
   "new",
@@ -38,10 +68,10 @@ const statusLabels = {
 };
 
 let allBookings = [];
+let allPosts = [];
 let detailModal = null;
 let detailModalBody = null;
 let activeDetailBookingId = null;
-
 let statusChart = null;
 let monthlyEnquiriesChart = null;
 let monthlyIncomeChart = null;
@@ -53,12 +83,34 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   loginForm.addEventListener("submit", handleLogin);
   logoutButton.addEventListener("click", handleLogout);
-  refreshBookingsButton.addEventListener("click", loadBookings);
+  refreshBookingsButton.addEventListener("click", refreshCurrentTab);
+
+  bookingsTabButton.addEventListener("click", () => switchAdminTab("bookings"));
+  postsTabButton.addEventListener("click", () => switchAdminTab("posts"));
+
   bookingsTableBody.addEventListener("change", handleStatusChange);
   bookingsTableBody.addEventListener("click", handleBookingTableClick);
   bookingSearchInput.addEventListener("input", applyFilters);
   statusFilterSelect.addEventListener("change", applyFilters);
   clearFiltersButton.addEventListener("click", clearFilters);
+
+  postSearchInput.addEventListener("input", applyPostFilters);
+  postPublishedFilter.addEventListener("change", applyPostFilters);
+  clearPostFiltersButton.addEventListener("click", clearPostFilters);
+  newPostButton.addEventListener("click", openNewPostModal);
+  postForm.addEventListener("submit", handlePostSave);
+  postTitleInput.addEventListener("input", handlePostTitleInput);
+  clearPostFormButton.addEventListener("click", clearPostForm);
+  deletePostButton.addEventListener("click", handlePostDelete);
+  postsTableBody.addEventListener("click", handlePostsTableClick);
+  closePostModalButton.addEventListener("click", closePostModal);
+
+  postEditorModal.addEventListener("click", (event) => {
+    if (event.target === postEditorModal) {
+      closePostModal();
+    }
+  });
+
   document.addEventListener("keydown", handleEscapeClose);
 });
 
@@ -319,7 +371,7 @@ async function checkSession() {
   }
 
   showDashboard();
-  await loadBookings();
+  await Promise.all([loadBookings(), loadPosts()]);
 }
 
 async function handleLogin(event) {
@@ -347,16 +399,20 @@ async function handleLogin(event) {
 
   loginMessage.textContent = "";
   showDashboard();
-  await loadBookings();
+  await Promise.all([loadBookings(), loadPosts()]);
 }
 
 async function handleLogout() {
   await supabaseClient.auth.signOut();
 
   allBookings = [];
+  allPosts = [];
   activeDetailBookingId = null;
+
   bookingSearchInput.value = "";
   statusFilterSelect.value = "all";
+  postSearchInput.value = "";
+  postPublishedFilter.value = "all";
 
   totalBookings.textContent = "Total: 0";
   newBookings.textContent = "New: 0";
@@ -374,7 +430,16 @@ async function handleLogout() {
     </tr>
   `;
 
+  postsTableBody.innerHTML = `
+    <tr>
+      <td colspan="5" class="empty-state">Login to load posts.</td>
+    </tr>
+  `;
+
+  clearPostForm();
+  closePostModal();
   closeBookingDetails();
+  switchAdminTab("bookings");
   showLogin();
 }
 
@@ -388,6 +453,24 @@ function showDashboard() {
   loginSection.classList.add("hidden");
   dashboardSection.classList.remove("hidden");
   logoutButton.classList.remove("hidden");
+}
+
+function switchAdminTab(tabName) {
+  const isBookings = tabName === "bookings";
+
+  bookingsTabButton.classList.toggle("active", isBookings);
+  postsTabButton.classList.toggle("active", !isBookings);
+  bookingsPanel.classList.toggle("active", isBookings);
+  postsPanel.classList.toggle("active", !isBookings);
+}
+
+async function refreshCurrentTab() {
+  if (postsPanel.classList.contains("active")) {
+    await loadPosts();
+    return;
+  }
+
+  await loadBookings();
 }
 
 async function loadBookings() {
@@ -758,12 +841,6 @@ async function saveBookingDetails() {
   }, 1800);
 }
 
-function handleEscapeClose(event) {
-  if (event.key === "Escape") {
-    closeBookingDetails();
-  }
-}
-
 async function handleStatusChange(event) {
   if (!event.target.classList.contains("status-select")) {
     return;
@@ -811,6 +888,284 @@ async function handleStatusChange(event) {
     dashboardMessage.classList.remove("success");
     dashboardMessage.textContent = "";
   }, 1800);
+}
+
+async function loadPosts() {
+  postsMessage.classList.remove("success");
+  postsMessage.textContent = "Loading posts...";
+
+  const { data, error } = await supabaseClient
+    .from("blog_posts")
+    .select("id, title, slug, excerpt, content, category, thumbnail_url, is_published, sort_order, published_at, created_at, updated_at")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    postsMessage.textContent = error.message;
+
+    postsTableBody.innerHTML = `
+      <tr>
+        <td colspan="5" class="empty-state">Unable to load posts.</td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  allPosts = data || [];
+  applyPostFilters();
+  postsMessage.textContent = "";
+}
+
+function applyPostFilters() {
+  const searchTerm = postSearchInput.value.trim().toLowerCase();
+  const publishedFilter = postPublishedFilter.value;
+
+  const filteredPosts = allPosts.filter((post) => {
+    const matchesStatus =
+      publishedFilter === "all" ||
+      (publishedFilter === "published" && post.is_published) ||
+      (publishedFilter === "draft" && !post.is_published);
+
+    const searchableText = [
+      post.title,
+      post.slug,
+      post.excerpt,
+      post.content,
+      post.category
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    const matchesSearch =
+      !searchTerm || searchableText.includes(searchTerm);
+
+    return matchesStatus && matchesSearch;
+  });
+
+  renderPosts(filteredPosts);
+}
+
+function clearPostFilters() {
+  postSearchInput.value = "";
+  postPublishedFilter.value = "all";
+  applyPostFilters();
+}
+
+function renderPosts(posts) {
+  if (!posts.length) {
+    postsTableBody.innerHTML = `
+      <tr>
+        <td colspan="5" class="empty-state">No posts found.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  postsTableBody.innerHTML = posts.map((post) => {
+    const statusClass = post.is_published ? "published" : "draft";
+    const statusText = post.is_published ? "Published" : "Draft";
+
+    return `
+      <tr>
+        <td>
+          <div class="post-title">${escapeHtml(post.title)}</div>
+          <div class="post-meta">
+            <span>${escapeHtml(post.slug)}</span>
+            <span>${escapeHtml(post.category || "Photography Tips")}</span>
+          </div>
+        </td>
+        <td>
+          <span class="post-status-pill ${statusClass}">
+            ${statusText}
+          </span>
+        </td>
+        <td>${Number(post.sort_order || 0)}</td>
+        <td>${formatDateTime(post.updated_at || post.created_at)}</td>
+        <td>
+          <button class="detail-button edit-post-button" type="button" data-post-id="${post.id}">
+            Edit
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function handlePostsTableClick(event) {
+  const editButton = event.target.closest(".edit-post-button");
+
+  if (!editButton) {
+    return;
+  }
+
+  const postId = editButton.dataset.postId;
+  const post = allPosts.find((item) => String(item.id) === String(postId));
+
+  if (!post) {
+    return;
+  }
+
+  loadPostIntoForm(post);
+  openPostModal();
+}
+
+function openNewPostModal() {
+  clearPostForm();
+  openPostModal();
+}
+
+function openPostModal() {
+  postEditorModal.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+}
+
+function closePostModal() {
+  postEditorModal.classList.add("hidden");
+
+  if (!detailModal || detailModal.classList.contains("hidden")) {
+    document.body.style.overflow = "";
+  }
+}
+
+function loadPostIntoForm(post) {
+  postFormTitle.textContent = "Edit Post";
+  postIdInput.value = post.id;
+  postTitleInput.value = post.title || "";
+  postSlugInput.value = post.slug || "";
+  postExcerptInput.value = post.excerpt || "";
+  postContentInput.value = post.content || "";
+  postCategoryInput.value = post.category || "Photography Tips";
+  postSortOrderInput.value = post.sort_order ?? 0;
+  postThumbnailInput.value = post.thumbnail_url || "";
+  postPublishedInput.checked = Boolean(post.is_published);
+  deletePostButton.classList.remove("hidden");
+
+  postsMessage.classList.remove("success");
+  postsMessage.textContent = "";
+}
+
+function handlePostTitleInput() {
+  if (postIdInput.value || postSlugInput.value.trim()) {
+    return;
+  }
+
+  postSlugInput.value = createSlug(postTitleInput.value);
+}
+
+async function handlePostSave(event) {
+  event.preventDefault();
+
+  const postId = postIdInput.value || null;
+  const title = postTitleInput.value.trim();
+  const slug = postSlugInput.value.trim() || createSlug(title);
+  const excerpt = postExcerptInput.value.trim();
+  const content = postContentInput.value.trim();
+  const category = postCategoryInput.value.trim() || "Photography Tips";
+  const thumbnailUrl = postThumbnailInput.value.trim() || null;
+  const sortOrder = Number(postSortOrderInput.value || 0);
+  const isPublished = postPublishedInput.checked;
+
+  if (!title || !slug || !excerpt || !content) {
+    postsMessage.textContent = "Please complete title, slug, excerpt and content.";
+    return;
+  }
+
+  savePostButton.disabled = true;
+  savePostButton.textContent = "Saving...";
+  postsMessage.classList.remove("success");
+  postsMessage.textContent = "";
+
+  const payload = {
+    title,
+    slug,
+    excerpt,
+    content,
+    category,
+    thumbnail_url: thumbnailUrl,
+    sort_order: Number.isFinite(sortOrder) ? sortOrder : 0,
+    is_published: isPublished
+  };
+
+  let error;
+
+  if (postId) {
+    const response = await supabaseClient
+      .from("blog_posts")
+      .update(payload)
+      .eq("id", postId);
+
+    error = response.error;
+  } else {
+    const response = await supabaseClient
+      .from("blog_posts")
+      .insert([payload]);
+
+    error = response.error;
+  }
+
+  savePostButton.disabled = false;
+  savePostButton.textContent = "Save Post";
+
+  if (error) {
+    postsMessage.textContent = error.message;
+    return;
+  }
+
+  postsMessage.classList.add("success");
+  postsMessage.textContent = postId ? "Post updated." : "Post created.";
+
+  clearPostForm();
+  closePostModal();
+  await loadPosts();
+}
+
+async function handlePostDelete() {
+  const postId = postIdInput.value;
+
+  if (!postId) {
+    return;
+  }
+
+  const confirmed = window.confirm("Delete this post? This cannot be undone.");
+
+  if (!confirmed) {
+    return;
+  }
+
+  deletePostButton.disabled = true;
+  deletePostButton.textContent = "Deleting...";
+
+  const { error } = await supabaseClient
+    .from("blog_posts")
+    .delete()
+    .eq("id", postId);
+
+  deletePostButton.disabled = false;
+  deletePostButton.textContent = "Delete Post";
+
+  if (error) {
+    postsMessage.textContent = error.message;
+    return;
+  }
+
+  postsMessage.classList.add("success");
+  postsMessage.textContent = "Post deleted.";
+
+  clearPostForm();
+  closePostModal();
+  await loadPosts();
+}
+
+function clearPostForm() {
+  postFormTitle.textContent = "New Post";
+  postForm.reset();
+  postIdInput.value = "";
+  postCategoryInput.value = "Photography Tips";
+  postSortOrderInput.value = "0";
+  postPublishedInput.checked = false;
+  deletePostButton.classList.add("hidden");
 }
 
 function renderCharts(bookings) {
@@ -1095,6 +1450,28 @@ function formatStatus(value) {
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
+}
+
+function createSlug(value) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/['"]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function handleEscapeClose(event) {
+  if (event.key !== "Escape") {
+    return;
+  }
+
+  if (postEditorModal && !postEditorModal.classList.contains("hidden")) {
+    closePostModal();
+    return;
+  }
+
+  closeBookingDetails();
 }
 
 function escapeHtml(value) {
