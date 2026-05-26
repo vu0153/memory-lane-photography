@@ -28,7 +28,7 @@
     }
 
     .admin-shell {
-      width: min(1180px, 100%);
+      width: min(1280px, 100%);
       margin: 0 auto;
     }
 
@@ -213,6 +213,76 @@
       font-weight: 600;
     }
 
+    .stats-section {
+      display: grid;
+      gap: 18px;
+      margin: 26px 0;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stat-card {
+      padding: 18px;
+      border: 1px solid rgba(81, 65, 56, 0.1);
+      border-radius: 18px;
+      background: #fff;
+    }
+
+    .stat-label {
+      display: block;
+      color: #8a7467;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      display: block;
+      margin-top: 8px;
+      color: #2d241f;
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .stat-note {
+      display: block;
+      margin-top: 8px;
+      color: #77665b;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr 1.1fr;
+      gap: 14px;
+    }
+
+    .chart-card {
+      min-height: 320px;
+      padding: 18px;
+      border: 1px solid rgba(81, 65, 56, 0.1);
+      border-radius: 18px;
+      background: #fff;
+    }
+
+    .chart-card h3 {
+      margin: 0 0 14px;
+      color: #2d241f;
+      font-size: 16px;
+    }
+
+    .chart-box {
+      position: relative;
+      height: 250px;
+    }
+
     .bookings-toolbar {
       display: flex;
       justify-content: space-between;
@@ -266,7 +336,7 @@
 
     .bookings-table {
       width: 100%;
-      min-width: 920px;
+      min-width: 1080px;
       border-collapse: collapse;
     }
 
@@ -303,10 +373,16 @@
     }
 
     .booking-message {
-      max-width: 280px;
+      max-width: 260px;
       color: #6e5c50;
       line-height: 1.5;
       white-space: pre-wrap;
+    }
+
+    .booking-price {
+      font-weight: 700;
+      color: #2d241f;
+      white-space: nowrap;
     }
 
     .status-select {
@@ -325,6 +401,16 @@
       padding: 26px;
       color: #77665b;
       text-align: center;
+    }
+
+    @media (max-width: 1100px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .chart-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 720px) {
@@ -348,6 +434,10 @@
       .admin-filters select,
       .admin-filters button {
         width: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
       }
 
       .login-card,
@@ -407,7 +497,7 @@
           <div>
             <h1>Booking Enquiries</h1>
             <p class="dashboard-intro">
-              View new enquiries from the Memory Lane website and update their booking status.
+              View enquiries, track booking status, manage quoted prices and monitor monthly revenue.
             </p>
 
             <div class="dashboard-meta">
@@ -421,6 +511,57 @@
             Refresh
           </button>
         </div>
+
+        <section class="stats-section" aria-label="Booking statistics">
+          <div class="stats-grid">
+            <article class="stat-card">
+              <span class="stat-label">Quoted Pipeline</span>
+              <span id="quotedPipelineValue" class="stat-value">A$0</span>
+              <span class="stat-note">Status: quoted</span>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-label">Booked Revenue</span>
+              <span id="bookedRevenueValue" class="stat-value">A$0</span>
+              <span class="stat-note">Status: booked + completed</span>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-label">Completed Revenue</span>
+              <span id="completedRevenueValue" class="stat-value">A$0</span>
+              <span class="stat-note">Status: completed</span>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-label">Average Deal</span>
+              <span id="averageDealValue" class="stat-value">A$0</span>
+              <span class="stat-note">Booked + completed average</span>
+            </article>
+          </div>
+
+          <div class="chart-grid">
+            <article class="chart-card">
+              <h3>Status Breakdown</h3>
+              <div class="chart-box">
+                <canvas id="statusChart"></canvas>
+              </div>
+            </article>
+
+            <article class="chart-card">
+              <h3>Monthly Enquiries</h3>
+              <div class="chart-box">
+                <canvas id="monthlyEnquiriesChart"></canvas>
+              </div>
+            </article>
+
+            <article class="chart-card">
+              <h3>Monthly Income</h3>
+              <div class="chart-box">
+                <canvas id="monthlyIncomeChart"></canvas>
+              </div>
+            </article>
+          </div>
+        </section>
 
         <div class="bookings-toolbar">
           <div>
@@ -456,13 +597,14 @@
                 <th>Contact</th>
                 <th>Service</th>
                 <th>Preferred Date</th>
+                <th>Quoted Price</th>
                 <th>Message</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody id="bookingsTableBody">
               <tr>
-                <td colspan="7" class="empty-state">
+                <td colspan="8" class="empty-state">
                   Login to load bookings.
                 </td>
               </tr>
@@ -473,6 +615,7 @@
     </div>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/admin.js"></script>

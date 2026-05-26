@@ -14,6 +14,11 @@ const bookingSearchInput = document.getElementById("bookingSearchInput");
 const statusFilterSelect = document.getElementById("statusFilterSelect");
 const clearFiltersButton = document.getElementById("clearFiltersButton");
 
+const quotedPipelineValue = document.getElementById("quotedPipelineValue");
+const bookedRevenueValue = document.getElementById("bookedRevenueValue");
+const completedRevenueValue = document.getElementById("completedRevenueValue");
+const averageDealValue = document.getElementById("averageDealValue");
+
 const statusOptions = [
   "new",
   "contacted",
@@ -23,10 +28,23 @@ const statusOptions = [
   "cancelled"
 ];
 
+const statusLabels = {
+  new: "New",
+  contacted: "Contacted",
+  quoted: "Quoted",
+  booked: "Booked",
+  completed: "Completed",
+  cancelled: "Cancelled"
+};
+
 let allBookings = [];
 let detailModal = null;
 let detailModalBody = null;
 let activeDetailBookingId = null;
+
+let statusChart = null;
+let monthlyEnquiriesChart = null;
+let monthlyIncomeChart = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   createDetailsModal();
@@ -61,7 +79,7 @@ function createDetailsModal() {
     }
 
     .details-modal {
-      width: min(820px, 100%);
+      width: min(860px, 100%);
       max-height: calc(100vh - 44px);
       overflow: auto;
       background: #fffaf5;
@@ -186,7 +204,19 @@ function createDetailsModal() {
       line-height: 1.6;
     }
 
-    .admin-notes-textarea:focus {
+    .admin-price-input {
+      width: min(240px, 100%);
+      border: 1px solid rgba(81, 65, 56, 0.16);
+      border-radius: 14px;
+      background: #fffaf5;
+      padding: 13px 14px;
+      font: inherit;
+      color: #2d241f;
+      outline: none;
+    }
+
+    .admin-notes-textarea:focus,
+    .admin-price-input:focus {
       border-color: #9b765f;
       box-shadow: 0 0 0 4px rgba(155, 118, 95, 0.16);
     }
@@ -251,7 +281,7 @@ function createDetailsModal() {
       <div class="details-modal-header">
         <div>
           <h2 id="bookingDetailsTitle">Enquiry Details</h2>
-          <p>View the full enquiry information and add internal notes.</p>
+          <p>View the full enquiry, add quoted price and keep internal notes.</p>
         </div>
 
         <button id="closeDetailsModalButton" class="details-close-button" type="button" aria-label="Close details popup">
@@ -331,10 +361,16 @@ async function handleLogout() {
   totalBookings.textContent = "Total: 0";
   newBookings.textContent = "New: 0";
   lastUpdated.textContent = "Last updated: Not loaded";
+  quotedPipelineValue.textContent = "A$0";
+  bookedRevenueValue.textContent = "A$0";
+  completedRevenueValue.textContent = "A$0";
+  averageDealValue.textContent = "A$0";
+
+  destroyCharts();
 
   bookingsTableBody.innerHTML = `
     <tr>
-      <td colspan="7" class="empty-state">Login to load bookings.</td>
+      <td colspan="8" class="empty-state">Login to load bookings.</td>
     </tr>
   `;
 
@@ -360,7 +396,7 @@ async function loadBookings() {
 
   const { data, error } = await supabaseClient
     .from("bookings")
-    .select("id, created_at, updated_at, full_name, phone, email, service_type, preferred_date, message, status, admin_notes")
+    .select("id, created_at, updated_at, full_name, phone, email, service_type, preferred_date, location, message, status, admin_notes, quoted_price")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -368,7 +404,7 @@ async function loadBookings() {
 
     bookingsTableBody.innerHTML = `
       <tr>
-        <td colspan="7" class="empty-state">Unable to load bookings.</td>
+        <td colspan="8" class="empty-state">Unable to load bookings.</td>
       </tr>
     `;
 
@@ -378,6 +414,8 @@ async function loadBookings() {
   allBookings = data || [];
 
   updateSummary(allBookings);
+  updateStatistics(allBookings);
+  renderCharts(allBookings);
   applyFilters();
 
   dashboardMessage.textContent = "";
@@ -399,9 +437,11 @@ function applyFilters() {
       booking.email,
       booking.service_type,
       booking.preferred_date,
+      booking.location,
       booking.message,
       booking.status,
-      booking.admin_notes
+      booking.admin_notes,
+      booking.quoted_price
     ]
       .filter(Boolean)
       .join(" ")
@@ -432,11 +472,43 @@ function updateSummary(bookings) {
   lastUpdated.textContent = `Last updated: ${formatDateTime(new Date().toISOString())}`;
 }
 
+function updateStatistics(bookings) {
+  const quotedPipeline = sumPricesByStatuses(bookings, ["quoted"]);
+  const bookedRevenue = sumPricesByStatuses(bookings, ["booked", "completed"]);
+  const completedRevenue = sumPricesByStatuses(bookings, ["completed"]);
+
+  const bookedDeals = bookings.filter((booking) => {
+    const status = booking.status || "new";
+    return ["booked", "completed"].includes(status) && parseMoney(booking.quoted_price) > 0;
+  });
+
+  const averageDeal = bookedDeals.length
+    ? bookedRevenue / bookedDeals.length
+    : 0;
+
+  quotedPipelineValue.textContent = formatCurrency(quotedPipeline);
+  bookedRevenueValue.textContent = formatCurrency(bookedRevenue);
+  completedRevenueValue.textContent = formatCurrency(completedRevenue);
+  averageDealValue.textContent = formatCurrency(averageDeal);
+}
+
+function sumPricesByStatuses(bookings, statuses) {
+  return bookings.reduce((total, booking) => {
+    const status = booking.status || "new";
+
+    if (!statuses.includes(status)) {
+      return total;
+    }
+
+    return total + parseMoney(booking.quoted_price);
+  }, 0);
+}
+
 function renderBookings(bookings) {
   if (!bookings.length) {
     bookingsTableBody.innerHTML = `
       <tr>
-        <td colspan="7" class="empty-state">No bookings found.</td>
+        <td colspan="8" class="empty-state">No bookings found.</td>
       </tr>
     `;
 
@@ -464,6 +536,9 @@ function renderBookings(bookings) {
         </td>
         <td>${escapeHtml(booking.service_type || "Not provided")}</td>
         <td>${formatDate(booking.preferred_date)}</td>
+        <td>
+          <span class="booking-price">${formatCurrency(parseMoney(booking.quoted_price))}</span>
+        </td>
         <td>
           <div class="booking-message">${escapeHtml(shortMessage)}</div>
           <button class="detail-button" type="button" data-booking-id="${booking.id}">
@@ -564,12 +639,25 @@ function openBookingDetails(booking) {
       </div>
 
       <div class="detail-item detail-full">
+        <span class="detail-label">Quoted Price</span>
+        <input
+          id="quotedPriceInput"
+          class="admin-price-input"
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="Example: 390"
+          value="${escapeAttribute(booking.quoted_price ?? "")}"
+        />
+      </div>
+
+      <div class="detail-item detail-full">
         <span class="detail-label">Internal Admin Notes</span>
         <textarea id="adminNotesTextarea" class="admin-notes-textarea" placeholder="Add private notes for this enquiry...">${escapeHtml(booking.admin_notes || "")}</textarea>
 
         <div class="details-actions">
-          <button id="saveAdminNotesButton" class="save-notes-button" type="button">
-            Save Notes
+          <button id="saveBookingDetailsButton" class="save-notes-button" type="button">
+            Save Details
           </button>
 
           <span id="notesSaveMessage" class="notes-save-message"></span>
@@ -593,27 +681,36 @@ function closeBookingDetails() {
 }
 
 function handleDetailsModalClick(event) {
-  if (event.target.id !== "saveAdminNotesButton") {
+  if (event.target.id !== "saveBookingDetailsButton") {
     return;
   }
 
-  saveAdminNotes();
+  saveBookingDetails();
 }
 
-async function saveAdminNotes() {
+async function saveBookingDetails() {
   if (!activeDetailBookingId) {
     return;
   }
 
-  const textarea = document.getElementById("adminNotesTextarea");
-  const saveButton = document.getElementById("saveAdminNotesButton");
+  const notesTextarea = document.getElementById("adminNotesTextarea");
+  const quotedPriceInput = document.getElementById("quotedPriceInput");
+  const saveButton = document.getElementById("saveBookingDetailsButton");
   const notesMessage = document.getElementById("notesSaveMessage");
 
-  if (!textarea || !saveButton || !notesMessage) {
+  if (!notesTextarea || !quotedPriceInput || !saveButton || !notesMessage) {
     return;
   }
 
-  const adminNotes = textarea.value.trim();
+  const adminNotes = notesTextarea.value.trim();
+  const rawQuotedPrice = quotedPriceInput.value.trim();
+  const quotedPrice = rawQuotedPrice ? Number(rawQuotedPrice) : null;
+
+  if (rawQuotedPrice && Number.isNaN(quotedPrice)) {
+    notesMessage.style.color = "#7c3f31";
+    notesMessage.textContent = "Please enter a valid price.";
+    return;
+  }
 
   saveButton.disabled = true;
   saveButton.textContent = "Saving...";
@@ -621,13 +718,16 @@ async function saveAdminNotes() {
 
   const { data, error } = await supabaseClient
     .from("bookings")
-    .update({ admin_notes: adminNotes || null })
+    .update({
+      admin_notes: adminNotes || null,
+      quoted_price: quotedPrice
+    })
     .eq("id", activeDetailBookingId)
-    .select("id, updated_at, admin_notes")
+    .select("id, updated_at, admin_notes, quoted_price")
     .single();
 
   saveButton.disabled = false;
-  saveButton.textContent = "Save Notes";
+  saveButton.textContent = "Save Details";
 
   if (error) {
     notesMessage.style.color = "#7c3f31";
@@ -639,14 +739,17 @@ async function saveAdminNotes() {
 
   if (booking) {
     booking.admin_notes = data.admin_notes;
+    booking.quoted_price = data.quoted_price;
     booking.updated_at = data.updated_at;
   }
 
   updateSummary(allBookings);
+  updateStatistics(allBookings);
+  renderCharts(allBookings);
   applyFilters();
 
   notesMessage.style.color = "#2f6d3c";
-  notesMessage.textContent = "Notes saved.";
+  notesMessage.textContent = "Details saved.";
 
   setTimeout(() => {
     if (notesMessage) {
@@ -697,6 +800,8 @@ async function handleStatusChange(event) {
   }
 
   updateSummary(allBookings);
+  updateStatistics(allBookings);
+  renderCharts(allBookings);
   applyFilters();
 
   dashboardMessage.classList.add("success");
@@ -706,6 +811,257 @@ async function handleStatusChange(event) {
     dashboardMessage.classList.remove("success");
     dashboardMessage.textContent = "";
   }, 1800);
+}
+
+function renderCharts(bookings) {
+  if (typeof Chart === "undefined") {
+    return;
+  }
+
+  renderStatusChart(bookings);
+  renderMonthlyEnquiriesChart(bookings);
+  renderMonthlyIncomeChart(bookings);
+}
+
+function renderStatusChart(bookings) {
+  const canvas = document.getElementById("statusChart");
+
+  if (!canvas) {
+    return;
+  }
+
+  const counts = statusOptions.map((status) =>
+    bookings.filter((booking) => (booking.status || "new") === status).length
+  );
+
+  if (statusChart) {
+    statusChart.destroy();
+  }
+
+  statusChart = new Chart(canvas, {
+    type: "doughnut",
+    data: {
+      labels: statusOptions.map((status) => statusLabels[status]),
+      datasets: [
+        {
+          data: counts,
+          backgroundColor: [
+            "#8a7467",
+            "#b19076",
+            "#d6ad60",
+            "#7b826b",
+            "#466b4f",
+            "#8b4f45"
+          ],
+          borderColor: "#fffaf5",
+          borderWidth: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            boxWidth: 12,
+            color: "#2d241f",
+            font: {
+              family: "Inter"
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderMonthlyEnquiriesChart(bookings) {
+  const canvas = document.getElementById("monthlyEnquiriesChart");
+
+  if (!canvas) {
+    return;
+  }
+
+  const monthlyData = buildMonthlyData(bookings);
+
+  if (monthlyEnquiriesChart) {
+    monthlyEnquiriesChart.destroy();
+  }
+
+  monthlyEnquiriesChart = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: monthlyData.labels,
+      datasets: [
+        {
+          label: "Enquiries",
+          data: monthlyData.enquiries,
+          backgroundColor: "#b19076",
+          borderRadius: 8
+        }
+      ]
+    },
+    options: getStandardChartOptions()
+  });
+}
+
+function renderMonthlyIncomeChart(bookings) {
+  const canvas = document.getElementById("monthlyIncomeChart");
+
+  if (!canvas) {
+    return;
+  }
+
+  const monthlyData = buildMonthlyData(bookings);
+
+  if (monthlyIncomeChart) {
+    monthlyIncomeChart.destroy();
+  }
+
+  monthlyIncomeChart = new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: monthlyData.labels,
+      datasets: [
+        {
+          label: "Booked + completed income",
+          data: monthlyData.income,
+          backgroundColor: "#7b826b",
+          borderRadius: 8
+        }
+      ]
+    },
+    options: getStandardChartOptions(true)
+  });
+}
+
+function getStandardChartOptions(isCurrency = false) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const value = context.raw || 0;
+            return isCurrency ? formatCurrency(value) : value;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: "#5d4436",
+          font: {
+            family: "Inter"
+          }
+        },
+        grid: {
+          display: false
+        }
+      },
+      y: {
+        beginAtZero: true,
+        ticks: {
+          color: "#5d4436",
+          font: {
+            family: "Inter"
+          },
+          callback: (value) => isCurrency ? formatCurrency(value) : value
+        },
+        grid: {
+          color: "rgba(81, 65, 56, 0.1)"
+        }
+      }
+    }
+  };
+}
+
+function buildMonthlyData(bookings) {
+  const monthMap = new Map();
+
+  bookings.forEach((booking) => {
+    const dateValue = booking.preferred_date || booking.created_at;
+
+    if (!dateValue) {
+      return;
+    }
+
+    const date = new Date(booking.preferred_date ? `${booking.preferred_date}T00:00:00` : dateValue);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+
+    if (!monthMap.has(monthKey)) {
+      monthMap.set(monthKey, {
+        label: new Intl.DateTimeFormat("en-AU", {
+          month: "short",
+          year: "numeric"
+        }).format(date),
+        enquiries: 0,
+        income: 0
+      });
+    }
+
+    const month = monthMap.get(monthKey);
+    const status = booking.status || "new";
+
+    month.enquiries += 1;
+
+    if (["booked", "completed"].includes(status)) {
+      month.income += parseMoney(booking.quoted_price);
+    }
+  });
+
+  const sortedMonths = Array.from(monthMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .slice(-12)
+    .map(([, value]) => value);
+
+  return {
+    labels: sortedMonths.map((month) => month.label),
+    enquiries: sortedMonths.map((month) => month.enquiries),
+    income: sortedMonths.map((month) => month.income)
+  };
+}
+
+function destroyCharts() {
+  if (statusChart) {
+    statusChart.destroy();
+    statusChart = null;
+  }
+
+  if (monthlyEnquiriesChart) {
+    monthlyEnquiriesChart.destroy();
+    monthlyEnquiriesChart = null;
+  }
+
+  if (monthlyIncomeChart) {
+    monthlyIncomeChart.destroy();
+    monthlyIncomeChart = null;
+  }
+}
+
+function parseMoney(value) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return 0;
+  }
+
+  return number;
+}
+
+function formatCurrency(value) {
+  return new Intl.NumberFormat("en-AU", {
+    style: "currency",
+    currency: "AUD",
+    maximumFractionDigits: 0
+  }).format(value || 0);
 }
 
 function formatDateTime(value) {
