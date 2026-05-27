@@ -356,11 +356,300 @@ function closeImageViewer() {
   viewer.classList.remove("open");
 }
 
+const tipsGrid = document.querySelector("#tipsGrid");
+
+const fallbackAdvicePosts = [
+  {
+    title: "How to look natural in family photos",
+    slug: "how-to-look-natural-in-family-photos",
+    excerpt: "Simple ways to avoid stiff poses and create photos that feel warm and real.",
+    content: "Family photos do not need to feel stiff or overly posed. The best images often come from small movements, natural interaction and simple prompts.",
+    thumbnail_url: null
+  },
+  {
+    title: "What to wear for a couple session",
+    slug: "what-to-wear-for-a-couple-session",
+    excerpt: "Easy outfit tips so you look coordinated without feeling overly dressed.",
+    content: "For couple sessions, the best outfits usually feel simple, comfortable and true to your style.",
+    thumbnail_url: null
+  },
+  {
+    title: "Choosing the right Adelaide photo location",
+    slug: "choosing-the-right-adelaide-photo-location",
+    excerpt: "A short guide to choosing a beach, park, garden or city location that suits your story.",
+    content: "The right location depends on the feeling you want from your photos.",
+    thumbnail_url: null
+  }
+];
+
+let activeAdvicePosts = [];
+
+async function loadHelpfulAdvicePosts() {
+  if (!tipsGrid) {
+    return;
+  }
+
+  if (typeof supabaseClient === "undefined") {
+    activeAdvicePosts = fallbackAdvicePosts;
+    renderHelpfulAdvicePosts(activeAdvicePosts);
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("blog_posts")
+    .select("title, slug, excerpt, content, category, thumbnail_url, published_at, sort_order")
+    .eq("is_published", true)
+    .order("sort_order", { ascending: true })
+    .order("published_at", { ascending: false })
+    .limit(3);
+
+  if (error) {
+    console.error(error);
+    activeAdvicePosts = fallbackAdvicePosts;
+    renderHelpfulAdvicePosts(activeAdvicePosts);
+    return;
+  }
+
+  activeAdvicePosts = data && data.length ? data : fallbackAdvicePosts;
+  renderHelpfulAdvicePosts(activeAdvicePosts);
+}
+
+function renderHelpfulAdvicePosts(posts) {
+  tipsGrid.innerHTML = posts.map(function (post, index) {
+    const imageMarkup = buildTipImageMarkup(post, index);
+
+    return `
+      <article class="tip-card">
+        ${imageMarkup}
+        <div class="tip-content">
+          <h3>${escapeHtml(post.title || "Photography advice")}</h3>
+          <p>${escapeHtml(post.excerpt || "Helpful advice before your photography session.")}</p>
+          <a href="#tips" class="read-post-link" data-slug="${escapeAttribute(post.slug || "")}">Read More</a>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  document.querySelectorAll(".read-post-link").forEach(function (link) {
+    link.addEventListener("click", function (event) {
+      event.preventDefault();
+
+      const slug = link.dataset.slug;
+      const post = activeAdvicePosts.find(function (item) {
+        return item.slug === slug;
+      });
+
+      if (post) {
+        openPostModal(post);
+      }
+    });
+  });
+}
+
+function buildTipImageMarkup(post, index) {
+  const fallbackClasses = ["posing", "prep", "event-tip"];
+  const fallbackClass = fallbackClasses[index % fallbackClasses.length];
+
+  if (post.thumbnail_url) {
+    return `
+      <div class="tip-image tip-image-thumbnail">
+        <img src="${escapeAttribute(post.thumbnail_url)}" alt="${escapeAttribute(post.title || "Photography tip thumbnail")}">
+      </div>
+    `;
+  }
+
+  return `<div class="tip-image ${fallbackClass}"></div>`;
+}
+
+function createPostModal() {
+  const modalStyle = document.createElement("style");
+
+  modalStyle.textContent = `
+    .post-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      background: rgba(42, 31, 24, 0.66);
+      backdrop-filter: blur(8px);
+    }
+
+    .post-modal.open {
+      display: flex;
+    }
+
+    .post-modal-panel {
+      width: min(780px, 100%);
+      max-height: calc(100vh - 44px);
+      overflow: auto;
+      background: #fffaf5;
+      border-radius: 24px;
+      box-shadow: 0 26px 80px rgba(0, 0, 0, 0.34);
+    }
+
+    .post-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 26px 28px 18px;
+      border-bottom: 1px solid rgba(81, 65, 56, 0.12);
+    }
+
+    .post-modal-header h2 {
+      margin: 0;
+      color: #2d241f;
+      font-size: 28px;
+    }
+
+    .post-modal-header p {
+      margin: 7px 0 0;
+      color: #77665b;
+      line-height: 1.5;
+    }
+
+    .post-modal-close {
+      width: 40px;
+      height: 40px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(93, 68, 54, 0.1);
+      color: #5d4436;
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .post-modal-close:hover {
+      background: rgba(93, 68, 54, 0.18);
+    }
+
+    .post-modal-body {
+      padding: 24px 28px 30px;
+      color: #2d241f;
+      line-height: 1.75;
+    }
+
+    .post-modal-body p {
+      margin: 0 0 16px;
+    }
+  `;
+
+  const modal = document.createElement("div");
+
+  modal.className = "post-modal";
+  modal.innerHTML = `
+    <div class="post-modal-panel" role="dialog" aria-modal="true" aria-labelledby="postModalTitle">
+      <div class="post-modal-header">
+        <div>
+          <p class="eyebrow">Photography Tips</p>
+          <h2 id="postModalTitle"></h2>
+          <p id="postModalExcerpt"></p>
+        </div>
+
+        <button class="post-modal-close" type="button" aria-label="Close article">
+          ×
+        </button>
+      </div>
+
+      <div id="postModalBody" class="post-modal-body"></div>
+    </div>
+  `;
+
+  document.head.appendChild(modalStyle);
+  document.body.appendChild(modal);
+
+  modal.addEventListener("click", function (event) {
+    if (event.target === modal) {
+      closePostModal();
+    }
+  });
+
+  modal.querySelector(".post-modal-close").addEventListener("click", closePostModal);
+}
+
+function openPostModal(post) {
+  const modal = document.querySelector(".post-modal");
+  const title = document.querySelector("#postModalTitle");
+  const excerpt = document.querySelector("#postModalExcerpt");
+  const body = document.querySelector("#postModalBody");
+
+  if (!modal || !title || !excerpt || !body) {
+    return;
+  }
+
+  title.textContent = post.title || "Photography Tips";
+  excerpt.textContent = post.excerpt || "";
+  body.innerHTML = formatPostContent(post.content || post.excerpt || "");
+
+  modal.classList.add("open");
+  document.body.classList.add("modal-open");
+}
+
+function closePostModal() {
+  const modal = document.querySelector(".post-modal");
+
+  if (!modal) {
+    return;
+  }
+
+  modal.classList.remove("open");
+  document.body.classList.remove("modal-open");
+}
+
+function formatPostContent(content) {
+  return String(content)
+    .split(/\n{2,}/)
+    .map(function (block) {
+      return renderPostContentBlock(block);
+    })
+    .join("");
+}
+
+function renderPostContentBlock(block) {
+  const trimmedBlock = block.trim();
+
+  if (!trimmedBlock) {
+    return "";
+  }
+
+  const headingMatch = trimmedBlock.match(/^##\s+(.+)$/);
+
+  if (headingMatch) {
+    return `<h3 class="post-content-heading">${escapeHtml(headingMatch[1])}</h3>`;
+  }
+
+  const imageMatch = trimmedBlock.match(/^\[image:(.+?)(?:\|(.+))?\]$/);
+
+  if (imageMatch) {
+    const imageUrl = imageMatch[1].trim();
+    const caption = imageMatch[2] ? imageMatch[2].trim() : "";
+
+    return `
+      <figure class="post-content-image">
+        <img src="${escapeAttribute(imageUrl)}" alt="${escapeAttribute(caption || "Photography article image")}">
+        ${caption ? `<figcaption>${escapeHtml(caption)}</figcaption>` : ""}
+      </figure>
+    `;
+  }
+
+  return `<p>${escapeHtml(trimmedBlock).replaceAll("\n", "<br>")}</p>`;
+}
+
 document.addEventListener("keydown", function (event) {
   const imageViewer = document.querySelector(".image-viewer");
   const galleryModal = document.querySelector(".gallery-modal");
+  const postModal = document.querySelector(".post-modal");
 
   if (event.key === "Escape") {
+    if (postModal && postModal.classList.contains("open")) {
+      closePostModal();
+      return;
+    }
+
     if (imageViewer && imageViewer.classList.contains("open")) {
       closeImageViewer();
       return;
@@ -382,6 +671,26 @@ document.addEventListener("keydown", function (event) {
   }
 });
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function escapeAttribute(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
 renderGalleryPreview();
 createGalleryModal();
 createImageViewer();
+createPostModal();
+loadHelpfulAdvicePosts();

@@ -1643,3 +1643,46 @@ p {
   cursor: not-allowed;
   opacity: 0.7;
 }
+.tip-image.has-thumbnail {
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #f2eee6;
+}
+.tip-image.tip-image-thumbnail {
+  height: auto;
+  min-height: 0;
+  background: #f2eee6;
+  overflow: hidden;
+}
+
+.tip-image.tip-image-thumbnail img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.post-content-heading {
+  margin: 28px 0 12px;
+  color: #2d2d2d;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.post-content-image {
+  margin: 24px 0;
+}
+
+.post-content-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 18px;
+}
+
+.post-content-image figcaption {
+  margin-top: 8px;
+  color: #6d6a63;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+}
