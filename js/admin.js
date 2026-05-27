@@ -43,6 +43,13 @@ const postContentInput = document.getElementById("postContentInput");
 const postCategoryInput = document.getElementById("postCategoryInput");
 const postSortOrderInput = document.getElementById("postSortOrderInput");
 const postThumbnailInput = document.getElementById("postThumbnailInput");
+const postThumbnailFileInput = document.getElementById("postThumbnailFileInput");
+const uploadThumbnailButton = document.getElementById("uploadThumbnailButton");
+const thumbnailUploadMessage = document.getElementById("thumbnailUploadMessage");
+const postContentImageFileInput = document.getElementById("postContentImageFileInput");
+const postContentImageCaptionInput = document.getElementById("postContentImageCaptionInput");
+const uploadContentImageButton = document.getElementById("uploadContentImageButton");
+const postContentUploadMessage = document.getElementById("postContentUploadMessage");
 const postPublishedInput = document.getElementById("postPublishedInput");
 const savePostButton = document.getElementById("savePostButton");
 const clearPostFormButton = document.getElementById("clearPostFormButton");
@@ -98,6 +105,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   postPublishedFilter.addEventListener("change", applyPostFilters);
   clearPostFiltersButton.addEventListener("click", clearPostFilters);
   newPostButton.addEventListener("click", openNewPostModal);
+  uploadThumbnailButton.addEventListener("click", handleThumbnailUpload);
+  uploadContentImageButton.addEventListener("click", handleContentImageUpload);
   postForm.addEventListener("submit", handlePostSave);
   postTitleInput.addEventListener("input", handlePostTitleInput);
   clearPostFormButton.addEventListener("click", clearPostForm);
@@ -1041,6 +1050,7 @@ function loadPostIntoForm(post) {
   postThumbnailInput.value = post.thumbnail_url || "";
   postPublishedInput.checked = Boolean(post.is_published);
   deletePostButton.classList.remove("hidden");
+  clearUploadMessages();
 
   postsMessage.classList.remove("success");
   postsMessage.textContent = "";
@@ -1053,6 +1063,168 @@ function handlePostTitleInput() {
 
   postSlugInput.value = createSlug(postTitleInput.value);
 }
+
+
+async function handleThumbnailUpload() {
+  const file = postThumbnailFileInput.files[0];
+
+  if (!file) {
+    setUploadMessage(thumbnailUploadMessage, "Please choose an image first.", "error");
+    return;
+  }
+
+  uploadThumbnailButton.disabled = true;
+  uploadThumbnailButton.textContent = "Uploading...";
+  setUploadMessage(thumbnailUploadMessage, "Uploading thumbnail...", "");
+
+  const result = await uploadBlogImage(file, "thumbnails");
+
+  uploadThumbnailButton.disabled = false;
+  uploadThumbnailButton.textContent = "Upload Thumbnail";
+
+  if (result.error) {
+    setUploadMessage(thumbnailUploadMessage, result.error, "error");
+    return;
+  }
+
+  postThumbnailInput.value = result.publicUrl;
+  postThumbnailFileInput.value = "";
+  setUploadMessage(thumbnailUploadMessage, "Thumbnail uploaded and URL added.", "success");
+}
+
+async function handleContentImageUpload() {
+  const file = postContentImageFileInput.files[0];
+
+  if (!file) {
+    setUploadMessage(postContentUploadMessage, "Please choose an image first.", "error");
+    return;
+  }
+
+  uploadContentImageButton.disabled = true;
+  uploadContentImageButton.textContent = "Uploading...";
+  setUploadMessage(postContentUploadMessage, "Uploading content image...", "");
+
+  const result = await uploadBlogImage(file, "content");
+
+  uploadContentImageButton.disabled = false;
+  uploadContentImageButton.textContent = "Upload Content Image";
+
+  if (result.error) {
+    setUploadMessage(postContentUploadMessage, result.error, "error");
+    return;
+  }
+
+  const caption = postContentImageCaptionInput.value.trim();
+  const fallbackCaption = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]+/g, " ");
+  const imageCaption = caption || fallbackCaption;
+  const imageMarkup = `\n\n[image:${result.publicUrl}|${imageCaption}]\n\n`;
+
+  insertTextAtCursor(postContentInput, imageMarkup);
+
+  postContentImageFileInput.value = "";
+  postContentImageCaptionInput.value = "";
+  setUploadMessage(postContentUploadMessage, "Content image uploaded and inserted into the article.", "success");
+}
+
+async function uploadBlogImage(file, folderName) {
+  if (typeof supabaseClient === "undefined") {
+    return { error: "Supabase is not connected." };
+  }
+
+  const validationError = validateImageFile(file);
+
+  if (validationError) {
+    return { error: validationError };
+  }
+
+  const baseSlug = createSlug(postSlugInput.value || postTitleInput.value || "post");
+  const safeFileName = createSafeFileName(file.name);
+  const filePath = `${folderName}/${baseSlug}/${Date.now()}-${safeFileName}`;
+
+  const { error } = await supabaseClient.storage
+    .from("blog-images")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: file.type
+    });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  const { data } = supabaseClient.storage
+    .from("blog-images")
+    .getPublicUrl(filePath);
+
+  if (!data || !data.publicUrl) {
+    return { error: "Image uploaded, but public URL could not be created." };
+  }
+
+  return {
+    publicUrl: data.publicUrl,
+    path: filePath
+  };
+}
+
+function validateImageFile(file) {
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  const maxSizeMb = 10;
+  const maxSizeBytes = maxSizeMb * 1024 * 1024;
+
+  if (!allowedTypes.includes(file.type)) {
+    return "Only JPG, PNG and WEBP images are allowed.";
+  }
+
+  if (file.size > maxSizeBytes) {
+    return `Image must be smaller than ${maxSizeMb} MB.`;
+  }
+
+  return "";
+}
+
+function createSafeFileName(fileName) {
+  const extensionMatch = fileName.match(/\.[a-z0-9]+$/i);
+  const extension = extensionMatch ? extensionMatch[0].toLowerCase() : "";
+  const nameWithoutExtension = fileName.replace(/\.[^/.]+$/, "");
+
+  const safeName = createSlug(nameWithoutExtension) || "image";
+
+  return `${safeName}${extension}`;
+}
+
+function insertTextAtCursor(textarea, text) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const currentValue = textarea.value;
+
+  textarea.value = currentValue.slice(0, start) + text + currentValue.slice(end);
+  textarea.focus();
+
+  const newCursorPosition = start + text.length;
+
+  textarea.setSelectionRange(newCursorPosition, newCursorPosition);
+}
+
+function setUploadMessage(element, message, type) {
+  element.classList.remove("success", "error");
+
+  if (type) {
+    element.classList.add(type);
+  }
+
+  element.textContent = message;
+}
+
+function clearUploadMessages() {
+  postThumbnailFileInput.value = "";
+  postContentImageFileInput.value = "";
+  postContentImageCaptionInput.value = "";
+
+  setUploadMessage(thumbnailUploadMessage, "", "");
+  setUploadMessage(postContentUploadMessage, "", "");
+}
+
 
 async function handlePostSave(event) {
   event.preventDefault();
@@ -1166,6 +1338,7 @@ function clearPostForm() {
   postSortOrderInput.value = "0";
   postPublishedInput.checked = false;
   deletePostButton.classList.add("hidden");
+  clearUploadMessages();
 }
 
 function renderCharts(bookings) {
