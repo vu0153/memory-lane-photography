@@ -21,13 +21,6 @@ const galleryConfig = [
     cover: 1
   },
   {
-    category: "Conference",
-    prefix: "conference",
-    count: 3,
-    folder: "assets/images/gallery",
-    cover: 1
-  },
-  {
     category: "Event",
     prefix: "event",
     count: 3,

@@ -10,6 +10,8 @@ const bookingsTabButton = document.getElementById("bookingsTabButton");
 const postsTabButton = document.getElementById("postsTabButton");
 const bookingsPanel = document.getElementById("bookingsPanel");
 const postsPanel = document.getElementById("postsPanel");
+const galleryTabButton = document.getElementById("galleryTabButton");
+const galleryPanel = document.getElementById("galleryPanel");
 
 const bookingsTableBody = document.getElementById("bookingsTableBody");
 const dashboardMessage = document.getElementById("dashboardMessage");
@@ -56,6 +58,35 @@ const clearPostFormButton = document.getElementById("clearPostFormButton");
 const deletePostButton = document.getElementById("deletePostButton");
 const postsTableBody = document.getElementById("postsTableBody");
 
+const galleryMessage = document.getElementById("galleryMessage");
+const gallerySearchInput = document.getElementById("gallerySearchInput");
+const galleryCategoryFilter = document.getElementById("galleryCategoryFilter");
+const galleryVisibleFilter = document.getElementById("galleryVisibleFilter");
+const clearGalleryFiltersButton = document.getElementById("clearGalleryFiltersButton");
+const newGalleryImageButton = document.getElementById("newGalleryImageButton");
+const galleryTableBody = document.getElementById("galleryTableBody");
+
+const galleryEditorModal = document.getElementById("galleryEditorModal");
+const closeGalleryModalButton = document.getElementById("closeGalleryModalButton");
+const galleryForm = document.getElementById("galleryForm");
+const galleryFormTitle = document.getElementById("galleryFormTitle");
+const galleryIdInput = document.getElementById("galleryIdInput");
+const galleryStoragePathInput = document.getElementById("galleryStoragePathInput");
+const galleryCategoryInput = document.getElementById("galleryCategoryInput");
+const gallerySortOrderInput = document.getElementById("gallerySortOrderInput");
+const galleryImageUrlInput = document.getElementById("galleryImageUrlInput");
+const galleryImageFileInput = document.getElementById("galleryImageFileInput");
+const uploadGalleryImageButton = document.getElementById("uploadGalleryImageButton");
+const galleryUploadMessage = document.getElementById("galleryUploadMessage");
+const galleryCaptionInput = document.getElementById("galleryCaptionInput");
+const galleryAltTextInput = document.getElementById("galleryAltTextInput");
+const galleryVisibleInput = document.getElementById("galleryVisibleInput");
+const galleryCoverInput = document.getElementById("galleryCoverInput");
+const saveGalleryImageButton = document.getElementById("saveGalleryImageButton");
+const clearGalleryFormButton = document.getElementById("clearGalleryFormButton");
+const deleteGalleryImageButton = document.getElementById("deleteGalleryImageButton");
+
+
 const statusOptions = [
   "new",
   "contacted",
@@ -74,8 +105,19 @@ const statusLabels = {
   cancelled: "Cancelled"
 };
 
+
+const galleryCategories = [
+  "Family",
+  "Couple",
+  "Friends",
+  "Portrait",
+  "Event"
+];
+
+
 let allBookings = [];
 let allPosts = [];
+let allGalleryImages = [];
 let detailModal = null;
 let detailModalBody = null;
 let activeDetailBookingId = null;
@@ -94,6 +136,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   bookingsTabButton.addEventListener("click", () => switchAdminTab("bookings"));
   postsTabButton.addEventListener("click", () => switchAdminTab("posts"));
+  galleryTabButton.addEventListener("click", () => switchAdminTab("gallery"));
 
   bookingsTableBody.addEventListener("change", handleStatusChange);
   bookingsTableBody.addEventListener("click", handleBookingTableClick);
@@ -113,6 +156,25 @@ document.addEventListener("DOMContentLoaded", async () => {
   deletePostButton.addEventListener("click", handlePostDelete);
   postsTableBody.addEventListener("click", handlePostsTableClick);
   closePostModalButton.addEventListener("click", closePostModal);
+
+  gallerySearchInput.addEventListener("input", applyGalleryFilters);
+  galleryCategoryFilter.addEventListener("change", applyGalleryFilters);
+  galleryVisibleFilter.addEventListener("change", applyGalleryFilters);
+  clearGalleryFiltersButton.addEventListener("click", clearGalleryFilters);
+  newGalleryImageButton.addEventListener("click", openNewGalleryModal);
+  uploadGalleryImageButton.addEventListener("click", handleGalleryImageUpload);
+  galleryForm.addEventListener("submit", handleGallerySave);
+  clearGalleryFormButton.addEventListener("click", clearGalleryForm);
+  deleteGalleryImageButton.addEventListener("click", handleGalleryDelete);
+  galleryTableBody.addEventListener("click", handleGalleryTableClick);
+  closeGalleryModalButton.addEventListener("click", closeGalleryModal);
+
+  galleryEditorModal.addEventListener("click", (event) => {
+    if (event.target === galleryEditorModal) {
+      closeGalleryModal();
+    }
+  });
+
 
   postEditorModal.addEventListener("click", (event) => {
     if (event.target === postEditorModal) {
@@ -380,7 +442,7 @@ async function checkSession() {
   }
 
   showDashboard();
-  await Promise.all([loadBookings(), loadPosts()]);
+  await Promise.all([loadBookings(), loadPosts(), loadGalleryImages()]);
 }
 
 async function handleLogin(event) {
@@ -408,7 +470,7 @@ async function handleLogin(event) {
 
   loginMessage.textContent = "";
   showDashboard();
-  await Promise.all([loadBookings(), loadPosts()]);
+  await Promise.all([loadBookings(), loadPosts(), loadGalleryImages()]);
 }
 
 async function handleLogout() {
@@ -416,12 +478,16 @@ async function handleLogout() {
 
   allBookings = [];
   allPosts = [];
+  allGalleryImages = [];
   activeDetailBookingId = null;
 
   bookingSearchInput.value = "";
   statusFilterSelect.value = "all";
   postSearchInput.value = "";
   postPublishedFilter.value = "all";
+  gallerySearchInput.value = "";
+  galleryCategoryFilter.value = "all";
+  galleryVisibleFilter.value = "all";
 
   totalBookings.textContent = "Total: 0";
   newBookings.textContent = "New: 0";
@@ -445,8 +511,16 @@ async function handleLogout() {
     </tr>
   `;
 
+  galleryTableBody.innerHTML = `
+    <tr>
+      <td colspan="8" class="empty-state">Login to load gallery images.</td>
+    </tr>
+  `;
+
   clearPostForm();
+  clearGalleryForm();
   closePostModal();
+  closeGalleryModal();
   closeBookingDetails();
   switchAdminTab("bookings");
   showLogin();
@@ -466,14 +540,23 @@ function showDashboard() {
 
 function switchAdminTab(tabName) {
   const isBookings = tabName === "bookings";
+  const isPosts = tabName === "posts";
+  const isGallery = tabName === "gallery";
 
   bookingsTabButton.classList.toggle("active", isBookings);
-  postsTabButton.classList.toggle("active", !isBookings);
+  postsTabButton.classList.toggle("active", isPosts);
+  galleryTabButton.classList.toggle("active", isGallery);
   bookingsPanel.classList.toggle("active", isBookings);
-  postsPanel.classList.toggle("active", !isBookings);
+  postsPanel.classList.toggle("active", isPosts);
+  galleryPanel.classList.toggle("active", isGallery);
 }
 
 async function refreshCurrentTab() {
+  if (galleryPanel.classList.contains("active")) {
+    await loadGalleryImages();
+    return;
+  }
+
   if (postsPanel.classList.contains("active")) {
     await loadPosts();
     return;
@@ -1167,65 +1250,6 @@ async function uploadBlogImage(file, folderName) {
   };
 }
 
-function validateImageFile(file) {
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-  const maxSizeMb = 10;
-  const maxSizeBytes = maxSizeMb * 1024 * 1024;
-
-  if (!allowedTypes.includes(file.type)) {
-    return "Only JPG, PNG and WEBP images are allowed.";
-  }
-
-  if (file.size > maxSizeBytes) {
-    return `Image must be smaller than ${maxSizeMb} MB.`;
-  }
-
-  return "";
-}
-
-function createSafeFileName(fileName) {
-  const extensionMatch = fileName.match(/\.[a-z0-9]+$/i);
-  const extension = extensionMatch ? extensionMatch[0].toLowerCase() : "";
-  const nameWithoutExtension = fileName.replace(/\.[^/.]+$/, "");
-
-  const safeName = createSlug(nameWithoutExtension) || "image";
-
-  return `${safeName}${extension}`;
-}
-
-function insertTextAtCursor(textarea, text) {
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  const currentValue = textarea.value;
-
-  textarea.value = currentValue.slice(0, start) + text + currentValue.slice(end);
-  textarea.focus();
-
-  const newCursorPosition = start + text.length;
-
-  textarea.setSelectionRange(newCursorPosition, newCursorPosition);
-}
-
-function setUploadMessage(element, message, type) {
-  element.classList.remove("success", "error");
-
-  if (type) {
-    element.classList.add(type);
-  }
-
-  element.textContent = message;
-}
-
-function clearUploadMessages() {
-  postThumbnailFileInput.value = "";
-  postContentImageFileInput.value = "";
-  postContentImageCaptionInput.value = "";
-
-  setUploadMessage(thumbnailUploadMessage, "", "");
-  setUploadMessage(postContentUploadMessage, "", "");
-}
-
-
 async function handlePostSave(event) {
   event.preventDefault();
 
@@ -1340,6 +1364,498 @@ function clearPostForm() {
   deletePostButton.classList.add("hidden");
   clearUploadMessages();
 }
+
+
+async function loadGalleryImages() {
+  galleryMessage.classList.remove("success");
+  galleryMessage.textContent = "Loading gallery images...";
+
+  const { data, error } = await supabaseClient
+    .from("gallery_images")
+    .select("id, category, image_url, storage_path, caption, alt_text, sort_order, is_cover, is_visible, created_at, updated_at")
+    .order("category", { ascending: true })
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    galleryMessage.textContent = error.message;
+
+    galleryTableBody.innerHTML = `
+      <tr>
+        <td colspan="8" class="empty-state">Unable to load gallery images.</td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  allGalleryImages = data || [];
+  applyGalleryFilters();
+  galleryMessage.textContent = "";
+}
+
+function applyGalleryFilters() {
+  const searchTerm = gallerySearchInput.value.trim().toLowerCase();
+  const categoryFilter = galleryCategoryFilter.value;
+  const visibleFilter = galleryVisibleFilter.value;
+
+  const filteredImages = allGalleryImages.filter((image) => {
+    const matchesCategory =
+      categoryFilter === "all" || image.category === categoryFilter;
+
+    const matchesVisible =
+      visibleFilter === "all" ||
+      (visibleFilter === "visible" && image.is_visible) ||
+      (visibleFilter === "hidden" && !image.is_visible);
+
+    const searchableText = [
+      image.category,
+      image.caption,
+      image.alt_text,
+      image.image_url,
+      image.storage_path
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    const matchesSearch =
+      !searchTerm || searchableText.includes(searchTerm);
+
+    return matchesCategory && matchesVisible && matchesSearch;
+  });
+
+  renderGalleryImages(filteredImages);
+}
+
+function clearGalleryFilters() {
+  gallerySearchInput.value = "";
+  galleryCategoryFilter.value = "all";
+  galleryVisibleFilter.value = "all";
+  applyGalleryFilters();
+}
+
+function renderGalleryImages(images) {
+  if (!images.length) {
+    galleryTableBody.innerHTML = `
+      <tr>
+        <td colspan="8" class="empty-state">No gallery images found.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  galleryTableBody.innerHTML = images.map((image) => {
+    const visibleClass = image.is_visible ? "visible" : "hidden-status";
+    const visibleText = image.is_visible ? "Visible" : "Hidden";
+    const coverText = image.is_cover ? "Cover" : "-";
+    const coverClass = image.is_cover ? "gallery-status-pill cover" : "";
+
+    return `
+      <tr>
+        <td>
+          <div class="gallery-image-cell">
+            <img class="gallery-thumb" src="${escapeAttribute(image.image_url)}" alt="${escapeAttribute(image.alt_text || image.caption || image.category || "Gallery image")}">
+            <div class="gallery-image-meta">
+              <span class="gallery-image-category">${escapeHtml(image.category || "Uncategorised")}</span>
+              <span>${escapeHtml(image.storage_path || "External URL")}</span>
+            </div>
+          </div>
+        </td>
+        <td>${escapeHtml(image.category || "Not provided")}</td>
+        <td>${escapeHtml(image.caption || "No caption")}</td>
+        <td>${Number(image.sort_order || 0)}</td>
+        <td>${image.is_cover ? `<span class="${coverClass}">${coverText}</span>` : coverText}</td>
+        <td>
+          <span class="gallery-status-pill ${visibleClass}">
+            ${visibleText}
+          </span>
+        </td>
+        <td>${formatDateTime(image.updated_at || image.created_at)}</td>
+        <td>
+          <button class="detail-button edit-gallery-button" type="button" data-gallery-id="${image.id}">
+            Edit
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function handleGalleryTableClick(event) {
+  const editButton = event.target.closest(".edit-gallery-button");
+
+  if (!editButton) {
+    return;
+  }
+
+  const galleryId = editButton.dataset.galleryId;
+  const image = allGalleryImages.find((item) => String(item.id) === String(galleryId));
+
+  if (!image) {
+    return;
+  }
+
+  loadGalleryIntoForm(image);
+  openGalleryModal();
+}
+
+function openNewGalleryModal(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  clearGalleryForm();
+  openGalleryModal();
+}
+
+function openGalleryModal() {
+  if (!galleryEditorModal) {
+    console.error("galleryEditorModal not found");
+    return;
+  }
+
+  galleryEditorModal.classList.remove("hidden");
+  galleryEditorModal.style.display = "flex";
+  galleryEditorModal.style.zIndex = "99999";
+  document.body.style.overflow = "hidden";
+}
+
+function closeGalleryModal() {
+  if (!galleryEditorModal) {
+    return;
+  }
+
+  galleryEditorModal.classList.add("hidden");
+  galleryEditorModal.style.display = "";
+
+  const postModalOpen = postEditorModal && !postEditorModal.classList.contains("hidden");
+  const detailModalOpen = detailModal && !detailModal.classList.contains("hidden");
+
+  if (!postModalOpen && !detailModalOpen) {
+    document.body.style.overflow = "";
+  }
+}
+
+function loadGalleryIntoForm(image) {
+  galleryFormTitle.textContent = "Edit Gallery Image";
+  galleryIdInput.value = image.id;
+  galleryStoragePathInput.value = image.storage_path || "";
+  galleryCategoryInput.value = galleryCategories.includes(image.category) ? image.category : "Family";
+  gallerySortOrderInput.value = image.sort_order ?? 0;
+  galleryImageUrlInput.value = image.image_url || "";
+  galleryCaptionInput.value = image.caption || "";
+  galleryAltTextInput.value = image.alt_text || "";
+  galleryVisibleInput.checked = Boolean(image.is_visible);
+  galleryCoverInput.checked = Boolean(image.is_cover);
+  deleteGalleryImageButton.classList.remove("hidden");
+  clearGalleryUploadMessage();
+
+  galleryMessage.classList.remove("success");
+  galleryMessage.textContent = "";
+}
+
+async function handleGalleryImageUpload() {
+  const file = galleryImageFileInput.files[0];
+
+  if (!file) {
+    setUploadMessage(galleryUploadMessage, "Please choose an image first.", "error");
+    return;
+  }
+
+  uploadGalleryImageButton.disabled = true;
+  uploadGalleryImageButton.textContent = "Uploading...";
+  setUploadMessage(galleryUploadMessage, "Uploading gallery image...", "");
+
+  const result = await uploadGalleryImage(file, galleryCategoryInput.value);
+
+  uploadGalleryImageButton.disabled = false;
+  uploadGalleryImageButton.textContent = "Upload Gallery Image";
+
+  if (result.error) {
+    setUploadMessage(galleryUploadMessage, result.error, "error");
+    return;
+  }
+
+  galleryImageUrlInput.value = result.publicUrl;
+  galleryStoragePathInput.value = result.path;
+  galleryImageFileInput.value = "";
+
+  if (!galleryAltTextInput.value.trim()) {
+    galleryAltTextInput.value = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]+/g, " ");
+  }
+
+  setUploadMessage(galleryUploadMessage, "Gallery image uploaded and URL added.", "success");
+}
+
+async function uploadGalleryImage(file, category) {
+  if (typeof supabaseClient === "undefined") {
+    return { error: "Supabase is not connected." };
+  }
+
+  const validationError = validateImageFile(file);
+
+  if (validationError) {
+    return { error: validationError };
+  }
+
+  const safeCategory = galleryCategories.includes(category) ? category : "Family";
+  const safeFileName = createSafeFileName(file.name);
+  const filePath = `${createSlug(safeCategory)}/${Date.now()}-${safeFileName}`;
+
+  const { error } = await supabaseClient.storage
+    .from("gallery-images")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: file.type
+    });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  const { data } = supabaseClient.storage
+    .from("gallery-images")
+    .getPublicUrl(filePath);
+
+  if (!data || !data.publicUrl) {
+    return { error: "Image uploaded, but public URL could not be created." };
+  }
+
+  return {
+    publicUrl: data.publicUrl,
+    path: filePath
+  };
+}
+
+async function handleGallerySave(event) {
+  event.preventDefault();
+
+  const galleryId = galleryIdInput.value || null;
+  const category = galleryCategoryInput.value;
+  const imageUrl = galleryImageUrlInput.value.trim();
+  const storagePath = galleryStoragePathInput.value.trim() || null;
+  const caption = galleryCaptionInput.value.trim() || null;
+  const altText = galleryAltTextInput.value.trim() || caption || category;
+  const sortOrder = Number(gallerySortOrderInput.value || 0);
+  const isVisible = galleryVisibleInput.checked;
+  const isCover = galleryCoverInput.checked;
+
+  if (!galleryCategories.includes(category)) {
+    galleryMessage.textContent = "Please choose a valid gallery category.";
+    return;
+  }
+
+  if (!imageUrl) {
+    galleryMessage.textContent = "Please upload an image or paste an image URL.";
+    return;
+  }
+
+  saveGalleryImageButton.disabled = true;
+  saveGalleryImageButton.textContent = "Saving...";
+  galleryMessage.classList.remove("success");
+  galleryMessage.textContent = "";
+
+  if (isCover) {
+    let coverUpdate = supabaseClient
+      .from("gallery_images")
+      .update({ is_cover: false })
+      .eq("category", category)
+      .eq("is_cover", true);
+
+    if (galleryId) {
+      coverUpdate = coverUpdate.neq("id", galleryId);
+    }
+
+    const { error: coverError } = await coverUpdate;
+
+    if (coverError) {
+      saveGalleryImageButton.disabled = false;
+      saveGalleryImageButton.textContent = "Save Gallery Image";
+      galleryMessage.textContent = coverError.message;
+      return;
+    }
+  }
+
+  const payload = {
+    category,
+    image_url: imageUrl,
+    storage_path: storagePath,
+    caption,
+    alt_text: altText,
+    sort_order: Number.isFinite(sortOrder) ? sortOrder : 0,
+    is_cover: isCover,
+    is_visible: isVisible
+  };
+
+  let error;
+
+  if (galleryId) {
+    const response = await supabaseClient
+      .from("gallery_images")
+      .update(payload)
+      .eq("id", galleryId);
+
+    error = response.error;
+  } else {
+    const response = await supabaseClient
+      .from("gallery_images")
+      .insert([payload]);
+
+    error = response.error;
+  }
+
+  saveGalleryImageButton.disabled = false;
+  saveGalleryImageButton.textContent = "Save Gallery Image";
+
+  if (error) {
+    galleryMessage.textContent = error.message;
+    return;
+  }
+
+  galleryMessage.classList.add("success");
+  galleryMessage.textContent = galleryId ? "Gallery image updated." : "Gallery image created.";
+
+  clearGalleryForm();
+  closeGalleryModal();
+  await loadGalleryImages();
+}
+
+async function handleGalleryDelete() {
+  const galleryId = galleryIdInput.value;
+  const storagePath = galleryStoragePathInput.value;
+
+  if (!galleryId) {
+    return;
+  }
+
+  const confirmed = window.confirm("Delete this gallery image? This cannot be undone.");
+
+  if (!confirmed) {
+    return;
+  }
+
+  deleteGalleryImageButton.disabled = true;
+  deleteGalleryImageButton.textContent = "Deleting...";
+
+  const { error } = await supabaseClient
+    .from("gallery_images")
+    .delete()
+    .eq("id", galleryId);
+
+  if (!error && storagePath) {
+    await supabaseClient.storage
+      .from("gallery-images")
+      .remove([storagePath]);
+  }
+
+  deleteGalleryImageButton.disabled = false;
+  deleteGalleryImageButton.textContent = "Delete Gallery Image";
+
+  if (error) {
+    galleryMessage.textContent = error.message;
+    return;
+  }
+
+  galleryMessage.classList.add("success");
+  galleryMessage.textContent = "Gallery image deleted.";
+
+  clearGalleryForm();
+  closeGalleryModal();
+  await loadGalleryImages();
+}
+
+function clearGalleryForm() {
+  galleryFormTitle.textContent = "New Gallery Image";
+  galleryForm.reset();
+  galleryIdInput.value = "";
+  galleryStoragePathInput.value = "";
+  galleryCategoryInput.value = "Family";
+  gallerySortOrderInput.value = "0";
+  galleryVisibleInput.checked = true;
+  galleryCoverInput.checked = false;
+  deleteGalleryImageButton.classList.add("hidden");
+  clearGalleryUploadMessage();
+}
+
+function clearGalleryUploadMessage() {
+  galleryImageFileInput.value = "";
+  setUploadMessage(galleryUploadMessage, "", "");
+}
+
+
+
+function validateImageFile(file) {
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  const maxSizeMb = 10;
+  const maxSizeBytes = maxSizeMb * 1024 * 1024;
+
+  if (!allowedTypes.includes(file.type)) {
+    return "Only JPG, PNG and WEBP images are allowed.";
+  }
+
+  if (file.size > maxSizeBytes) {
+    return `Image must be smaller than ${maxSizeMb} MB.`;
+  }
+
+  return "";
+}
+
+function createSafeFileName(fileName) {
+  const extensionMatch = fileName.match(/\.[a-z0-9]+$/i);
+  const extension = extensionMatch ? extensionMatch[0].toLowerCase() : "";
+  const nameWithoutExtension = fileName.replace(/\.[^/.]+$/, "");
+  const safeName = createSlug(nameWithoutExtension) || "image";
+
+  return `${safeName}${extension}`;
+}
+
+function insertTextAtCursor(textarea, text) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const currentValue = textarea.value;
+
+  textarea.value = currentValue.slice(0, start) + text + currentValue.slice(end);
+  textarea.focus();
+
+  const newCursorPosition = start + text.length;
+
+  textarea.setSelectionRange(newCursorPosition, newCursorPosition);
+}
+
+function setUploadMessage(element, message, type) {
+  if (!element) {
+    return;
+  }
+
+  element.classList.remove("success", "error");
+
+  if (type) {
+    element.classList.add(type);
+  }
+
+  element.textContent = message;
+}
+
+function clearUploadMessages() {
+  if (postThumbnailFileInput) {
+    postThumbnailFileInput.value = "";
+  }
+
+  if (postContentImageFileInput) {
+    postContentImageFileInput.value = "";
+  }
+
+  if (postContentImageCaptionInput) {
+    postContentImageCaptionInput.value = "";
+  }
+
+  setUploadMessage(thumbnailUploadMessage, "", "");
+  setUploadMessage(postContentUploadMessage, "", "");
+}
+
 
 function renderCharts(bookings) {
   if (typeof Chart === "undefined") {
@@ -1636,6 +2152,11 @@ function createSlug(value) {
 
 function handleEscapeClose(event) {
   if (event.key !== "Escape") {
+    return;
+  }
+
+  if (galleryEditorModal && !galleryEditorModal.classList.contains("hidden")) {
+    closeGalleryModal();
     return;
   }
 
