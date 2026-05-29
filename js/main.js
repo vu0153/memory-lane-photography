@@ -142,49 +142,246 @@ if (slides.length > 0 && previousButton && nextButton) {
 
 const galleryGrid = document.querySelector("#galleryGrid");
 
+const galleryCategoryOrder = [
+  "Family",
+  "Couple",
+  "Friends",
+  "Portrait",
+  "Event"
+];
+
+const fallbackGalleryImages = [
+  {
+    category: "Family",
+    image_url: "assets/images/gallery/family/family-1.jpg",
+    alt_text: "Family photography preview",
+    caption: "Family",
+    sort_order: 1,
+    is_cover: true
+  },
+  {
+    category: "Family",
+    image_url: "assets/images/gallery/family/family-2.jpg",
+    alt_text: "Family photography 2",
+    caption: "Family",
+    sort_order: 2,
+    is_cover: false
+  },
+  {
+    category: "Family",
+    image_url: "assets/images/gallery/family/family-3.jpg",
+    alt_text: "Family photography 3",
+    caption: "Family",
+    sort_order: 3,
+    is_cover: false
+  },
+  {
+    category: "Couple",
+    image_url: "assets/images/gallery/couple/couple-1.jpg",
+    alt_text: "Couple photography preview",
+    caption: "Couple",
+    sort_order: 1,
+    is_cover: true
+  },
+  {
+    category: "Couple",
+    image_url: "assets/images/gallery/couple/couple-2.jpg",
+    alt_text: "Couple photography 2",
+    caption: "Couple",
+    sort_order: 2,
+    is_cover: false
+  },
+  {
+    category: "Couple",
+    image_url: "assets/images/gallery/couple/couple-3.jpg",
+    alt_text: "Couple photography 3",
+    caption: "Couple",
+    sort_order: 3,
+    is_cover: false
+  },
+  {
+    category: "Friends",
+    image_url: "assets/images/gallery/friends/friends-1.jpg",
+    alt_text: "Friends photography preview",
+    caption: "Friends",
+    sort_order: 1,
+    is_cover: true
+  },
+  {
+    category: "Friends",
+    image_url: "assets/images/gallery/friends/friends-2.jpg",
+    alt_text: "Friends photography 2",
+    caption: "Friends",
+    sort_order: 2,
+    is_cover: false
+  },
+  {
+    category: "Friends",
+    image_url: "assets/images/gallery/friends/friends-3.jpg",
+    alt_text: "Friends photography 3",
+    caption: "Friends",
+    sort_order: 3,
+    is_cover: false
+  },
+  {
+    category: "Portrait",
+    image_url: "assets/images/gallery/portrait/portrait-1.jpg",
+    alt_text: "Portrait photography preview",
+    caption: "Portrait",
+    sort_order: 1,
+    is_cover: true
+  },
+  {
+    category: "Portrait",
+    image_url: "assets/images/gallery/portrait/portrait-2.jpg",
+    alt_text: "Portrait photography 2",
+    caption: "Portrait",
+    sort_order: 2,
+    is_cover: false
+  },
+  {
+    category: "Portrait",
+    image_url: "assets/images/gallery/portrait/portrait-3.jpg",
+    alt_text: "Portrait photography 3",
+    caption: "Portrait",
+    sort_order: 3,
+    is_cover: false
+  },
+  {
+    category: "Event",
+    image_url: "assets/images/gallery/event/event-1.jpg",
+    alt_text: "Event photography preview",
+    caption: "Event",
+    sort_order: 1,
+    is_cover: true
+  },
+  {
+    category: "Event",
+    image_url: "assets/images/gallery/event/event-2.jpg",
+    alt_text: "Event photography 2",
+    caption: "Event",
+    sort_order: 2,
+    is_cover: false
+  },
+  {
+    category: "Event",
+    image_url: "assets/images/gallery/event/event-3.jpg",
+    alt_text: "Event photography 3",
+    caption: "Event",
+    sort_order: 3,
+    is_cover: false
+  }
+];
+
+let activeGalleryGroups = [];
 let activeModalImages = [];
 let activeImageIndex = 0;
 
-function getActiveGalleryCategories() {
-  if (typeof galleryConfig === "undefined") {
-    return [];
-  }
-
-  return galleryConfig.filter(function (group) {
-    return group.count > 0;
-  });
-}
-
-function buildCategoryImages(group) {
-  return Array.from({ length: group.count }, function (_, index) {
-    const imageNumber = index + 1;
-
-    return {
-      category: group.category,
-      src: `${group.folder}/${group.prefix}-${imageNumber}.jpg`,
-      alt: `${group.category} photography ${imageNumber}`,
-      imageNumber: imageNumber
-    };
-  });
-}
-
-function renderGalleryPreview() {
+async function loadGalleryPreview() {
   if (!galleryGrid) {
     return;
   }
 
-  const categories = getActiveGalleryCategories();
+  if (typeof supabaseClient === "undefined") {
+    activeGalleryGroups = buildGalleryGroups(fallbackGalleryImages);
+    renderGalleryPreview(activeGalleryGroups);
+    return;
+  }
 
-  galleryGrid.innerHTML = categories.map(function (group, index) {
-    const coverNumber = group.cover || 1;
+  const { data, error } = await supabaseClient
+    .from("gallery_images")
+    .select("id, category, image_url, caption, alt_text, sort_order, is_cover, is_visible, created_at")
+    .eq("is_visible", true)
+    .order("category", { ascending: true })
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    activeGalleryGroups = buildGalleryGroups(fallbackGalleryImages);
+    renderGalleryPreview(activeGalleryGroups);
+    return;
+  }
+
+  const visibleImages = data || [];
+
+  activeGalleryGroups = visibleImages.length
+    ? buildGalleryGroups(visibleImages)
+    : buildGalleryGroups(fallbackGalleryImages);
+
+  renderGalleryPreview(activeGalleryGroups);
+}
+
+function buildGalleryGroups(images) {
+  return galleryCategoryOrder
+    .map(function (category) {
+      const categoryImages = images
+        .filter(function (image) {
+          return image.category === category && image.image_url;
+        })
+        .sort(function (a, b) {
+          const sortA = Number(a.sort_order || 0);
+          const sortB = Number(b.sort_order || 0);
+
+          if (sortA !== sortB) {
+            return sortA - sortB;
+          }
+
+          return String(b.created_at || "").localeCompare(String(a.created_at || ""));
+        })
+        .map(function (image, index) {
+          return {
+            category: category,
+            src: image.image_url,
+            alt: image.alt_text || image.caption || `${category} photography ${index + 1}`,
+            caption: image.caption || "",
+            isCover: Boolean(image.is_cover),
+            sortOrder: Number(image.sort_order || 0)
+          };
+        });
+
+      if (!categoryImages.length) {
+        return null;
+      }
+
+      const coverImage = categoryImages.find(function (image) {
+        return image.isCover;
+      }) || categoryImages[0];
+
+      return {
+        category: category,
+        count: categoryImages.length,
+        coverImage: coverImage,
+        images: categoryImages
+      };
+    })
+    .filter(Boolean);
+}
+
+function renderGalleryPreview(groups) {
+  if (!galleryGrid) {
+    return;
+  }
+
+  if (!groups.length) {
+    galleryGrid.innerHTML = `
+      <div class="empty-state">
+        Gallery images will appear here soon.
+      </div>
+    `;
+    return;
+  }
+
+  galleryGrid.innerHTML = groups.map(function (group, index) {
     const largeClass = index === 0 ? "large" : "";
+    const photoLabel = group.count === 1 ? "photo" : "photos";
 
     return `
-      <article class="gallery-card ${largeClass}" data-category="${group.category}">
-        <img src="${group.folder}/${group.prefix}-${coverNumber}.jpg" alt="${group.category} photography preview">
+      <article class="gallery-card ${largeClass}" data-category="${escapeAttribute(group.category)}">
+        <img src="${escapeAttribute(group.coverImage.src)}" alt="${escapeAttribute(group.coverImage.alt)}">
         <div class="gallery-card-content">
-          <span>${group.category}</span>
-          <small>${group.count} photos</small>
+          <span>${escapeHtml(group.category)}</span>
+          <small>${group.count} ${photoLabel}</small>
         </div>
       </article>
     `;
@@ -270,7 +467,7 @@ function openGalleryModal(category) {
   const title = document.querySelector("#galleryModalTitle");
   const grid = document.querySelector("#galleryModalGrid");
 
-  const group = getActiveGalleryCategories().find(function (item) {
+  const group = activeGalleryGroups.find(function (item) {
     return item.category === category;
   });
 
@@ -278,7 +475,7 @@ function openGalleryModal(category) {
     return;
   }
 
-  const images = buildCategoryImages(group);
+  const images = group.images;
   const columnCount = Math.min(images.length, 4);
 
   activeModalImages = images;
@@ -289,7 +486,7 @@ function openGalleryModal(category) {
   grid.innerHTML = images.map(function (image, index) {
     return `
       <article class="gallery-modal-item" data-index="${index}">
-        <img src="${image.src}" alt="${image.alt}">
+        <img src="${escapeAttribute(image.src)}" alt="${escapeAttribute(image.alt)}">
       </article>
     `;
   }).join("");
@@ -355,6 +552,7 @@ function closeImageViewer() {
 
   viewer.classList.remove("open");
 }
+
 
 const tipsGrid = document.querySelector("#tipsGrid");
 
@@ -689,8 +887,8 @@ function escapeAttribute(value) {
     .replaceAll(">", "&gt;");
 }
 
-renderGalleryPreview();
 createGalleryModal();
 createImageViewer();
 createPostModal();
+loadGalleryPreview();
 loadHelpfulAdvicePosts();
