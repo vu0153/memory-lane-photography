@@ -12,6 +12,8 @@ const bookingsPanel = document.getElementById("bookingsPanel");
 const postsPanel = document.getElementById("postsPanel");
 const galleryTabButton = document.getElementById("galleryTabButton");
 const galleryPanel = document.getElementById("galleryPanel");
+const heroTabButton = document.getElementById("heroTabButton");
+const heroPanel = document.getElementById("heroPanel");
 
 const bookingsTableBody = document.getElementById("bookingsTableBody");
 const dashboardMessage = document.getElementById("dashboardMessage");
@@ -86,6 +88,30 @@ const saveGalleryImageButton = document.getElementById("saveGalleryImageButton")
 const clearGalleryFormButton = document.getElementById("clearGalleryFormButton");
 const deleteGalleryImageButton = document.getElementById("deleteGalleryImageButton");
 
+const heroMessage = document.getElementById("heroMessage");
+const heroSearchInput = document.getElementById("heroSearchInput");
+const heroActiveFilter = document.getElementById("heroActiveFilter");
+const clearHeroFiltersButton = document.getElementById("clearHeroFiltersButton");
+const newHeroImageButton = document.getElementById("newHeroImageButton");
+const heroTableBody = document.getElementById("heroTableBody");
+
+const heroEditorModal = document.getElementById("heroEditorModal");
+const closeHeroModalButton = document.getElementById("closeHeroModalButton");
+const heroForm = document.getElementById("heroForm");
+const heroFormTitle = document.getElementById("heroFormTitle");
+const heroIdInput = document.getElementById("heroIdInput");
+const heroStoragePathInput = document.getElementById("heroStoragePathInput");
+const heroImageUrlInput = document.getElementById("heroImageUrlInput");
+const heroImageFileInput = document.getElementById("heroImageFileInput");
+const uploadHeroImageButton = document.getElementById("uploadHeroImageButton");
+const heroUploadMessage = document.getElementById("heroUploadMessage");
+const heroAltTextInput = document.getElementById("heroAltTextInput");
+const heroSortOrderInput = document.getElementById("heroSortOrderInput");
+const heroActiveInput = document.getElementById("heroActiveInput");
+const saveHeroImageButton = document.getElementById("saveHeroImageButton");
+const clearHeroFormButton = document.getElementById("clearHeroFormButton");
+const deleteHeroImageButton = document.getElementById("deleteHeroImageButton");
+
 
 const statusOptions = [
   "new",
@@ -118,6 +144,7 @@ const galleryCategories = [
 let allBookings = [];
 let allPosts = [];
 let allGalleryImages = [];
+let allHeroImages = [];
 let detailModal = null;
 let detailModalBody = null;
 let activeDetailBookingId = null;
@@ -137,6 +164,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   bookingsTabButton.addEventListener("click", () => switchAdminTab("bookings"));
   postsTabButton.addEventListener("click", () => switchAdminTab("posts"));
   galleryTabButton.addEventListener("click", () => switchAdminTab("gallery"));
+  heroTabButton.addEventListener("click", () => switchAdminTab("hero"));
 
   bookingsTableBody.addEventListener("change", handleStatusChange);
   bookingsTableBody.addEventListener("click", handleBookingTableClick);
@@ -172,6 +200,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   galleryEditorModal.addEventListener("click", (event) => {
     if (event.target === galleryEditorModal) {
       closeGalleryModal();
+    }
+  });
+
+  heroSearchInput.addEventListener("input", applyHeroFilters);
+  heroActiveFilter.addEventListener("change", applyHeroFilters);
+  clearHeroFiltersButton.addEventListener("click", clearHeroFilters);
+  newHeroImageButton.addEventListener("click", openNewHeroModal);
+  uploadHeroImageButton.addEventListener("click", handleHeroImageUpload);
+  heroForm.addEventListener("submit", handleHeroSave);
+  clearHeroFormButton.addEventListener("click", clearHeroForm);
+  deleteHeroImageButton.addEventListener("click", handleHeroDelete);
+  heroTableBody.addEventListener("click", handleHeroTableClick);
+  closeHeroModalButton.addEventListener("click", closeHeroModal);
+
+  heroEditorModal.addEventListener("click", (event) => {
+    if (event.target === heroEditorModal) {
+      closeHeroModal();
     }
   });
 
@@ -442,7 +487,7 @@ async function checkSession() {
   }
 
   showDashboard();
-  await Promise.all([loadBookings(), loadPosts(), loadGalleryImages()]);
+  await Promise.all([loadBookings(), loadPosts(), loadGalleryImages(), loadHeroImages()]);
 }
 
 async function handleLogin(event) {
@@ -470,7 +515,7 @@ async function handleLogin(event) {
 
   loginMessage.textContent = "";
   showDashboard();
-  await Promise.all([loadBookings(), loadPosts(), loadGalleryImages()]);
+  await Promise.all([loadBookings(), loadPosts(), loadGalleryImages(), loadHeroImages()]);
 }
 
 async function handleLogout() {
@@ -479,6 +524,7 @@ async function handleLogout() {
   allBookings = [];
   allPosts = [];
   allGalleryImages = [];
+  allHeroImages = [];
   activeDetailBookingId = null;
 
   bookingSearchInput.value = "";
@@ -488,6 +534,8 @@ async function handleLogout() {
   gallerySearchInput.value = "";
   galleryCategoryFilter.value = "all";
   galleryVisibleFilter.value = "all";
+  heroSearchInput.value = "";
+  heroActiveFilter.value = "all";
 
   totalBookings.textContent = "Total: 0";
   newBookings.textContent = "New: 0";
@@ -517,10 +565,18 @@ async function handleLogout() {
     </tr>
   `;
 
+  heroTableBody.innerHTML = `
+    <tr>
+      <td colspan="6" class="empty-state">Login to load hero images.</td>
+    </tr>
+  `;
+
   clearPostForm();
   clearGalleryForm();
+  clearHeroForm();
   closePostModal();
   closeGalleryModal();
+  closeHeroModal();
   closeBookingDetails();
   switchAdminTab("bookings");
   showLogin();
@@ -542,16 +598,24 @@ function switchAdminTab(tabName) {
   const isBookings = tabName === "bookings";
   const isPosts = tabName === "posts";
   const isGallery = tabName === "gallery";
+  const isHero = tabName === "hero";
 
   bookingsTabButton.classList.toggle("active", isBookings);
   postsTabButton.classList.toggle("active", isPosts);
   galleryTabButton.classList.toggle("active", isGallery);
+  heroTabButton.classList.toggle("active", isHero);
   bookingsPanel.classList.toggle("active", isBookings);
   postsPanel.classList.toggle("active", isPosts);
   galleryPanel.classList.toggle("active", isGallery);
+  heroPanel.classList.toggle("active", isHero);
 }
 
 async function refreshCurrentTab() {
+  if (heroPanel.classList.contains("active")) {
+    await loadHeroImages();
+    return;
+  }
+
   if (galleryPanel.classList.contains("active")) {
     await loadGalleryImages();
     return;
@@ -1432,6 +1496,8 @@ function clearGalleryFilters() {
   gallerySearchInput.value = "";
   galleryCategoryFilter.value = "all";
   galleryVisibleFilter.value = "all";
+  heroSearchInput.value = "";
+  heroActiveFilter.value = "all";
   applyGalleryFilters();
 }
 
@@ -1857,6 +1923,380 @@ function clearUploadMessages() {
 }
 
 
+async function loadHeroImages() {
+  heroMessage.classList.remove("success");
+  heroMessage.textContent = "Loading hero images...";
+
+  const { data, error } = await supabaseClient
+    .from("hero_images")
+    .select("id, image_url, storage_path, alt_text, sort_order, is_active, created_at, updated_at")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    heroMessage.textContent = error.message;
+
+    heroTableBody.innerHTML = `
+      <tr>
+        <td colspan="6" class="empty-state">Unable to load hero images.</td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  allHeroImages = data || [];
+  applyHeroFilters();
+  heroMessage.textContent = "";
+}
+
+function applyHeroFilters() {
+  const searchTerm = heroSearchInput.value.trim().toLowerCase();
+  const activeFilter = heroActiveFilter.value;
+
+  const filteredImages = allHeroImages.filter((image) => {
+    const matchesActive =
+      activeFilter === "all" ||
+      (activeFilter === "active" && image.is_active) ||
+      (activeFilter === "inactive" && !image.is_active);
+
+    const searchableText = [
+      image.alt_text,
+      image.image_url,
+      image.storage_path
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    const matchesSearch =
+      !searchTerm || searchableText.includes(searchTerm);
+
+    return matchesActive && matchesSearch;
+  });
+
+  renderHeroImages(filteredImages);
+}
+
+function clearHeroFilters() {
+  heroSearchInput.value = "";
+  heroActiveFilter.value = "all";
+  applyHeroFilters();
+}
+
+function renderHeroImages(images) {
+  if (!images.length) {
+    heroTableBody.innerHTML = `
+      <tr>
+        <td colspan="6" class="empty-state">No hero images found.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  heroTableBody.innerHTML = images.map((image) => {
+    const activeClass = image.is_active ? "visible" : "hidden-status";
+    const activeText = image.is_active ? "Active" : "Inactive";
+
+    return `
+      <tr>
+        <td>
+          <div class="gallery-image-cell">
+            <img class="gallery-thumb" src="${escapeAttribute(image.image_url)}" alt="${escapeAttribute(image.alt_text || "Hero image")}">
+            <div class="gallery-image-meta">
+              <span class="gallery-image-category">Hero Image</span>
+              <span>${escapeHtml(image.storage_path || "External URL")}</span>
+            </div>
+          </div>
+        </td>
+        <td>${escapeHtml(image.alt_text || "No alt text")}</td>
+        <td>${Number(image.sort_order || 0)}</td>
+        <td>
+          <span class="gallery-status-pill ${activeClass}">
+            ${activeText}
+          </span>
+        </td>
+        <td>${formatDateTime(image.updated_at || image.created_at)}</td>
+        <td>
+          <button class="detail-button edit-hero-button" type="button" data-hero-id="${image.id}">
+            Edit
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function handleHeroTableClick(event) {
+  const editButton = event.target.closest(".edit-hero-button");
+
+  if (!editButton) {
+    return;
+  }
+
+  const heroId = editButton.dataset.heroId;
+  const image = allHeroImages.find((item) => String(item.id) === String(heroId));
+
+  if (!image) {
+    return;
+  }
+
+  loadHeroIntoForm(image);
+  openHeroModal();
+}
+
+function openNewHeroModal(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  clearHeroForm();
+  openHeroModal();
+}
+
+function openHeroModal() {
+  if (!heroEditorModal) {
+    console.error("heroEditorModal not found");
+    return;
+  }
+
+  heroEditorModal.classList.remove("hidden");
+  heroEditorModal.style.display = "flex";
+  heroEditorModal.style.zIndex = "99999";
+  document.body.style.overflow = "hidden";
+}
+
+function closeHeroModal() {
+  if (!heroEditorModal) {
+    return;
+  }
+
+  heroEditorModal.classList.add("hidden");
+  heroEditorModal.style.display = "";
+
+  const postModalOpen = postEditorModal && !postEditorModal.classList.contains("hidden");
+  const galleryModalOpen = galleryEditorModal && !galleryEditorModal.classList.contains("hidden");
+  const detailModalOpen = detailModal && !detailModal.classList.contains("hidden");
+
+  if (!postModalOpen && !galleryModalOpen && !detailModalOpen) {
+    document.body.style.overflow = "";
+  }
+}
+
+function loadHeroIntoForm(image) {
+  heroFormTitle.textContent = "Edit Hero Image";
+  heroIdInput.value = image.id;
+  heroStoragePathInput.value = image.storage_path || "";
+  heroImageUrlInput.value = image.image_url || "";
+  heroAltTextInput.value = image.alt_text || "";
+  heroSortOrderInput.value = image.sort_order ?? 0;
+  heroActiveInput.checked = Boolean(image.is_active);
+  deleteHeroImageButton.classList.remove("hidden");
+  clearHeroUploadMessage();
+
+  heroMessage.classList.remove("success");
+  heroMessage.textContent = "";
+}
+
+async function handleHeroImageUpload() {
+  const file = heroImageFileInput.files[0];
+
+  if (!file) {
+    setUploadMessage(heroUploadMessage, "Please choose an image first.", "error");
+    return;
+  }
+
+  uploadHeroImageButton.disabled = true;
+  uploadHeroImageButton.textContent = "Uploading...";
+  setUploadMessage(heroUploadMessage, "Uploading hero image...", "");
+
+  const result = await uploadHeroImage(file);
+
+  uploadHeroImageButton.disabled = false;
+  uploadHeroImageButton.textContent = "Upload Hero Image";
+
+  if (result.error) {
+    setUploadMessage(heroUploadMessage, result.error, "error");
+    return;
+  }
+
+  heroImageUrlInput.value = result.publicUrl;
+  heroStoragePathInput.value = result.path;
+  heroImageFileInput.value = "";
+
+  if (!heroAltTextInput.value.trim()) {
+    heroAltTextInput.value = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]+/g, " ");
+  }
+
+  setUploadMessage(heroUploadMessage, "Hero image uploaded and URL added.", "success");
+}
+
+async function uploadHeroImage(file) {
+  if (typeof supabaseClient === "undefined") {
+    return { error: "Supabase is not connected." };
+  }
+
+  const validationError = validateImageFile(file);
+
+  if (validationError) {
+    return { error: validationError };
+  }
+
+  const safeFileName = createSafeFileName(file.name);
+  const filePath = `hero/${Date.now()}-${safeFileName}`;
+
+  const { error } = await supabaseClient.storage
+    .from("hero-images")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: file.type
+    });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  const { data } = supabaseClient.storage
+    .from("hero-images")
+    .getPublicUrl(filePath);
+
+  if (!data || !data.publicUrl) {
+    return { error: "Image uploaded, but public URL could not be created." };
+  }
+
+  return {
+    publicUrl: data.publicUrl,
+    path: filePath
+  };
+}
+
+async function handleHeroSave(event) {
+  event.preventDefault();
+
+  const heroId = heroIdInput.value || null;
+  const imageUrl = heroImageUrlInput.value.trim();
+  const storagePath = heroStoragePathInput.value.trim() || null;
+  const altText = heroAltTextInput.value.trim() || "Memory Lane hero image";
+  const sortOrder = Number(heroSortOrderInput.value || 0);
+  const isActive = heroActiveInput.checked;
+
+  if (!imageUrl) {
+    heroMessage.textContent = "Please upload an image or paste an image URL.";
+    return;
+  }
+
+  saveHeroImageButton.disabled = true;
+  saveHeroImageButton.textContent = "Saving...";
+  heroMessage.classList.remove("success");
+  heroMessage.textContent = "";
+
+  const payload = {
+    image_url: imageUrl,
+    storage_path: storagePath,
+    alt_text: altText,
+    sort_order: Number.isFinite(sortOrder) ? sortOrder : 0,
+    is_active: isActive
+  };
+
+  let error;
+
+  if (heroId) {
+    const response = await supabaseClient
+      .from("hero_images")
+      .update(payload)
+      .eq("id", heroId);
+
+    error = response.error;
+  } else {
+    const response = await supabaseClient
+      .from("hero_images")
+      .insert([payload]);
+
+    error = response.error;
+  }
+
+  saveHeroImageButton.disabled = false;
+  saveHeroImageButton.textContent = "Save Hero Image";
+
+  if (error) {
+    heroMessage.textContent = error.message;
+    return;
+  }
+
+  heroMessage.classList.add("success");
+  heroMessage.textContent = heroId ? "Hero image updated." : "Hero image created.";
+
+  clearHeroForm();
+  closeHeroModal();
+  await loadHeroImages();
+}
+
+async function handleHeroDelete() {
+  const heroId = heroIdInput.value;
+  const storagePath = heroStoragePathInput.value;
+
+  if (!heroId) {
+    return;
+  }
+
+  const confirmed = window.confirm("Delete this hero image? This cannot be undone.");
+
+  if (!confirmed) {
+    return;
+  }
+
+  deleteHeroImageButton.disabled = true;
+  deleteHeroImageButton.textContent = "Deleting...";
+
+  const { error } = await supabaseClient
+    .from("hero_images")
+    .delete()
+    .eq("id", heroId);
+
+  if (!error && storagePath) {
+    await supabaseClient.storage
+      .from("hero-images")
+      .remove([storagePath]);
+  }
+
+  deleteHeroImageButton.disabled = false;
+  deleteHeroImageButton.textContent = "Delete Hero Image";
+
+  if (error) {
+    heroMessage.textContent = error.message;
+    return;
+  }
+
+  heroMessage.classList.add("success");
+  heroMessage.textContent = "Hero image deleted.";
+
+  clearHeroForm();
+  closeHeroModal();
+  await loadHeroImages();
+}
+
+function clearHeroForm() {
+  heroFormTitle.textContent = "New Hero Image";
+  heroForm.reset();
+  heroIdInput.value = "";
+  heroStoragePathInput.value = "";
+  heroImageUrlInput.value = "";
+  heroAltTextInput.value = "";
+  heroSortOrderInput.value = "0";
+  heroActiveInput.checked = true;
+  deleteHeroImageButton.classList.add("hidden");
+  clearHeroUploadMessage();
+}
+
+function clearHeroUploadMessage() {
+  heroImageFileInput.value = "";
+  setUploadMessage(heroUploadMessage, "", "");
+}
+
+
+
 function renderCharts(bookings) {
   if (typeof Chart === "undefined") {
     return;
@@ -2152,6 +2592,11 @@ function createSlug(value) {
 
 function handleEscapeClose(event) {
   if (event.key !== "Escape") {
+    return;
+  }
+
+  if (heroEditorModal && !heroEditorModal.classList.contains("hidden")) {
+    closeHeroModal();
     return;
   }
 

@@ -977,7 +977,7 @@
           <div>
             <h1>Memory Lane Admin</h1>
             <p class="dashboard-intro">
-              Manage bookings, track revenue and update Helpful Session Advice content.
+              Manage bookings, track revenue, gallery images, hero images and Helpful Session Advice content.
             </p>
 
             <div class="dashboard-meta">
@@ -1003,6 +1003,10 @@
 
           <button id="galleryTabButton" class="admin-tab-button" type="button" data-tab="gallery">
             Gallery
+          </button>
+
+          <button id="heroTabButton" class="admin-tab-button" type="button" data-tab="hero">
+            Hero
           </button>
         </nav>
 
@@ -1231,6 +1235,63 @@
             </div>
           </section>
         </section>
+
+        <section id="heroPanel" class="admin-panel">
+          <div class="posts-toolbar">
+            <div class="posts-toolbar-title">
+              <h2>Hero Slider Manager</h2>
+              <p>Upload, organise and publish hero slider images shown at the top of the website.</p>
+              <div id="heroMessage" class="admin-message"></div>
+            </div>
+
+            <div class="posts-toolbar-actions">
+              <div class="admin-filters">
+                <input id="heroSearchInput" type="search" placeholder="Search hero images..." />
+
+                <select id="heroActiveFilter">
+                  <option value="all">All images</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+
+                <button id="clearHeroFiltersButton" class="admin-button small" type="button">
+                  Clear
+                </button>
+              </div>
+
+              <button id="newHeroImageButton" class="admin-button" type="button">
+                New Hero Image
+              </button>
+            </div>
+          </div>
+
+          <section class="gallery-list-card">
+            <h2>All hero images</h2>
+            <p>Select Edit to update image, alt text, sort order or active status.</p>
+
+            <div class="posts-table-wrap" style="margin-top: 18px;">
+              <table class="gallery-table">
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>Alt Text</th>
+                    <th>Sort</th>
+                    <th>Active</th>
+                    <th>Updated</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="heroTableBody">
+                  <tr>
+                    <td colspan="6" class="empty-state">
+                      Load hero images to begin.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
       </section>
     </div>
   </main>
@@ -1433,6 +1494,81 @@
 
             <button id="deleteGalleryImageButton" class="admin-button danger hidden" type="button">
               Delete Gallery Image
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </div>
+
+
+  <div id="heroEditorModal" class="gallery-editor-overlay hidden">
+    <section class="gallery-editor-modal" role="dialog" aria-modal="true" aria-labelledby="heroFormTitle">
+      <div class="gallery-editor-header">
+        <div>
+          <h2 id="heroFormTitle">New Hero Image</h2>
+          <p>Upload or edit hero slider images used on the website homepage.</p>
+        </div>
+
+        <button id="closeHeroModalButton" class="gallery-editor-close" type="button" aria-label="Close hero editor">
+          ×
+        </button>
+      </div>
+
+      <div class="gallery-editor-body">
+        <form id="heroForm" class="gallery-form-grid">
+          <input id="heroIdInput" type="hidden" />
+          <input id="heroStoragePathInput" type="hidden" />
+
+          <div class="gallery-form-row">
+            <div class="admin-field">
+              <label for="heroImageUrlInput">Image URL</label>
+              <input id="heroImageUrlInput" type="text" placeholder="Upload an image or paste a public image URL" required />
+
+              <div class="upload-helper">
+                <small>
+                  Upload a hero image to Supabase Storage. The public URL will be added above automatically.
+                </small>
+
+                <div class="upload-row">
+                  <input id="heroImageFileInput" type="file" accept="image/jpeg,image/png,image/webp" />
+
+                  <button id="uploadHeroImageButton" class="admin-button small light" type="button">
+                    Upload Hero Image
+                  </button>
+                </div>
+
+                <div id="heroUploadMessage" class="upload-message"></div>
+              </div>
+            </div>
+
+            <div class="admin-field">
+              <label for="heroSortOrderInput">Sort Order</label>
+              <input id="heroSortOrderInput" type="number" min="0" step="1" value="0" />
+            </div>
+          </div>
+
+          <div class="admin-field">
+            <label for="heroAltTextInput">Alt Text</label>
+            <input id="heroAltTextInput" type="text" placeholder="Describe the hero image for accessibility and SEO" />
+          </div>
+
+          <label class="checkbox-field" for="heroActiveInput">
+            <input id="heroActiveInput" type="checkbox" checked />
+            Show this image in the hero slider
+          </label>
+
+          <div class="gallery-actions">
+            <button id="saveHeroImageButton" class="admin-button" type="submit">
+              Save Hero Image
+            </button>
+
+            <button id="clearHeroFormButton" class="admin-button light" type="button">
+              Clear Form
+            </button>
+
+            <button id="deleteHeroImageButton" class="admin-button danger hidden" type="button">
+              Delete Hero Image
             </button>
           </div>
         </form>

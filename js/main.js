@@ -78,26 +78,145 @@ if (bookingForm) {
   });
 }
 
-const slides = document.querySelectorAll(".hero-slide");
-const dots = document.querySelectorAll(".slider-dot");
-const previousButton = document.querySelector(".slider-arrow-left");
-const nextButton = document.querySelector(".slider-arrow-right");
+const heroSlider = document.querySelector(".hero-slider");
 
+const fallbackHeroImages = [
+  {
+    image_url: "assets/images/hero-1.jpg",
+    alt_text: "Family photography session in Adelaide",
+    sort_order: 1
+  },
+  {
+    image_url: "assets/images/hero-2.jpg",
+    alt_text: "Couple photography session in Adelaide",
+    sort_order: 2
+  },
+  {
+    image_url: "assets/images/hero-3.jpg",
+    alt_text: "Friends and memory photography session",
+    sort_order: 3
+  },
+  {
+    image_url: "assets/images/hero-4.jpg",
+    alt_text: "Small event photography in Adelaide",
+    sort_order: 4
+  }
+];
+
+let heroSlides = [];
+let heroDots = [];
 let currentSlide = 0;
-let slideTimer;
+let slideTimer = null;
 
-function showSlide(index) {
-  if (slides.length === 0) {
+async function loadHeroImages() {
+  if (!heroSlider) {
     return;
   }
 
-  currentSlide = (index + slides.length) % slides.length;
+  if (typeof supabaseClient === "undefined") {
+    renderHeroSlider(fallbackHeroImages);
+    return;
+  }
 
-  slides.forEach(function (slide, slideIndex) {
+  const { data, error } = await supabaseClient
+    .from("hero_images")
+    .select("id, image_url, storage_path, alt_text, sort_order, is_active, created_at")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    renderHeroSlider(fallbackHeroImages);
+    return;
+  }
+
+  const heroImages = data && data.length ? data : fallbackHeroImages;
+
+  renderHeroSlider(heroImages);
+}
+
+function renderHeroSlider(images) {
+  if (!heroSlider || !images.length) {
+    return;
+  }
+
+  clearInterval(slideTimer);
+  slideTimer = null;
+  currentSlide = 0;
+
+  const slidesMarkup = images.map(function (image, index) {
+    return `
+      <div class="hero-slide ${index === 0 ? "active" : ""}">
+        <img src="${escapeAttribute(image.image_url)}" alt="${escapeAttribute(image.alt_text || "Memory Lane photography hero image")}">
+      </div>
+    `;
+  }).join("");
+
+  const controlsMarkup = images.length > 1
+    ? `
+      <button class="slider-arrow slider-arrow-left" type="button" aria-label="Previous image">
+        ‹
+      </button>
+
+      <button class="slider-arrow slider-arrow-right" type="button" aria-label="Next image">
+        ›
+      </button>
+
+      <div class="slider-dots" aria-label="Slideshow position">
+        ${images.map(function (_, index) {
+          return `
+            <button class="slider-dot ${index === 0 ? "active" : ""}" type="button" aria-label="Go to image ${index + 1}"></button>
+          `;
+        }).join("")}
+      </div>
+    `
+    : "";
+
+  heroSlider.innerHTML = slidesMarkup + controlsMarkup;
+
+  heroSlides = Array.from(heroSlider.querySelectorAll(".hero-slide"));
+  heroDots = Array.from(heroSlider.querySelectorAll(".slider-dot"));
+
+  const previousButton = heroSlider.querySelector(".slider-arrow-left");
+  const nextButton = heroSlider.querySelector(".slider-arrow-right");
+
+  if (heroSlides.length <= 1 || !previousButton || !nextButton) {
+    return;
+  }
+
+  nextButton.addEventListener("click", function () {
+    nextSlide();
+    resetSlideTimer();
+  });
+
+  previousButton.addEventListener("click", function () {
+    previousSlide();
+    resetSlideTimer();
+  });
+
+  heroDots.forEach(function (dot, index) {
+    dot.addEventListener("click", function () {
+      showSlide(index);
+      resetSlideTimer();
+    });
+  });
+
+  startSlideTimer();
+}
+
+function showSlide(index) {
+  if (heroSlides.length === 0) {
+    return;
+  }
+
+  currentSlide = (index + heroSlides.length) % heroSlides.length;
+
+  heroSlides.forEach(function (slide, slideIndex) {
     slide.classList.toggle("active", slideIndex === currentSlide);
   });
 
-  dots.forEach(function (dot, dotIndex) {
+  heroDots.forEach(function (dot, dotIndex) {
     dot.classList.toggle("active", dotIndex === currentSlide);
   });
 }
@@ -111,33 +230,16 @@ function previousSlide() {
 }
 
 function startSlideTimer() {
-  slideTimer = setInterval(nextSlide, 5000);
+  clearInterval(slideTimer);
+
+  if (heroSlides.length > 1) {
+    slideTimer = setInterval(nextSlide, 5000);
+  }
 }
 
 function resetSlideTimer() {
   clearInterval(slideTimer);
   startSlideTimer();
-}
-
-if (slides.length > 0 && previousButton && nextButton) {
-  startSlideTimer();
-
-  nextButton.addEventListener("click", function () {
-    nextSlide();
-    resetSlideTimer();
-  });
-
-  previousButton.addEventListener("click", function () {
-    previousSlide();
-    resetSlideTimer();
-  });
-
-  dots.forEach(function (dot, index) {
-    dot.addEventListener("click", function () {
-      showSlide(index);
-      resetSlideTimer();
-    });
-  });
 }
 
 const galleryGrid = document.querySelector("#galleryGrid");
@@ -887,6 +989,7 @@ function escapeAttribute(value) {
     .replaceAll(">", "&gt;");
 }
 
+loadHeroImages();
 createGalleryModal();
 createImageViewer();
 createPostModal();
