@@ -2587,68 +2587,188 @@ p {
     border-radius: 24px !important;
   }
 }
-.site-header {
-  background:
-    linear-gradient(135deg, #4f5746 0%, #69705d 58%, #7b826b 100%) !important;
-  border-bottom: 1px solid rgba(255, 250, 245, 0.18) !important;
-  box-shadow: 0 14px 36px rgba(42, 31, 24, 0.18) !important;
-}
-
-.site-header .logo {
-  color: #fffaf5 !important;
-}
-
-.site-header .logo-image {
-  background: #fffaf5 !important;
-  border-radius: 999px !important;
-  box-shadow: 0 6px 18px rgba(42, 31, 24, 0.22) !important;
-}
-
-.site-header .logo strong {
-  color: #fffaf5 !important;
-  text-shadow: 0 2px 12px rgba(42, 31, 24, 0.22) !important;
-}
-
-.site-header .logo span {
-  color: rgba(255, 250, 245, 0.78) !important;
-}
-
-.nav-menu a {
-  color: rgba(255, 250, 245, 0.82) !important;
-}
-
-.nav-menu a:hover {
-  color: #ffffff !important;
-}
-
-.nav-button {
-  background: #fffaf5 !important;
-  color: #4f5746 !important;
-  box-shadow: 0 10px 24px rgba(42, 31, 24, 0.18) !important;
-}
-
-.nav-button:hover {
-  background: #f0eadf !important;
-  color: #3f4738 !important;
-}
+/* =========================================================
+   FINAL MOBILE POLISH OVERRIDES
+   Keep this block at the very end of the file.
+   ========================================================= */
 
 @media (max-width: 760px) {
-  .site-header {
-    background:
-      linear-gradient(135deg, #4d5544 0%, #69705d 100%) !important;
-    border-bottom: 1px solid rgba(255, 250, 245, 0.18) !important;
+  body .section {
+    padding: 44px 20px !important;
   }
 
-  .site-header .logo strong {
-    color: #fffaf5 !important;
+  body #pricing.section {
+    padding-top: 42px !important;
+    padding-bottom: 46px !important;
   }
 
-  .site-header .logo span {
-    color: rgba(255, 250, 245, 0.76) !important;
+  body #pricing .section-heading.centre {
+    max-width: 340px !important;
+    margin-bottom: 24px !important;
   }
 
-  .nav-button {
-    background: #fffaf5 !important;
-    color: #4f5746 !important;
+  body #pricing .section-heading .eyebrow {
+    margin-bottom: 10px !important;
+    color: #777164 !important;
+    font-size: 10px !important;
+    line-height: 1.4 !important;
+    letter-spacing: 0.30em !important;
+  }
+
+  body #pricing .section-heading h2 {
+    max-width: 330px !important;
+    margin: 0 auto 16px !important;
+    color: #2d2d2b !important;
+    font-size: clamp(31px, 8.3vw, 37px) !important;
+    line-height: 1.08 !important;
+    letter-spacing: -0.035em !important;
+  }
+
+  body #pricing .section-heading p {
+    max-width: 330px !important;
+    margin: 0 auto !important;
+    color: #6b655d !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+  }
+
+  body #pricing .pricing-grid {
+    gap: 16px !important;
+  }
+
+  body #pricing .price-card {
+    padding: 24px 22px !important;
+    border-radius: 22px !important;
+    box-shadow: 0 14px 34px rgba(42, 31, 24, 0.08) !important;
+  }
+
+  body #pricing .price-card h3 {
+    margin: 0 0 16px !important;
+    font-size: 20px !important;
+    line-height: 1.25 !important;
+  }
+
+  body #pricing .price {
+    margin: 0 0 12px !important;
+    font-size: 34px !important;
+    line-height: 1.05 !important;
+  }
+
+  body #pricing .price-note {
+    margin: 0 !important;
+    font-size: 14px !important;
+    line-height: 1.58 !important;
+  }
+
+  body #pricing .price-card ul {
+    gap: 8px !important;
+    margin: 18px 0 20px !important;
+  }
+
+  body #pricing .price-card li {
+    padding-left: 24px !important;
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+  }
+
+  body #pricing .price-card .card-button {
+    min-height: 46px !important;
+    margin-top: 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    font-size: 14px !important;
+  }
+
+  body #pricing .pricing-note-block {
+    margin-top: 20px !important;
+  }
+
+  body #pricing .pricing-note-block p {
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+
+  body #gallery.section {
+    padding-top: 46px !important;
+    padding-bottom: 48px !important;
+  }
+
+  body #gallery .split-heading {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    margin-bottom: 24px !important;
+  }
+
+  body #gallery .split-heading .eyebrow {
+    margin-bottom: 10px !important;
+    color: #777164 !important;
+    font-size: 10px !important;
+    letter-spacing: 0.30em !important;
+  }
+
+  body #gallery .split-heading h2 {
+    margin: 0 !important;
+    font-size: clamp(34px, 9vw, 42px) !important;
+    line-height: 1.05 !important;
+    letter-spacing: -0.035em !important;
+  }
+
+  body #gallery .split-heading p {
+    max-width: 330px !important;
+    margin: 0 !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+  }
+
+  body #gallery .gallery-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    grid-auto-rows: auto !important;
+  }
+
+  body #gallery .gallery-card,
+  body #gallery .gallery-card.large {
+    min-height: 210px !important;
+    height: 210px !important;
+    grid-row: auto !important;
+    border-radius: 22px !important;
+    padding: 20px !important;
+  }
+
+  body #gallery .gallery-card-content span {
+    font-size: 27px !important;
+    line-height: 1 !important;
+  }
+
+  body #gallery .gallery-card-content small {
+    font-size: 13px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  body .section {
+    padding: 40px 18px !important;
+  }
+
+  body #pricing .section-heading h2 {
+    font-size: clamp(29px, 8vw, 34px) !important;
+  }
+
+  body #pricing .price-card {
+    padding: 22px 20px !important;
+  }
+
+  body #pricing .price {
+    font-size: 32px !important;
+  }
+
+  body #gallery .gallery-card,
+  body #gallery .gallery-card.large {
+    height: 200px !important;
+    min-height: 200px !important;
   }
 }
