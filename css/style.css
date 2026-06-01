@@ -2772,3 +2772,75 @@ p {
     min-height: 200px !important;
   }
 }
+@media (max-width: 760px) {
+  .contact-section {
+    padding-top: 54px !important;
+    padding-bottom: 58px !important;
+  }
+
+  .booking-form {
+    padding: 24px !important;
+    border-radius: 26px !important;
+    gap: 14px !important;
+  }
+
+  .booking-form input,
+  .booking-form select,
+  .booking-form textarea {
+    min-height: 50px !important;
+    border-radius: 15px !important;
+    font-size: 15px !important;
+    background: #fffdf9 !important;
+  }
+
+  .booking-form textarea {
+    min-height: 132px !important;
+    line-height: 1.45 !important;
+  }
+
+  .booking-form button {
+    min-height: 50px !important;
+    margin-top: 8px !important;
+    font-size: 15px !important;
+  }
+
+  .form-message {
+    margin: 2px 0 4px !important;
+    padding: 12px 14px !important;
+    border-radius: 14px !important;
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+  }
+
+  .form-message:empty {
+    display: none !important;
+  }
+
+  .form-message.success {
+    display: block !important;
+    background: rgba(63, 111, 78, 0.10) !important;
+    border: 1px solid rgba(63, 111, 78, 0.18) !important;
+    color: #315f3e !important;
+  }
+
+  .form-message.error {
+    display: block !important;
+    background: rgba(159, 58, 56, 0.08) !important;
+    border: 1px solid rgba(159, 58, 56, 0.18) !important;
+    color: #8a302f !important;
+  }
+}
+
+.booking-form input:-webkit-autofill,
+.booking-form input:-webkit-autofill:hover,
+.booking-form input:-webkit-autofill:focus,
+.booking-form textarea:-webkit-autofill,
+.booking-form textarea:-webkit-autofill:hover,
+.booking-form textarea:-webkit-autofill:focus,
+.booking-form select:-webkit-autofill,
+.booking-form select:-webkit-autofill:hover,
+.booking-form select:-webkit-autofill:focus {
+  -webkit-text-fill-color: #333333 !important;
+  box-shadow: 0 0 0 1000px #fffdf9 inset !important;
+  transition: background-color 9999s ease-in-out 0s !important;
+}
