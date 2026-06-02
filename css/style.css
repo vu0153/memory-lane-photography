@@ -2844,3 +2844,71 @@ p {
   box-shadow: 0 0 0 1000px #fffdf9 inset !important;
   transition: background-color 9999s ease-in-out 0s !important;
 }
+/* Dark premium header */
+.site-header {
+  background:
+    linear-gradient(135deg, #3f4738 0%, #566047 52%, #6f765f 100%) !important;
+  border-bottom: 1px solid rgba(255, 250, 245, 0.18) !important;
+  box-shadow: 0 12px 34px rgba(42, 31, 24, 0.22) !important;
+  backdrop-filter: blur(14px) !important;
+}
+
+.site-header .logo {
+  color: #fffaf5 !important;
+}
+
+.site-header .logo-image {
+  background: #fffaf5 !important;
+  border-radius: 999px !important;
+  box-shadow: 0 6px 18px rgba(42, 31, 24, 0.24) !important;
+}
+
+.site-header .logo strong {
+  color: #fffaf5 !important;
+  text-shadow: 0 2px 12px rgba(42, 31, 24, 0.28) !important;
+}
+
+.site-header .logo span {
+  color: rgba(255, 250, 245, 0.78) !important;
+}
+
+.site-header .nav-menu a {
+  color: rgba(255, 250, 245, 0.82) !important;
+}
+
+.site-header .nav-menu a:hover {
+  color: #ffffff !important;
+}
+
+.site-header .nav-button {
+  background: #fffaf5 !important;
+  color: #3f4738 !important;
+  box-shadow: 0 10px 24px rgba(42, 31, 24, 0.20) !important;
+}
+
+.site-header .nav-button:hover {
+  background: #f0eadf !important;
+  color: #2f362a !important;
+}
+
+/* Mobile header */
+@media (max-width: 760px) {
+  .site-header {
+    background:
+      linear-gradient(135deg, #3f4738 0%, #566047 100%) !important;
+    border-bottom: 1px solid rgba(255, 250, 245, 0.18) !important;
+  }
+
+  .site-header .logo strong {
+    color: #fffaf5 !important;
+  }
+
+  .site-header .logo span {
+    color: rgba(255, 250, 245, 0.76) !important;
+  }
+
+  .site-header .nav-button {
+    background: #fffaf5 !important;
+    color: #3f4738 !important;
+  }
+}
