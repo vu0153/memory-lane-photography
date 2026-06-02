@@ -78,6 +78,142 @@ if (bookingForm) {
   });
 }
 
+
+const servicesHeroSlider = document.querySelector("#servicesHeroSlider");
+
+const fallbackServicesHeroImages = [
+  {
+    image_url: "assets/images/hero-1.jpg",
+    alt_text: "Family photography session in Adelaide",
+    sort_order: 1
+  },
+  {
+    image_url: "assets/images/hero-2.jpg",
+    alt_text: "Couple photography session in Adelaide",
+    sort_order: 2
+  },
+  {
+    image_url: "assets/images/hero-3.jpg",
+    alt_text: "Friends and memory photography session",
+    sort_order: 3
+  },
+  {
+    image_url: "assets/images/hero-4.jpg",
+    alt_text: "Small event photography in Adelaide",
+    sort_order: 4
+  }
+];
+
+let servicesHeroSlides = [];
+let servicesHeroDots = [];
+let servicesHeroCurrentSlide = 0;
+let servicesHeroTimer = null;
+
+async function loadServicesHeroImages() {
+  if (!servicesHeroSlider) {
+    return;
+  }
+
+  if (typeof supabaseClient === "undefined") {
+    renderServicesHeroSlider(fallbackServicesHeroImages);
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("hero_images")
+    .select("id, image_url, storage_path, alt_text, sort_order, is_active, created_at")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    renderServicesHeroSlider(fallbackServicesHeroImages);
+    return;
+  }
+
+  const heroImages = data && data.length ? data : fallbackServicesHeroImages;
+
+  renderServicesHeroSlider(heroImages);
+}
+
+function renderServicesHeroSlider(images) {
+  if (!servicesHeroSlider || !images.length) {
+    return;
+  }
+
+  clearInterval(servicesHeroTimer);
+  servicesHeroTimer = null;
+  servicesHeroCurrentSlide = 0;
+
+  const slidesMarkup = images.map(function (image, index) {
+    return `
+      <div class="services-hero-slide ${index === 0 ? "active" : ""}">
+        <img src="${escapeAttribute(image.image_url)}" alt="${escapeAttribute(image.alt_text || "Memory Lane photography feature image")}">
+      </div>
+    `;
+  }).join("");
+
+  const dotsMarkup = images.length > 1
+    ? `
+      <div class="services-slider-dots" aria-label="Featured image position">
+        ${images.map(function (_, index) {
+          return `
+            <button class="services-slider-dot ${index === 0 ? "active" : ""}" type="button" aria-label="Go to featured image ${index + 1}"></button>
+          `;
+        }).join("")}
+      </div>
+    `
+    : "";
+
+  servicesHeroSlider.innerHTML = slidesMarkup + dotsMarkup;
+
+  servicesHeroSlides = Array.from(servicesHeroSlider.querySelectorAll(".services-hero-slide"));
+  servicesHeroDots = Array.from(servicesHeroSlider.querySelectorAll(".services-slider-dot"));
+
+  servicesHeroDots.forEach(function (dot, index) {
+    dot.addEventListener("click", function () {
+      showServicesHeroSlide(index);
+      resetServicesHeroTimer();
+    });
+  });
+
+  startServicesHeroTimer();
+}
+
+function showServicesHeroSlide(index) {
+  if (servicesHeroSlides.length === 0) {
+    return;
+  }
+
+  servicesHeroCurrentSlide = (index + servicesHeroSlides.length) % servicesHeroSlides.length;
+
+  servicesHeroSlides.forEach(function (slide, slideIndex) {
+    slide.classList.toggle("active", slideIndex === servicesHeroCurrentSlide);
+  });
+
+  servicesHeroDots.forEach(function (dot, dotIndex) {
+    dot.classList.toggle("active", dotIndex === servicesHeroCurrentSlide);
+  });
+}
+
+function nextServicesHeroSlide() {
+  showServicesHeroSlide(servicesHeroCurrentSlide + 1);
+}
+
+function startServicesHeroTimer() {
+  clearInterval(servicesHeroTimer);
+
+  if (servicesHeroSlides.length > 1) {
+    servicesHeroTimer = setInterval(nextServicesHeroSlide, 5000);
+  }
+}
+
+function resetServicesHeroTimer() {
+  clearInterval(servicesHeroTimer);
+  startServicesHeroTimer();
+}
+
 const galleryGrid = document.querySelector("#galleryGrid");
 
 const galleryCategoryOrder = [
@@ -825,6 +961,7 @@ function escapeAttribute(value) {
     .replaceAll(">", "&gt;");
 }
 
+loadServicesHeroImages();
 createGalleryModal();
 createImageViewer();
 createPostModal();

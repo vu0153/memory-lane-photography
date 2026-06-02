@@ -3194,54 +3194,244 @@ p {
     width: min(340px, 100%);
   }
 }
-/* Make static hero photographer image larger */
-.hero.hero-static {
-  grid-template-columns: minmax(0, 0.85fr) minmax(520px, 1.08fr) !important;
-  gap: clamp(24px, 4vw, 58px) !important;
+
+
+/* Services section with managed photo slider */
+.services-showcase-section {
+  margin-top: 0 !important;
+  padding-top: 88px !important;
+  padding-bottom: 92px !important;
+  background:
+    radial-gradient(circle at 84% 56%, rgba(123, 130, 107, 0.12), transparent 28%),
+    var(--cream) !important;
 }
 
-.hero.hero-static .hero-static-visual {
-  min-height: 650px !important;
-  margin-right: -3vw !important;
+.services-main-heading {
+  max-width: 840px !important;
+  margin-bottom: 44px !important;
 }
 
-.hero.hero-static .hero-static-visual::before {
-  width: min(620px, 100%) !important;
-  height: min(620px, 100%) !important;
+.services-showcase-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(360px, 0.82fr);
+  gap: clamp(28px, 4vw, 56px);
+  align-items: stretch;
 }
 
-.hero.hero-static .hero-static-visual img {
-  width: min(760px, 116%) !important;
-  max-height: 760px !important;
+.service-card-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 22px !important;
+  align-content: stretch;
 }
 
-/* Tablet */
+.service-card-grid .service-card {
+  aspect-ratio: 1 / 1;
+  min-height: 0;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.services-photo-showcase {
+  position: relative;
+  min-height: 560px;
+  border-radius: 34px;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(111, 118, 95, 0.18), rgba(255, 250, 245, 0.42)),
+    #e9e1d4;
+  box-shadow:
+    0 28px 68px rgba(42, 31, 24, 0.16),
+    0 8px 22px rgba(42, 31, 24, 0.08);
+}
+
+.services-photo-showcase::before {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  z-index: 2;
+  border: 1px solid rgba(255, 250, 245, 0.36);
+  border-radius: 26px;
+  pointer-events: none;
+}
+
+.services-photo-showcase::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(180deg, rgba(18, 22, 17, 0.04) 0%, rgba(18, 22, 17, 0.18) 48%, rgba(18, 22, 17, 0.55) 100%),
+    linear-gradient(90deg, rgba(123, 130, 107, 0.18), transparent 50%);
+  pointer-events: none;
+}
+
+.services-hero-slider {
+  position: absolute;
+  inset: 0;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+.services-hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 900ms ease, transform 1200ms ease;
+}
+
+.services-hero-slide.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.services-hero-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.services-slider-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  z-index: 4;
+  display: flex;
+  gap: 9px;
+  transform: translateX(-50%);
+}
+
+.services-slider-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 250, 245, 0.58);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(42, 31, 24, 0.24);
+}
+
+.services-slider-dot.active {
+  width: 28px;
+  background: #fffaf5;
+}
+
+.services-showcase-label {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  bottom: 56px;
+  z-index: 3;
+  display: grid;
+  gap: 8px;
+  padding: 18px 20px;
+  border: 1px solid rgba(255, 250, 245, 0.22);
+  border-radius: 22px;
+  background: rgba(38, 41, 33, 0.42);
+  color: #fffaf5;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.services-showcase-label span {
+  color: rgba(255, 250, 245, 0.76);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.services-showcase-label strong {
+  font-family: Georgia, serif;
+  font-size: clamp(20px, 2vw, 27px);
+  line-height: 1.12;
+}
+
 @media (max-width: 1150px) {
-  .hero.hero-static .hero-static-visual {
-    min-height: 570px !important;
-    margin-right: -2vw !important;
+  .services-showcase-layout {
+    grid-template-columns: 1fr;
   }
 
-  .hero.hero-static .hero-static-visual img {
-    width: min(650px, 108%) !important;
-    max-height: 680px !important;
+  .services-photo-showcase {
+    min-height: 420px;
+  }
+
+  .service-card-grid .service-card {
+    aspect-ratio: auto;
+    min-height: 220px;
   }
 }
 
-/* Mobile */
 @media (max-width: 760px) {
-  .hero.hero-static .hero-static-visual img {
-    width: min(430px, 112%) !important;
+  .services-showcase-section {
+    padding-top: 52px !important;
+    padding-bottom: 52px !important;
   }
 
-  .hero.hero-static .hero-static-visual::before {
-    width: min(390px, 92vw) !important;
-    height: min(390px, 92vw) !important;
+  .services-main-heading {
+    margin-bottom: 28px !important;
+  }
+
+  .service-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+  }
+
+  .service-card-grid .service-card {
+    min-height: 190px;
+    padding: 20px 16px;
+    border-radius: 22px;
+  }
+
+  .service-card-grid .service-card h3 {
+    font-size: 18px;
+    line-height: 1.15;
+  }
+
+  .service-card-grid .service-card p {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .services-photo-showcase {
+    min-height: 340px;
+    border-radius: 28px;
+  }
+
+  .services-showcase-label {
+    left: 18px;
+    right: 18px;
+    bottom: 46px;
+    padding: 14px 16px;
+    border-radius: 18px;
+  }
+
+  .services-showcase-label strong {
+    font-size: 20px;
+  }
+
+  .services-slider-dots {
+    bottom: 18px;
   }
 }
 
-@media (max-width: 390px) {
-  .hero.hero-static .hero-static-visual img {
-    width: min(380px, 112%) !important;
+@media (max-width: 520px) {
+  .service-card-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .service-card-grid .service-card {
+    min-height: 0;
+    aspect-ratio: auto;
+  }
+
+  .services-photo-showcase {
+    min-height: 300px;
   }
 }
