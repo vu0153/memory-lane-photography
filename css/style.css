@@ -2912,3 +2912,336 @@ p {
     color: #3f4738 !important;
   }
 }
+
+/* =========================================================
+   STATIC HERO DUO IMAGE
+   Replaces the old background slider with a fixed landing image.
+   Keep this block at the very end of the file.
+   ========================================================= */
+
+.hero.hero-static {
+  display: grid !important;
+  grid-template-columns: minmax(0, 0.92fr) minmax(420px, 0.9fr) !important;
+  align-items: center !important;
+  gap: clamp(34px, 5vw, 74px) !important;
+  min-height: calc(100vh - 76px) !important;
+  padding: clamp(72px, 7vw, 104px) 6% clamp(54px, 6vw, 86px) !important;
+  background:
+    radial-gradient(circle at 78% 54%, rgba(123, 130, 107, 0.20), transparent 34%),
+    linear-gradient(135deg, rgba(239, 232, 220, 0.88) 0%, rgba(247, 244, 238, 1) 48%, rgba(239, 232, 220, 0.74) 100%) !important;
+  overflow: hidden !important;
+}
+
+.hero.hero-static::before {
+  content: "";
+  position: absolute;
+  right: -14vw;
+  bottom: -34vw;
+  width: 72vw;
+  height: 72vw;
+  border: 1px solid rgba(123, 130, 107, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 250, 245, 0.32);
+  pointer-events: none;
+}
+
+.hero.hero-static::after {
+  content: "";
+  position: absolute;
+  right: 4%;
+  top: 18%;
+  width: 170px;
+  height: 170px;
+  border-radius: 999px;
+  background: rgba(123, 130, 107, 0.08);
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+.hero.hero-static .hero-content {
+  position: relative !important;
+  z-index: 4 !important;
+  max-width: 640px !important;
+  padding: 0 !important;
+}
+
+.hero.hero-static .hero-static-visual {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  min-height: 560px;
+}
+
+.hero.hero-static .hero-static-visual::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  width: min(520px, 92%);
+  height: min(520px, 92%);
+  border: 1px solid rgba(98, 105, 84, 0.18);
+  border-radius: 999px;
+  transform: translateX(-50%);
+  box-shadow: 0 34px 90px rgba(42, 31, 24, 0.10);
+}
+
+.hero.hero-static .hero-static-visual img {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: min(620px, 100%);
+  max-height: 640px;
+  object-fit: contain;
+  filter: drop-shadow(0 34px 54px rgba(42, 31, 24, 0.20));
+}
+
+.hero.hero-static .hero-editorial-note {
+  margin-bottom: 0;
+}
+
+.hero.hero-static .hero-buttons {
+  margin-top: 34px;
+}
+
+.hero.hero-static .slider-arrow,
+.hero.hero-static .slider-dots,
+.hero.hero-static .hero-slider {
+  display: none !important;
+}
+
+@media (max-width: 1150px) {
+  .hero.hero-static {
+    grid-template-columns: 1fr 0.86fr !important;
+    gap: 30px !important;
+  }
+
+  .hero.hero-static .hero-static-visual {
+    min-height: 500px;
+  }
+}
+
+@media (max-width: 900px) {
+  .hero.hero-static {
+    grid-template-columns: 1fr !important;
+    min-height: auto !important;
+    padding: 54px 6% 42px !important;
+  }
+
+  .hero.hero-static .hero-content {
+    max-width: 680px !important;
+  }
+
+  .hero.hero-static .hero-static-visual {
+    min-height: auto;
+    margin-top: 10px;
+  }
+
+  .hero.hero-static .hero-static-visual::before {
+    bottom: 2%;
+    width: min(480px, 86vw);
+    height: min(480px, 86vw);
+  }
+
+  .hero.hero-static .hero-static-visual img {
+    width: min(520px, 96%);
+    max-height: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero.hero-static {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 28px !important;
+    padding: 38px 20px 42px !important;
+    background:
+      radial-gradient(circle at 70% 78%, rgba(123, 130, 107, 0.20), transparent 38%),
+      linear-gradient(135deg, #fffaf5 0%, #f2ece3 100%) !important;
+  }
+
+  .hero.hero-static::before {
+    right: -52vw;
+    bottom: -44vw;
+    width: 100vw;
+    height: 100vw;
+  }
+
+  .hero.hero-static::after {
+    display: none;
+  }
+
+  .hero.hero-static .hero-content {
+    width: 100% !important;
+    max-width: 390px !important;
+    padding: 0 !important;
+    align-self: flex-start;
+  }
+
+  .hero.hero-static .hero-content .eyebrow {
+    max-width: 330px !important;
+    margin: 0 0 15px !important;
+    color: #69705d !important;
+    font-size: 11px !important;
+    line-height: 1.7 !important;
+    letter-spacing: 0.28em !important;
+  }
+
+  .hero.hero-static .hero-content h1 {
+    max-width: 390px !important;
+    margin: 0 !important;
+    color: #2d2d2b !important;
+    font-size: clamp(39px, 11vw, 54px) !important;
+    line-height: 0.98 !important;
+    letter-spacing: -0.045em !important;
+  }
+
+  .hero.hero-static .hero-divider {
+    width: 72px !important;
+    height: 5px !important;
+    margin: 22px 0 20px !important;
+    background: #7b826b !important;
+    opacity: 0.65 !important;
+  }
+
+  .hero.hero-static .hero-editorial-note {
+    width: 100% !important;
+    max-width: 370px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .hero.hero-static .hero-editorial-note::before,
+  .hero.hero-static .hero-editorial-note::after {
+    display: none !important;
+  }
+
+  .hero.hero-static .hero-editorial-kicker {
+    display: none !important;
+  }
+
+  .hero.hero-static .hero-content .hero-editorial-note p {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 360px !important;
+    color: #4c4741 !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    line-height: 1.75 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .hero.hero-static .hero-buttons {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+    max-width: 370px !important;
+    margin-top: 26px !important;
+  }
+
+  .hero.hero-static .primary-button,
+  .hero.hero-static .secondary-button {
+    width: 100% !important;
+    min-height: 50px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 15px !important;
+  }
+
+  .hero.hero-static .secondary-button {
+    background: transparent !important;
+  }
+
+  .hero.hero-static .hero-static-visual {
+    width: 100%;
+    margin: 0 auto;
+    min-height: auto;
+  }
+
+  .hero.hero-static .hero-static-visual::before {
+    bottom: 0;
+    width: min(360px, 88vw);
+    height: min(360px, 88vw);
+  }
+
+  .hero.hero-static .hero-static-visual img {
+    width: min(380px, 100%);
+    filter: drop-shadow(0 20px 34px rgba(42, 31, 24, 0.18));
+  }
+}
+
+@media (max-width: 390px) {
+  .hero.hero-static {
+    padding: 34px 16px 38px !important;
+  }
+
+  .hero.hero-static .hero-content h1 {
+    font-size: clamp(36px, 10.5vw, 48px) !important;
+  }
+
+  .hero.hero-static .hero-static-visual img {
+    width: min(340px, 100%);
+  }
+}
+/* Make static hero photographer image larger */
+.hero.hero-static {
+  grid-template-columns: minmax(0, 0.85fr) minmax(520px, 1.08fr) !important;
+  gap: clamp(24px, 4vw, 58px) !important;
+}
+
+.hero.hero-static .hero-static-visual {
+  min-height: 650px !important;
+  margin-right: -3vw !important;
+}
+
+.hero.hero-static .hero-static-visual::before {
+  width: min(620px, 100%) !important;
+  height: min(620px, 100%) !important;
+}
+
+.hero.hero-static .hero-static-visual img {
+  width: min(760px, 116%) !important;
+  max-height: 760px !important;
+}
+
+/* Tablet */
+@media (max-width: 1150px) {
+  .hero.hero-static .hero-static-visual {
+    min-height: 570px !important;
+    margin-right: -2vw !important;
+  }
+
+  .hero.hero-static .hero-static-visual img {
+    width: min(650px, 108%) !important;
+    max-height: 680px !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 760px) {
+  .hero.hero-static .hero-static-visual img {
+    width: min(430px, 112%) !important;
+  }
+
+  .hero.hero-static .hero-static-visual::before {
+    width: min(390px, 92vw) !important;
+    height: min(390px, 92vw) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .hero.hero-static .hero-static-visual img {
+    width: min(380px, 112%) !important;
+  }
+}
