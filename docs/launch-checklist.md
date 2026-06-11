@@ -27,8 +27,8 @@ Current key features:
 
 Replace these if the final public domain changes.
 
-- Website URL: `https://marklong.mycloudnas.com:8091/`
-- Admin URL: `https://marklong.mycloudnas.com:8091/admin.html`
+- Website URL: `https://memorylaneadelaide.com/`
+- Admin URL: `https://memorylaneadelaide.com/admin.html`
 - Local website: `http://127.0.0.1:5500/index.html`
 - Local admin: `http://127.0.0.1:5500/admin.html`
 
@@ -315,7 +315,7 @@ Current social preview image path:
 Current social image absolute URL:
 
 ```text
-https://marklong.mycloudnas.com:8091/assets/brand/og-image.jpg
+https://memorylaneadelaide.com/assets/brand/og-image.jpg
 ```
 
 Check social preview with:
