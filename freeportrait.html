@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Allura&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260619-freeportrait-plan">
+  <link rel="stylesheet" href="css/style.css?v=20260619-freeportrait-plan-fix">
 </head>
 <body>
 
@@ -386,15 +386,19 @@
     const timeText = formatPublicTimeRange(event.start_time, event.end_time);
     const mapMarkup = buildPublicMapMarkup(event);
     const addressText = [event.location_name, event.location_address].filter(Boolean).join(", ");
+    const shortSummary = event.session_summary || "A relaxed, one-person portrait moment by Memory Lane Photo Studio.";
+    const deliveryText = event.delivery_time || "Selected images may be available during the session or later the same day where possible.";
+    const joinText = event.signup_note || event.contact_note || "Message us before attending so we can manage timing.";
+    const prepareText = event.what_to_bring || "Wear something simple and comfortable. Bring yourself, a tidy look and an honest smile.";
 
     freePortraitPlanBody.innerHTML = `
-      <article class="free-portrait-plan-card free-portrait-published-plan">
+      <article class="free-portrait-plan-card free-portrait-published-plan free-portrait-plan-simple">
         <div class="free-portrait-plan-content">
-          <span class="free-portrait-plan-status">Planned session</span>
+          <span class="free-portrait-plan-status">Current plan</span>
           <h3>${escapePublicHtml(event.title || "Free Individual Portrait Session")}</h3>
-          <p>${escapePublicHtml(event.session_summary || "A relaxed, one-person portrait opportunity by Memory Lane Photo Studio.")}</p>
+          <p class="free-portrait-plan-summary">${escapePublicHtml(shortSummary)}</p>
 
-          <div class="free-portrait-detail-grid">
+          <div class="free-portrait-simple-details">
             <div>
               <strong>Date</strong>
               <span>${escapePublicHtml(dateText)}</span>
@@ -407,20 +411,13 @@
               <strong>Location</strong>
               <span>${escapePublicHtml(addressText || "Location to be confirmed")}</span>
             </div>
-            <div>
-              <strong>Photo delivery</strong>
-              <span>${escapePublicHtml(event.delivery_time || "Selected images may be available during the session or later the same day where possible.")}</span>
-            </div>
           </div>
 
-          <div class="free-portrait-info-list">
-            ${buildInfoItem("Who it is for", event.who_is_it_for || "One individual person at a time. This is not a family, couple or group photoshoot.")}
-            ${buildInfoItem("What to bring", event.what_to_bring)}
-            ${buildInfoItem("Availability", event.capacity_note)}
-            ${buildInfoItem("Weather note", event.weather_note)}
-            ${buildInfoItem("How to join", event.signup_note)}
-            ${buildInfoItem("Contact", event.contact_note)}
-            ${buildInfoItem("Meeting note", event.map_note)}
+          <div class="free-portrait-simple-notes">
+            <p><strong>For one person only.</strong> This is not a family, couple or group photoshoot.</p>
+            <p><strong>Photo delivery:</strong> ${escapePublicHtml(deliveryText)}</p>
+            <p><strong>Before you come:</strong> ${escapePublicHtml(prepareText)}</p>
+            <p><strong>How to join:</strong> ${escapePublicHtml(joinText)}</p>
           </div>
 
           <a class="primary-button" href="index.html#contact">Ask About This Session</a>
@@ -465,6 +462,7 @@
       <iframe
         title="Free portrait session location map"
         loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
         src="${escapePublicAttribute(mapUrl)}">
       </iframe>
       <a class="free-portrait-map-link" href="${escapePublicAttribute(openMapUrl)}" target="_blank" rel="noopener">
@@ -485,7 +483,7 @@
       lat + delta
     ].join(",");
 
-    return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik&marker=${encodeURIComponent(`${lat},${lon}`)}`;
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lon}`;
   }
 
   function parsePublicCoordinate(value) {

@@ -29,6 +29,7 @@ const freePortraitStartInput = document.getElementById("freePortraitStartInput")
 const freePortraitEndInput = document.getElementById("freePortraitEndInput");
 const freePortraitLocationNameInput = document.getElementById("freePortraitLocationNameInput");
 const freePortraitLocationAddressInput = document.getElementById("freePortraitLocationAddressInput");
+const freePortraitCoordinatesInput = document.getElementById("freePortraitCoordinatesInput");
 const freePortraitLatitudeInput = document.getElementById("freePortraitLatitudeInput");
 const freePortraitLongitudeInput = document.getElementById("freePortraitLongitudeInput");
 const freePortraitMapNoteInput = document.getElementById("freePortraitMapNoteInput");
@@ -251,8 +252,15 @@ freePortraitForm.addEventListener("submit", handleFreePortraitSave);
 clearFreePortraitFormButton.addEventListener("click", function () {
   clearFreePortraitForm(false);
 });
-freePortraitLatitudeInput.addEventListener("input", renderFreePortraitAdminMap);
-freePortraitLongitudeInput.addEventListener("input", renderFreePortraitAdminMap);
+if (freePortraitCoordinatesInput) {
+  freePortraitCoordinatesInput.addEventListener("input", renderFreePortraitAdminMap);
+}
+if (freePortraitLatitudeInput) {
+  freePortraitLatitudeInput.addEventListener("input", renderFreePortraitAdminMap);
+}
+if (freePortraitLongitudeInput) {
+  freePortraitLongitudeInput.addEventListener("input", renderFreePortraitAdminMap);
+}
 
   heroEditorModal.addEventListener("click", (event) => {
     if (event.target === heroEditorModal) {
@@ -2388,6 +2396,9 @@ function loadFreePortraitIntoForm(event) {
   freePortraitLocationAddressInput.value = event.location_address || "";
   freePortraitLatitudeInput.value = event.latitude ?? "";
   freePortraitLongitudeInput.value = event.longitude ?? "";
+  if (freePortraitCoordinatesInput) {
+    freePortraitCoordinatesInput.value = formatCoordinatePair(event.latitude, event.longitude);
+  }
   freePortraitMapNoteInput.value = event.map_note || "";
   freePortraitSummaryInput.value = event.session_summary || "";
   freePortraitWhoInput.value = event.who_is_it_for || "";
@@ -2410,6 +2421,11 @@ function clearFreePortraitForm(empty) {
   freePortraitForm.reset();
   freePortraitIdInput.value = "";
   freePortraitActiveInput.checked = false;
+  freePortraitLatitudeInput.value = "";
+  freePortraitLongitudeInput.value = "";
+  if (freePortraitCoordinatesInput) {
+    freePortraitCoordinatesInput.value = "";
+  }
   freePortraitTitleInput.value = empty ? "" : "Free Individual Portrait Session";
   freePortraitSummaryInput.value = empty ? "" : "A relaxed, one-person portrait opportunity by Memory Lane Photo Studio.";
   freePortraitWhoInput.value = empty ? "" : "One individual person at a time. This is not a family, couple or group photoshoot.";
@@ -2428,6 +2444,12 @@ async function handleFreePortraitSave(event) {
   event.preventDefault();
 
   const payload = buildFreePortraitPayload();
+  const coordinateText = freePortraitCoordinatesInput ? freePortraitCoordinatesInput.value.trim() : "";
+
+  if (coordinateText && (payload.latitude === null || payload.longitude === null)) {
+    freePortraitMessage.textContent = "Please check the Google Maps coordinate. Example: 34°58'52.5\"S 138°30'41.1\"E or -34.9806, 138.5110.";
+    return;
+  }
 
   if (!payload.title) {
     freePortraitMessage.textContent = "Please enter a session title.";
@@ -2543,8 +2565,8 @@ function buildFreePortraitPayload() {
     end_time: freePortraitEndInput.value || null,
     location_name: freePortraitLocationNameInput.value.trim() || null,
     location_address: freePortraitLocationAddressInput.value.trim() || null,
-    latitude: parseCoordinate(freePortraitLatitudeInput.value),
-    longitude: parseCoordinate(freePortraitLongitudeInput.value),
+    latitude: getFreePortraitCoordinates()?.latitude ?? null,
+    longitude: getFreePortraitCoordinates()?.longitude ?? null,
     map_note: freePortraitMapNoteInput.value.trim() || null,
     session_summary: freePortraitSummaryInput.value.trim() || null,
     who_is_it_for: freePortraitWhoInput.value.trim() || null,
@@ -2598,21 +2620,127 @@ function renderFreePortraitAdminMap() {
     return;
   }
 
-  const latitude = parseCoordinate(freePortraitLatitudeInput.value);
-  const longitude = parseCoordinate(freePortraitLongitudeInput.value);
+  const coordinates = getFreePortraitCoordinates();
 
-  if (latitude === null || longitude === null) {
-    freePortraitMapPreview.innerHTML = "Enter latitude and longitude to preview the map.";
+  if (!coordinates) {
+    freePortraitMapPreview.innerHTML = `
+      <div class="free-portrait-preview-map-empty">
+        Paste a Google Maps coordinate or map link to preview the location.
+      </div>
+    `;
     return;
   }
+
+  const { latitude, longitude } = coordinates;
+  const openMapUrl = `https://www.openstreetmap.org/?mlat=${encodeURIComponent(latitude)}&mlon=${encodeURIComponent(longitude)}#map=16/${encodeURIComponent(latitude)}/${encodeURIComponent(longitude)}`;
 
   freePortraitMapPreview.innerHTML = `
     <iframe
       title="Free portrait session map preview"
       loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
       src="${escapeAttribute(buildOpenStreetMapEmbedUrl(latitude, longitude))}">
     </iframe>
+    <a class="free-portrait-map-link" href="${escapeAttribute(openMapUrl)}" target="_blank" rel="noopener">
+      Open larger map
+    </a>
   `;
+}
+
+function getFreePortraitCoordinates() {
+  const coordinateText = freePortraitCoordinatesInput ? freePortraitCoordinatesInput.value.trim() : "";
+  const parsedFromText = parseCoordinatePair(coordinateText);
+
+  if (parsedFromText) {
+    freePortraitLatitudeInput.value = String(parsedFromText.latitude);
+    freePortraitLongitudeInput.value = String(parsedFromText.longitude);
+    return parsedFromText;
+  }
+
+  const latitude = parseCoordinate(freePortraitLatitudeInput.value);
+  const longitude = parseCoordinate(freePortraitLongitudeInput.value);
+
+  if (latitude === null || longitude === null) {
+    return null;
+  }
+
+  return { latitude, longitude };
+}
+
+function parseCoordinatePair(value) {
+  const raw = String(value || "").trim();
+
+  if (!raw) {
+    return null;
+  }
+
+  const atMatch = raw.match(/@\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/);
+  if (atMatch) {
+    return normaliseCoordinatePair(Number(atMatch[1]), Number(atMatch[2]));
+  }
+
+  const decimalMatches = raw.match(/-?\d+(?:\.\d+)?/g);
+  if (decimalMatches && decimalMatches.length >= 2 && !/[NSEW]/i.test(raw)) {
+    return normaliseCoordinatePair(Number(decimalMatches[0]), Number(decimalMatches[1]));
+  }
+
+  const dmsMatches = Array.from(raw.matchAll(/(\d+(?:\.\d+)?)\s*[°º]\s*(?:(\d+(?:\.\d+)?)\s*['’′])?\s*(?:(\d+(?:\.\d+)?)\s*(?:"|”|″))?\s*([NSEW])/gi));
+  if (dmsMatches.length >= 2) {
+    const first = convertDmsMatch(dmsMatches[0]);
+    const second = convertDmsMatch(dmsMatches[1]);
+
+    if (first && second) {
+      const latitude = first.direction === "N" || first.direction === "S" ? first.value : second.value;
+      const longitude = first.direction === "E" || first.direction === "W" ? first.value : second.value;
+      return normaliseCoordinatePair(latitude, longitude);
+    }
+  }
+
+  return null;
+}
+
+function convertDmsMatch(match) {
+  const degrees = Number(match[1]);
+  const minutes = Number(match[2] || 0);
+  const seconds = Number(match[3] || 0);
+  const direction = String(match[4] || "").toUpperCase();
+
+  if (!Number.isFinite(degrees) || !Number.isFinite(minutes) || !Number.isFinite(seconds) || !direction) {
+    return null;
+  }
+
+  let value = degrees + minutes / 60 + seconds / 3600;
+  if (direction === "S" || direction === "W") {
+    value *= -1;
+  }
+
+  return {
+    value: Number(value.toFixed(7)),
+    direction
+  };
+}
+
+function normaliseCoordinatePair(latitude, longitude) {
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return null;
+  }
+
+  let lat = latitude;
+  let lon = longitude;
+
+  if (Math.abs(lat) > 90 && Math.abs(lon) <= 90) {
+    lat = longitude;
+    lon = latitude;
+  }
+
+  if (Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+    return null;
+  }
+
+  return {
+    latitude: Number(lat.toFixed(7)),
+    longitude: Number(lon.toFixed(7))
+  };
 }
 
 function parseCoordinate(value) {
@@ -2627,10 +2755,21 @@ function parseCoordinate(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function formatCoordinatePair(latitude, longitude) {
+  const lat = parseCoordinate(latitude);
+  const lon = parseCoordinate(longitude);
+
+  if (lat === null || lon === null) {
+    return "";
+  }
+
+  return `${lat}, ${lon}`;
+}
+
 function buildOpenStreetMapEmbedUrl(latitude, longitude) {
   const lat = Number(latitude);
   const lon = Number(longitude);
-  const delta = 0.008;
+  const delta = 0.006;
 
   const bbox = [
     lon - delta,
@@ -2639,7 +2778,7 @@ function buildOpenStreetMapEmbedUrl(latitude, longitude) {
     lat + delta
   ].join(",");
 
-  return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik&marker=${encodeURIComponent(`${lat},${lon}`)}`;
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lon}`;
 }
 
 function formatTimeValue(value) {
