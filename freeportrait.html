@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Allura&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260619-google-map-link">
+  <link rel="stylesheet" href="css/style.css?v=20260619-invitation-card">
 </head>
 <body>
 
@@ -316,34 +316,33 @@
       const dateText = formatPublicDate(event.event_date);
       const timeText = formatPublicTimeRange(event.start_time, event.end_time);
       const mapMarkup = buildPublicMapMarkup(event);
-      const addressText = [event.location_name, event.location_address].filter(Boolean).join(", ");
       const prepText = event.what_to_bring || "Come as yourself. Simple, comfortable clothing is best.";
       const joinText = event.signup_note || event.contact_note || "Message us through the contact form to ask about availability.";
+      const deliveryText = event.delivery_time || "Selected images may be available during the session or later the same day where possible.";
 
       freePortraitPlanBody.innerHTML = `
-        <article class="free-polish-plan-card free-polish-active-plan-card">
-          <div class="free-polish-plan-content">
+        <article class="free-polish-plan-card free-polish-active-plan-card free-polish-invitation-layout">
+          <div class="free-polish-plan-content free-polish-plan-main-content">
             <span class="free-polish-plan-status">Planned session</span>
             <h3>${escapePublicHtml(event.title || "Free Individual Portrait Session")}</h3>
             <p class="free-polish-plan-summary">${escapePublicHtml(event.session_summary || "A relaxed, one-person portrait opportunity by Memory Lane Photo Studio.")}</p>
 
-            <div class="free-polish-plan-details">
+            <div class="free-polish-plan-details free-polish-plan-details-refined">
               <div><strong>Date</strong><span>${escapePublicHtml(dateText)}</span></div>
               <div><strong>Time</strong><span>${escapePublicHtml(timeText)}</span></div>
-              <div><strong>Location</strong><span>${escapePublicHtml(addressText || "Location to be confirmed")}</span></div>
-              <div><strong>Photo delivery</strong><span>${escapePublicHtml(event.delivery_time || "Selected images may be available during the session or later the same day where possible.")}</span></div>
+              <div><strong>Photo delivery</strong><span>${escapePublicHtml(deliveryText)}</span></div>
             </div>
 
-            <div class="free-polish-plan-notes">
-              <p><strong>Before you come:</strong> ${escapePublicHtml(prepText)}</p>
-              <p><strong>How to join:</strong> ${escapePublicHtml(joinText)}</p>
-              ${event.weather_note ? `<p><strong>Weather note:</strong> ${escapePublicHtml(event.weather_note)}</p>` : ""}
+            <div class="free-polish-plan-notes free-polish-plan-notes-refined">
+              <p><strong>Before you come</strong><span>${escapePublicHtml(prepText)}</span></p>
+              <p><strong>How to join</strong><span>${escapePublicHtml(joinText)}</span></p>
+              ${event.weather_note ? `<p><strong>Weather note</strong><span>${escapePublicHtml(event.weather_note)}</span></p>` : ""}
             </div>
 
             <a class="primary-button" href="index.html#contact">Ask About This Session</a>
           </div>
 
-          <aside class="free-polish-map-card">
+          <aside class="free-polish-map-card free-polish-invitation-aside">
             ${mapMarkup}
           </aside>
         </article>
@@ -358,25 +357,32 @@
 
       if (!googleMapsUrl) {
         return `
-          <div class="free-polish-google-map-card free-polish-google-map-card-empty">
-            <span>Location</span>
+          <div class="free-polish-google-map-card free-polish-invitation-card free-polish-google-map-card-empty">
+            <div class="free-polish-invitation-topline">
+              <span>Location</span>
+              <small>To be confirmed</small>
+            </div>
             <strong>${escapePublicHtml(locationTitle)}</strong>
-            <p>${escapePublicHtml(addressText)}</p>
-            <p>${escapePublicHtml(meetingNote)}</p>
-            <small>Google Maps link will be added once the exact location is confirmed.</small>
+            <p class="free-polish-location-address">${escapePublicHtml(addressText)}</p>
+            <p class="free-polish-location-note">${escapePublicHtml(meetingNote)}</p>
+            <small class="free-polish-invitation-small">Google Maps link will appear once the meeting point is confirmed.</small>
           </div>
         `;
       }
 
       return `
-        <div class="free-polish-google-map-card">
-          <span>Location</span>
+        <div class="free-polish-google-map-card free-polish-invitation-card">
+          <div class="free-polish-invitation-topline">
+            <span>You are invited</span>
+            <small>Free portrait day</small>
+          </div>
           <strong>${escapePublicHtml(locationTitle)}</strong>
-          <p>${escapePublicHtml(addressText)}</p>
-          ${event.map_note ? `<p>${escapePublicHtml(event.map_note)}</p>` : ""}
+          <p class="free-polish-location-address">${escapePublicHtml(addressText)}</p>
+          ${event.map_note ? `<p class="free-polish-location-note">${escapePublicHtml(event.map_note)}</p>` : ""}
           <a class="free-polish-map-link" href="${escapePublicAttribute(googleMapsUrl)}" target="_blank" rel="noopener">
             Open in Google Maps
           </a>
+          <small class="free-polish-invitation-small">Tap the button on your phone to open directions in Google Maps.</small>
         </div>
       `;
     }

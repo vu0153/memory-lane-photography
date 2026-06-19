@@ -4851,3 +4851,344 @@ p {
     width: 100% !important;
   }
 }
+
+
+/* =========================================================
+   FREE PORTRAIT INVITATION CARD POLISH - 20260619-invitation-card
+   Keep this block at the very end of the file.
+   ========================================================= */
+
+.free-polish-plan-section {
+  padding-top: 72px !important;
+  padding-bottom: 78px !important;
+  background:
+    radial-gradient(circle at 88% 12%, rgba(123, 130, 107, 0.14), transparent 28%),
+    linear-gradient(180deg, #efe8dc 0%, #f4efe7 100%) !important;
+}
+
+.free-polish-section-heading {
+  max-width: 760px !important;
+  margin-bottom: 30px !important;
+}
+
+.free-polish-section-heading h2 {
+  margin-bottom: 12px !important;
+}
+
+.free-polish-active-plan-card.free-polish-invitation-layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.72fr) !important;
+  gap: clamp(22px, 3vw, 38px) !important;
+  align-items: stretch !important;
+  padding: clamp(24px, 3.4vw, 42px) !important;
+  border: 1px solid rgba(123, 130, 107, 0.18) !important;
+  border-radius: 34px !important;
+  background:
+    linear-gradient(135deg, rgba(255, 250, 245, 0.96), rgba(255, 250, 245, 0.76)),
+    radial-gradient(circle at 8% 0%, rgba(123, 130, 107, 0.14), transparent 35%) !important;
+  box-shadow: 0 28px 76px rgba(42, 31, 24, 0.12) !important;
+}
+
+.free-polish-plan-main-content {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+}
+
+.free-polish-plan-main-content h3 {
+  max-width: 720px !important;
+  margin: 16px 0 12px !important;
+  font-size: clamp(34px, 4.2vw, 60px) !important;
+  line-height: 0.98 !important;
+}
+
+.free-polish-plan-summary {
+  max-width: 680px !important;
+  margin: 0 0 24px !important;
+  color: #5f5a53 !important;
+  font-size: 1.04rem !important;
+  line-height: 1.72 !important;
+}
+
+.free-polish-plan-details.free-polish-plan-details-refined {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin: 0 0 18px !important;
+}
+
+.free-polish-plan-details-refined div {
+  min-height: 96px !important;
+  padding: 17px 18px !important;
+  border: 1px solid rgba(123, 130, 107, 0.16) !important;
+  border-radius: 20px !important;
+  background: rgba(255, 255, 255, 0.62) !important;
+  box-shadow: 0 10px 24px rgba(42, 31, 24, 0.05) !important;
+}
+
+.free-polish-plan-details-refined strong {
+  display: block !important;
+  margin-bottom: 8px !important;
+  color: #69705d !important;
+  font-size: 0.68rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+}
+
+.free-polish-plan-details-refined span {
+  color: #342f2a !important;
+  font-size: 1rem !important;
+  line-height: 1.45 !important;
+}
+
+.free-polish-plan-notes.free-polish-plan-notes-refined {
+  width: 100% !important;
+  display: grid !important;
+  gap: 10px !important;
+  margin: 2px 0 26px !important;
+}
+
+.free-polish-plan-notes-refined p {
+  display: grid !important;
+  grid-template-columns: 150px minmax(0, 1fr) !important;
+  gap: 16px !important;
+  align-items: start !important;
+  margin: 0 !important;
+  padding: 14px 0 !important;
+  border-bottom: 1px solid rgba(123, 130, 107, 0.13) !important;
+  color: #5f5a53 !important;
+}
+
+.free-polish-plan-notes-refined p:last-child {
+  border-bottom: 0 !important;
+}
+
+.free-polish-plan-notes-refined strong {
+  color: #3f4738 !important;
+  font-size: 0.76rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.12em !important;
+  line-height: 1.4 !important;
+  text-transform: uppercase !important;
+}
+
+.free-polish-plan-notes-refined span {
+  color: #5f5a53 !important;
+  line-height: 1.62 !important;
+}
+
+.free-polish-invitation-aside {
+  align-self: stretch !important;
+  display: flex !important;
+  min-height: 100% !important;
+  border-radius: 30px !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+.free-polish-google-map-card.free-polish-invitation-card {
+  position: relative !important;
+  width: 100% !important;
+  min-height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 16px !important;
+  padding: clamp(28px, 3.5vw, 42px) !important;
+  border: 1px solid rgba(255, 250, 245, 0.24) !important;
+  border-radius: 30px !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 250, 245, 0.19), transparent 32%),
+    linear-gradient(145deg, #4f583f 0%, #68705b 55%, #7b826b 100%) !important;
+  color: #fffaf5 !important;
+  box-shadow:
+    0 26px 58px rgba(42, 31, 24, 0.20),
+    inset 0 0 0 1px rgba(255, 250, 245, 0.10) !important;
+  overflow: hidden !important;
+}
+
+.free-polish-google-map-card.free-polish-invitation-card::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 18px !important;
+  border: 1px solid rgba(255, 250, 245, 0.20) !important;
+  border-radius: 22px !important;
+  pointer-events: none !important;
+}
+
+.free-polish-google-map-card.free-polish-invitation-card::after {
+  content: "ML" !important;
+  position: absolute !important;
+  right: -18px !important;
+  bottom: -24px !important;
+  color: rgba(255, 250, 245, 0.08) !important;
+  font-family: Georgia, serif !important;
+  font-size: 112px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  pointer-events: none !important;
+}
+
+.free-polish-invitation-topline {
+  position: relative !important;
+  z-index: 1 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  align-items: center !important;
+  padding-bottom: 12px !important;
+  border-bottom: 1px solid rgba(255, 250, 245, 0.20) !important;
+}
+
+.free-polish-invitation-topline span,
+.free-polish-invitation-topline small {
+  color: rgba(255, 250, 245, 0.82) !important;
+  font-size: 0.68rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+}
+
+.free-polish-google-map-card.free-polish-invitation-card > strong {
+  position: relative !important;
+  z-index: 1 !important;
+  margin-top: 4px !important;
+  color: #fffaf5 !important;
+  font-family: Georgia, serif !important;
+  font-size: clamp(32px, 3.8vw, 48px) !important;
+  line-height: 0.98 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.free-polish-google-map-card.free-polish-invitation-card p {
+  position: relative !important;
+  z-index: 1 !important;
+  margin: 0 !important;
+  color: rgba(255, 250, 245, 0.84) !important;
+  line-height: 1.62 !important;
+}
+
+.free-polish-location-address {
+  font-size: 1.02rem !important;
+  font-weight: 700 !important;
+}
+
+.free-polish-location-note {
+  padding-left: 14px !important;
+  border-left: 2px solid rgba(255, 250, 245, 0.30) !important;
+}
+
+.free-polish-map-link {
+  position: relative !important;
+  z-index: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: fit-content !important;
+  min-height: 48px !important;
+  margin-top: 4px !important;
+  padding: 0 22px !important;
+  border-radius: 999px !important;
+  background: #fffaf5 !important;
+  color: #4f583f !important;
+  font-weight: 900 !important;
+  text-decoration: none !important;
+  box-shadow: 0 16px 34px rgba(42, 31, 24, 0.18) !important;
+}
+
+.free-polish-map-link:hover {
+  background: #efe8dc !important;
+  color: #2f362a !important;
+}
+
+.free-polish-invitation-small {
+  position: relative !important;
+  z-index: 1 !important;
+  display: block !important;
+  max-width: 280px !important;
+  color: rgba(255, 250, 245, 0.72) !important;
+  font-size: 0.82rem !important;
+  line-height: 1.5 !important;
+}
+
+.free-polish-google-map-card-empty.free-polish-invitation-card {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(123, 130, 107, 0.16), transparent 34%),
+    linear-gradient(145deg, #fffaf5 0%, #eee6d9 100%) !important;
+  border-color: rgba(93, 68, 54, 0.12) !important;
+  color: #342f2a !important;
+}
+
+.free-polish-google-map-card-empty.free-polish-invitation-card .free-polish-invitation-topline,
+.free-polish-google-map-card-empty.free-polish-invitation-card p,
+.free-polish-google-map-card-empty.free-polish-invitation-card > strong,
+.free-polish-google-map-card-empty.free-polish-invitation-card .free-polish-invitation-small,
+.free-polish-google-map-card-empty.free-polish-invitation-card .free-polish-invitation-topline span,
+.free-polish-google-map-card-empty.free-polish-invitation-card .free-polish-invitation-topline small {
+  color: #4f4a44 !important;
+}
+
+@media (max-width: 1040px) {
+  .free-polish-active-plan-card.free-polish-invitation-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .free-polish-invitation-aside {
+    min-height: auto !important;
+  }
+
+  .free-polish-google-map-card.free-polish-invitation-card {
+    min-height: 320px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .free-polish-plan-section {
+    padding-top: 52px !important;
+    padding-bottom: 56px !important;
+  }
+
+  .free-polish-active-plan-card.free-polish-invitation-layout {
+    padding: 20px !important;
+    border-radius: 26px !important;
+  }
+
+  .free-polish-plan-main-content h3 {
+    font-size: clamp(31px, 9vw, 42px) !important;
+  }
+
+  .free-polish-plan-details.free-polish-plan-details-refined {
+    grid-template-columns: 1fr !important;
+  }
+
+  .free-polish-plan-details-refined div {
+    min-height: auto !important;
+  }
+
+  .free-polish-plan-notes-refined p {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+  }
+
+  .free-polish-google-map-card.free-polish-invitation-card {
+    min-height: 300px !important;
+    padding: 28px 24px !important;
+    border-radius: 24px !important;
+  }
+
+  .free-polish-google-map-card.free-polish-invitation-card::before {
+    inset: 14px !important;
+    border-radius: 18px !important;
+  }
+
+  .free-polish-invitation-topline {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .free-polish-map-link {
+    width: 100% !important;
+  }
+}
