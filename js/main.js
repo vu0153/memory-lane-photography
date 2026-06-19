@@ -83,24 +83,9 @@ const servicesHeroSlider = document.querySelector("#servicesHeroSlider");
 
 const fallbackServicesHeroImages = [
   {
-    image_url: "assets/images/hero-1.jpg",
-    alt_text: "Family photography session in Adelaide",
+    image_url: "assets/images/hero-photographer-duo.png",
+    alt_text: "Memory Lane Photo Studio photography team in Adelaide",
     sort_order: 1
-  },
-  {
-    image_url: "assets/images/hero-2.jpg",
-    alt_text: "Couple photography session in Adelaide",
-    sort_order: 2
-  },
-  {
-    image_url: "assets/images/hero-3.jpg",
-    alt_text: "Friends and memory photography session",
-    sort_order: 3
-  },
-  {
-    image_url: "assets/images/hero-4.jpg",
-    alt_text: "Small event photography in Adelaide",
-    sort_order: 4
   }
 ];
 
