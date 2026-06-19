@@ -8,4 +8,8 @@
     <loc>https://memorylaneadelaide.com/aboutus.html</loc>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://memorylaneadelaide.com/freeportrait.html</loc>
+    <priority>0.8</priority>
+  </url>
 </urlset>
