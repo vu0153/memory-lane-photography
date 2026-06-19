@@ -10,14 +10,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Allura&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/style.css?v=20260619-final" />
+  <link rel="stylesheet" href="css/style.css?v=20260619-freeportrait-plan" />
 
   <style>
     body {
       min-height: 100vh;
       background:
         linear-gradient(rgba(42, 31, 24, 0.68), rgba(42, 31, 24, 0.68)),
-        url("assets/images/hero-photographer-duo.png") center / cover fixed;
+        url("assets/images/hero-1.jpg") center / cover fixed;
       color: #2d241f;
       font-family: "Inter", sans-serif;
     }
@@ -929,6 +929,104 @@
         font-size: 38px;
       }
     }
+
+
+/* Free Portrait Planner */
+.free-portrait-admin-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.48fr);
+  gap: 18px;
+  align-items: start;
+  margin-top: 18px;
+}
+
+.free-portrait-admin-card {
+  padding: 22px;
+  border: 1px solid rgba(81, 65, 56, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.free-portrait-admin-card h2,
+.free-portrait-admin-card h3 {
+  margin: 0 0 8px;
+  color: #2d241f;
+}
+
+.free-portrait-admin-card p {
+  margin: 0;
+  color: #77665b;
+  line-height: 1.6;
+}
+
+.free-portrait-form-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.free-portrait-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.free-portrait-form-row.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.free-portrait-status-card {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(93, 68, 54, 0.06);
+  border: 1px solid rgba(81, 65, 56, 0.1);
+}
+
+.free-portrait-status-card strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #2d241f;
+}
+
+.free-portrait-preview-map {
+  display: grid;
+  place-items: center;
+  min-height: 260px;
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #efe8dc;
+  border: 1px solid rgba(81, 65, 56, 0.12);
+}
+
+.free-portrait-preview-map iframe {
+  width: 100%;
+  height: 300px;
+  border: 0;
+}
+
+.free-portrait-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.free-portrait-help-list {
+  margin: 12px 0 0;
+  padding-left: 18px;
+  color: #77665b;
+  line-height: 1.6;
+}
+
+@media (max-width: 980px) {
+  .free-portrait-admin-layout,
+  .free-portrait-form-row,
+  .free-portrait-form-row.three {
+    grid-template-columns: 1fr;
+  }
+}
+
   </style>
 </head>
 
@@ -1008,6 +1106,11 @@
           <button id="heroTabButton" class="admin-tab-button" type="button" data-tab="hero">
             Hero
           </button>
+
+<button id="freePortraitTabButton" class="admin-tab-button" type="button" data-tab="freePortrait">
+  Free Portrait
+</button>
+
         </nav>
 
         <section id="bookingsPanel" class="admin-panel active">
@@ -1292,6 +1395,169 @@
             </div>
           </section>
         </section>
+
+
+<section id="freePortraitPanel" class="admin-panel">
+  <div class="posts-toolbar">
+    <div class="posts-toolbar-title">
+      <h2>Free Portrait Planner</h2>
+      <p>Control what appears on the Free Portrait page. Publish a planned session, or show that there is no current plan.</p>
+      <div id="freePortraitMessage" class="admin-message"></div>
+    </div>
+
+    <div class="posts-toolbar-actions">
+      <button id="refreshFreePortraitButton" class="admin-button small" type="button">
+        Refresh Plan
+      </button>
+
+      <button id="setNoFreePortraitPlanButton" class="admin-button danger small" type="button">
+        Set No Current Plan
+      </button>
+    </div>
+  </div>
+
+  <div class="free-portrait-admin-layout">
+    <section class="free-portrait-admin-card">
+      <h2>Session details</h2>
+      <p>
+        Use this form when you have a confirmed free individual portrait session. If there is no planned session yet, use “Set No Current Plan”.
+      </p>
+
+      <form id="freePortraitForm" class="free-portrait-form-grid">
+        <input id="freePortraitIdInput" type="hidden" />
+
+        <label class="checkbox-field">
+          <input id="freePortraitActiveInput" type="checkbox" />
+          Publish this free portrait plan on the website
+        </label>
+
+        <div class="admin-field">
+          <label for="freePortraitTitleInput">Session title</label>
+          <input id="freePortraitTitleInput" type="text" placeholder="Example: Free Individual Portrait Day at Glenelg" />
+        </div>
+
+        <div class="free-portrait-form-row three">
+          <div class="admin-field">
+            <label for="freePortraitDateInput">Date</label>
+            <input id="freePortraitDateInput" type="date" />
+          </div>
+
+          <div class="admin-field">
+            <label for="freePortraitStartInput">Start time</label>
+            <input id="freePortraitStartInput" type="time" />
+          </div>
+
+          <div class="admin-field">
+            <label for="freePortraitEndInput">End time</label>
+            <input id="freePortraitEndInput" type="time" />
+          </div>
+        </div>
+
+        <div class="free-portrait-form-row">
+          <div class="admin-field">
+            <label for="freePortraitLocationNameInput">Location name</label>
+            <input id="freePortraitLocationNameInput" type="text" placeholder="Example: Glenelg Beach" />
+          </div>
+
+          <div class="admin-field">
+            <label for="freePortraitLocationAddressInput">Location address</label>
+            <input id="freePortraitLocationAddressInput" type="text" placeholder="Example: Moseley Square, Glenelg SA" />
+          </div>
+        </div>
+
+        <div class="free-portrait-form-row">
+          <div class="admin-field">
+            <label for="freePortraitLatitudeInput">Latitude</label>
+            <input id="freePortraitLatitudeInput" type="text" placeholder="-34.9806" />
+          </div>
+
+          <div class="admin-field">
+            <label for="freePortraitLongitudeInput">Longitude</label>
+            <input id="freePortraitLongitudeInput" type="text" placeholder="138.5110" />
+          </div>
+        </div>
+
+        <div class="admin-field">
+          <label for="freePortraitMapNoteInput">Map / meeting note</label>
+          <input id="freePortraitMapNoteInput" type="text" placeholder="Example: Meet near the jetty entrance. Look for the Memory Lane sign." />
+        </div>
+
+        <div class="admin-field">
+          <label for="freePortraitSummaryInput">Session summary</label>
+          <textarea id="freePortraitSummaryInput" placeholder="Short public description of the free portrait session."></textarea>
+        </div>
+
+        <div class="free-portrait-form-row">
+          <div class="admin-field">
+            <label for="freePortraitWhoInput">Who it is for</label>
+            <textarea id="freePortraitWhoInput" placeholder="Example: One individual person at a time. Not a family or group session."></textarea>
+          </div>
+
+          <div class="admin-field">
+            <label for="freePortraitBringInput">What to bring / prepare</label>
+            <textarea id="freePortraitBringInput" placeholder="Example: A simple outfit, tidy hair, and an open smile."></textarea>
+          </div>
+        </div>
+
+        <div class="free-portrait-form-row">
+          <div class="admin-field">
+            <label for="freePortraitDeliveryInput">When photos are delivered</label>
+            <input id="freePortraitDeliveryInput" type="text" placeholder="Example: Selected images during the session or later the same day." />
+          </div>
+
+          <div class="admin-field">
+            <label for="freePortraitCapacityInput">Capacity / availability note</label>
+            <input id="freePortraitCapacityInput" type="text" placeholder="Example: Limited walk-up spots. One person per mini session." />
+          </div>
+        </div>
+
+        <div class="free-portrait-form-row">
+          <div class="admin-field">
+            <label for="freePortraitWeatherInput">Weather note</label>
+            <input id="freePortraitWeatherInput" type="text" placeholder="Example: Outdoor session may move or be postponed if weather is poor." />
+          </div>
+
+          <div class="admin-field">
+            <label for="freePortraitSignupInput">Signup / contact note</label>
+            <input id="freePortraitSignupInput" type="text" placeholder="Example: Message us before attending so we can manage timing." />
+          </div>
+        </div>
+
+        <div class="admin-field">
+          <label for="freePortraitContactInput">Contact note</label>
+          <input id="freePortraitContactInput" type="text" placeholder="Example: Contact Ricky or Mark through the website form." />
+        </div>
+
+        <div class="free-portrait-admin-actions">
+          <button id="saveFreePortraitButton" class="admin-button" type="submit">
+            Save Free Portrait Plan
+          </button>
+
+          <button id="clearFreePortraitFormButton" class="admin-button light" type="button">
+            Reset Form
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <aside class="free-portrait-admin-card">
+      <h3>Website preview status</h3>
+      <div id="freePortraitStatusPreview" class="free-portrait-status-card">
+        No free portrait plan loaded yet.
+      </div>
+
+      <div id="freePortraitMapPreview" class="free-portrait-preview-map">
+        Enter latitude and longitude to preview the map.
+      </div>
+
+      <ul class="free-portrait-help-list">
+        <li>Use OpenStreetMap to find the location and copy latitude / longitude.</li>
+        <li>If “Publish” is off, the public page will show “No current plan”.</li>
+        <li>This free portrait offer is for one individual person, not a family or group session.</li>
+      </ul>
+    </aside>
+  </div>
+</section>
       </section>
     </div>
   </main>

@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Allura&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260619-mobile-menu">
+  <link rel="stylesheet" href="css/style.css?v=20260619-freeportrait-plan">
 </head>
 <body>
 
@@ -96,7 +96,7 @@
         </p>
 
         <div class="free-portrait-actions">
-          <a class="primary-button" href="index.html#contact">Ask About the Next Session</a>
+          <a class="primary-button" href="#free-portrait-plan">See Current Plan</a>
           <a class="secondary-button" href="#how-it-works">How It Works</a>
         </div>
       </div>
@@ -109,6 +109,26 @@
         </p>
       </aside>
     </section>
+
+
+
+<section id="free-portrait-plan" class="section free-portrait-plan-section">
+  <div class="free-portrait-plan-shell">
+    <div class="free-portrait-plan-heading">
+      <p class="eyebrow">Current free portrait plan</p>
+      <h2>Next session details</h2>
+      <p>
+        When a free portrait session is planned, details will appear here with time, location, preparation notes and a map.
+      </p>
+    </div>
+
+    <div id="freePortraitPlanBody" class="free-portrait-plan-body">
+      <div class="free-portrait-plan-card free-portrait-plan-loading">
+        Loading current plan...
+      </div>
+    </div>
+  </div>
+</section>
 
     <section class="section free-portrait-editorial-section free-portrait-editorial-section-why">
       <div class="free-portrait-editorial-copy">
@@ -311,6 +331,232 @@
 
     loadFreePortraitImages();
   </script>
+
+<script>
+  const freePortraitPlanBody = document.querySelector("#freePortraitPlanBody");
+
+  async function loadPublicFreePortraitPlan() {
+    if (!freePortraitPlanBody) {
+      return;
+    }
+
+    if (typeof supabaseClient === "undefined") {
+      renderNoFreePortraitPlan("The schedule is not connected yet.");
+      return;
+    }
+
+    const { data, error } = await supabaseClient
+      .from("free_portrait_events")
+      .select("*")
+      .eq("is_active", true)
+      .order("event_date", { ascending: true })
+      .order("start_time", { ascending: true })
+      .limit(1);
+
+    if (error) {
+      console.error(error);
+      renderNoFreePortraitPlan("There is no free portrait session planned at the moment.");
+      return;
+    }
+
+    if (!data || !data.length) {
+      renderNoFreePortraitPlan("There is no free portrait session planned at the moment.");
+      return;
+    }
+
+    renderFreePortraitPlan(data[0]);
+  }
+
+  function renderNoFreePortraitPlan(message) {
+    freePortraitPlanBody.innerHTML = `
+      <article class="free-portrait-plan-card free-portrait-no-plan">
+        <span class="free-portrait-plan-status">No current plan</span>
+        <h3>New free portrait dates will be shared here.</h3>
+        <p>${escapePublicHtml(message || "There is no free portrait session planned at the moment.")}</p>
+        <p>
+          You can still message us if you are interested, and we will let you know when the next free individual portrait opportunity is available.
+        </p>
+        <a class="secondary-button" href="index.html#contact">Ask About Future Dates</a>
+      </article>
+    `;
+  }
+
+  function renderFreePortraitPlan(event) {
+    const dateText = formatPublicDate(event.event_date);
+    const timeText = formatPublicTimeRange(event.start_time, event.end_time);
+    const mapMarkup = buildPublicMapMarkup(event);
+    const addressText = [event.location_name, event.location_address].filter(Boolean).join(", ");
+
+    freePortraitPlanBody.innerHTML = `
+      <article class="free-portrait-plan-card free-portrait-published-plan">
+        <div class="free-portrait-plan-content">
+          <span class="free-portrait-plan-status">Planned session</span>
+          <h3>${escapePublicHtml(event.title || "Free Individual Portrait Session")}</h3>
+          <p>${escapePublicHtml(event.session_summary || "A relaxed, one-person portrait opportunity by Memory Lane Photo Studio.")}</p>
+
+          <div class="free-portrait-detail-grid">
+            <div>
+              <strong>Date</strong>
+              <span>${escapePublicHtml(dateText)}</span>
+            </div>
+            <div>
+              <strong>Time</strong>
+              <span>${escapePublicHtml(timeText)}</span>
+            </div>
+            <div>
+              <strong>Location</strong>
+              <span>${escapePublicHtml(addressText || "Location to be confirmed")}</span>
+            </div>
+            <div>
+              <strong>Photo delivery</strong>
+              <span>${escapePublicHtml(event.delivery_time || "Selected images may be available during the session or later the same day where possible.")}</span>
+            </div>
+          </div>
+
+          <div class="free-portrait-info-list">
+            ${buildInfoItem("Who it is for", event.who_is_it_for || "One individual person at a time. This is not a family, couple or group photoshoot.")}
+            ${buildInfoItem("What to bring", event.what_to_bring)}
+            ${buildInfoItem("Availability", event.capacity_note)}
+            ${buildInfoItem("Weather note", event.weather_note)}
+            ${buildInfoItem("How to join", event.signup_note)}
+            ${buildInfoItem("Contact", event.contact_note)}
+            ${buildInfoItem("Meeting note", event.map_note)}
+          </div>
+
+          <a class="primary-button" href="index.html#contact">Ask About This Session</a>
+        </div>
+
+        <aside class="free-portrait-plan-map">
+          ${mapMarkup}
+        </aside>
+      </article>
+    `;
+  }
+
+  function buildInfoItem(label, value) {
+    if (!value) {
+      return "";
+    }
+
+    return `
+      <div class="free-portrait-info-item">
+        <strong>${escapePublicHtml(label)}</strong>
+        <p>${escapePublicHtml(value)}</p>
+      </div>
+    `;
+  }
+
+  function buildPublicMapMarkup(event) {
+    const latitude = parsePublicCoordinate(event.latitude);
+    const longitude = parsePublicCoordinate(event.longitude);
+
+    if (latitude === null || longitude === null) {
+      return `
+        <div class="free-portrait-map-placeholder">
+          Map will appear once the exact location is confirmed.
+        </div>
+      `;
+    }
+
+    const mapUrl = buildPublicOpenStreetMapEmbedUrl(latitude, longitude);
+    const openMapUrl = `https://www.openstreetmap.org/?mlat=${encodeURIComponent(latitude)}&mlon=${encodeURIComponent(longitude)}#map=16/${encodeURIComponent(latitude)}/${encodeURIComponent(longitude)}`;
+
+    return `
+      <iframe
+        title="Free portrait session location map"
+        loading="lazy"
+        src="${escapePublicAttribute(mapUrl)}">
+      </iframe>
+      <a class="free-portrait-map-link" href="${escapePublicAttribute(openMapUrl)}" target="_blank" rel="noopener">
+        Open larger map
+      </a>
+    `;
+  }
+
+  function buildPublicOpenStreetMapEmbedUrl(latitude, longitude) {
+    const lat = Number(latitude);
+    const lon = Number(longitude);
+    const delta = 0.008;
+
+    const bbox = [
+      lon - delta,
+      lat - delta,
+      lon + delta,
+      lat + delta
+    ].join(",");
+
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik&marker=${encodeURIComponent(`${lat},${lon}`)}`;
+  }
+
+  function parsePublicCoordinate(value) {
+    if (value === null || value === undefined || value === "") {
+      return null;
+    }
+
+    const parsed = Number(value);
+
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  function formatPublicDate(value) {
+    if (!value) {
+      return "Date to be confirmed";
+    }
+
+    return new Intl.DateTimeFormat("en-AU", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long",
+      year: "numeric"
+    }).format(new Date(`${value}T00:00:00`));
+  }
+
+  function formatPublicTimeRange(start, end) {
+    const startText = formatPublicTime(start);
+    const endText = formatPublicTime(end);
+
+    if (startText && endText) {
+      return `${startText} - ${endText}`;
+    }
+
+    return startText || "Time to be confirmed";
+  }
+
+  function formatPublicTime(value) {
+    if (!value) {
+      return "";
+    }
+
+    const parts = String(value).split(":");
+
+    if (parts.length < 2) {
+      return String(value);
+    }
+
+    const date = new Date(`2026-01-01T${parts[0]}:${parts[1]}:00`);
+
+    return new Intl.DateTimeFormat("en-AU", {
+      hour: "numeric",
+      minute: "2-digit"
+    }).format(date);
+  }
+
+  function escapePublicHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapePublicAttribute(value) {
+    return escapePublicHtml(value);
+  }
+
+  loadPublicFreePortraitPlan();
+</script>
+
   <script>
     (function () {
       const header = document.querySelector('.site-header');

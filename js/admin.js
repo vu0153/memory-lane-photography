@@ -15,6 +15,35 @@ const galleryPanel = document.getElementById("galleryPanel");
 const heroTabButton = document.getElementById("heroTabButton");
 const heroPanel = document.getElementById("heroPanel");
 
+const freePortraitTabButton = document.getElementById("freePortraitTabButton");
+const freePortraitPanel = document.getElementById("freePortraitPanel");
+const refreshFreePortraitButton = document.getElementById("refreshFreePortraitButton");
+const setNoFreePortraitPlanButton = document.getElementById("setNoFreePortraitPlanButton");
+const freePortraitMessage = document.getElementById("freePortraitMessage");
+const freePortraitForm = document.getElementById("freePortraitForm");
+const freePortraitIdInput = document.getElementById("freePortraitIdInput");
+const freePortraitActiveInput = document.getElementById("freePortraitActiveInput");
+const freePortraitTitleInput = document.getElementById("freePortraitTitleInput");
+const freePortraitDateInput = document.getElementById("freePortraitDateInput");
+const freePortraitStartInput = document.getElementById("freePortraitStartInput");
+const freePortraitEndInput = document.getElementById("freePortraitEndInput");
+const freePortraitLocationNameInput = document.getElementById("freePortraitLocationNameInput");
+const freePortraitLocationAddressInput = document.getElementById("freePortraitLocationAddressInput");
+const freePortraitLatitudeInput = document.getElementById("freePortraitLatitudeInput");
+const freePortraitLongitudeInput = document.getElementById("freePortraitLongitudeInput");
+const freePortraitMapNoteInput = document.getElementById("freePortraitMapNoteInput");
+const freePortraitSummaryInput = document.getElementById("freePortraitSummaryInput");
+const freePortraitWhoInput = document.getElementById("freePortraitWhoInput");
+const freePortraitBringInput = document.getElementById("freePortraitBringInput");
+const freePortraitDeliveryInput = document.getElementById("freePortraitDeliveryInput");
+const freePortraitCapacityInput = document.getElementById("freePortraitCapacityInput");
+const freePortraitWeatherInput = document.getElementById("freePortraitWeatherInput");
+const freePortraitSignupInput = document.getElementById("freePortraitSignupInput");
+const freePortraitContactInput = document.getElementById("freePortraitContactInput");
+const clearFreePortraitFormButton = document.getElementById("clearFreePortraitFormButton");
+const freePortraitStatusPreview = document.getElementById("freePortraitStatusPreview");
+const freePortraitMapPreview = document.getElementById("freePortraitMapPreview");
+
 const bookingsTableBody = document.getElementById("bookingsTableBody");
 const dashboardMessage = document.getElementById("dashboardMessage");
 const totalBookings = document.getElementById("totalBookings");
@@ -145,6 +174,7 @@ let allBookings = [];
 let allPosts = [];
 let allGalleryImages = [];
 let allHeroImages = [];
+let currentFreePortraitEvent = null;
 let detailModal = null;
 let detailModalBody = null;
 let activeDetailBookingId = null;
@@ -165,6 +195,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   postsTabButton.addEventListener("click", () => switchAdminTab("posts"));
   galleryTabButton.addEventListener("click", () => switchAdminTab("gallery"));
   heroTabButton.addEventListener("click", () => switchAdminTab("hero"));
+  freePortraitTabButton.addEventListener("click", () => switchAdminTab("freePortrait"));
 
   bookingsTableBody.addEventListener("change", handleStatusChange);
   bookingsTableBody.addEventListener("click", handleBookingTableClick);
@@ -213,6 +244,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   deleteHeroImageButton.addEventListener("click", handleHeroDelete);
   heroTableBody.addEventListener("click", handleHeroTableClick);
   closeHeroModalButton.addEventListener("click", closeHeroModal);
+
+refreshFreePortraitButton.addEventListener("click", loadFreePortraitEvent);
+setNoFreePortraitPlanButton.addEventListener("click", handleFreePortraitNoPlan);
+freePortraitForm.addEventListener("submit", handleFreePortraitSave);
+clearFreePortraitFormButton.addEventListener("click", function () {
+  clearFreePortraitForm(false);
+});
+freePortraitLatitudeInput.addEventListener("input", renderFreePortraitAdminMap);
+freePortraitLongitudeInput.addEventListener("input", renderFreePortraitAdminMap);
 
   heroEditorModal.addEventListener("click", (event) => {
     if (event.target === heroEditorModal) {
@@ -487,7 +527,7 @@ async function checkSession() {
   }
 
   showDashboard();
-  await Promise.all([loadBookings(), loadPosts(), loadGalleryImages(), loadHeroImages()]);
+  await Promise.all([loadBookings(), loadPosts(), loadGalleryImages(), loadHeroImages(), loadFreePortraitEvent()]);
 }
 
 async function handleLogin(event) {
@@ -515,7 +555,7 @@ async function handleLogin(event) {
 
   loginMessage.textContent = "";
   showDashboard();
-  await Promise.all([loadBookings(), loadPosts(), loadGalleryImages(), loadHeroImages()]);
+  await Promise.all([loadBookings(), loadPosts(), loadGalleryImages(), loadHeroImages(), loadFreePortraitEvent()]);
 }
 
 async function handleLogout() {
@@ -599,18 +639,26 @@ function switchAdminTab(tabName) {
   const isPosts = tabName === "posts";
   const isGallery = tabName === "gallery";
   const isHero = tabName === "hero";
+  const isFreePortrait = tabName === "freePortrait";
 
   bookingsTabButton.classList.toggle("active", isBookings);
   postsTabButton.classList.toggle("active", isPosts);
   galleryTabButton.classList.toggle("active", isGallery);
   heroTabButton.classList.toggle("active", isHero);
+  freePortraitTabButton.classList.toggle("active", isFreePortrait);
   bookingsPanel.classList.toggle("active", isBookings);
   postsPanel.classList.toggle("active", isPosts);
   galleryPanel.classList.toggle("active", isGallery);
   heroPanel.classList.toggle("active", isHero);
+  freePortraitPanel.classList.toggle("active", isFreePortrait);
 }
 
 async function refreshCurrentTab() {
+  if (freePortraitPanel.classList.contains("active")) {
+    await loadFreePortraitEvent();
+    return;
+  }
+
   if (heroPanel.classList.contains("active")) {
     await loadHeroImages();
     return;
@@ -2295,6 +2343,318 @@ function clearHeroUploadMessage() {
   setUploadMessage(heroUploadMessage, "", "");
 }
 
+
+
+
+async function loadFreePortraitEvent() {
+  if (!freePortraitMessage) {
+    return;
+  }
+
+  freePortraitMessage.classList.remove("success");
+  freePortraitMessage.textContent = "Loading free portrait plan...";
+
+  const { data, error } = await supabaseClient
+    .from("free_portrait_events")
+    .select("*")
+    .order("updated_at", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    freePortraitMessage.textContent = error.message;
+    renderFreePortraitAdminStatus(null, error.message);
+    return;
+  }
+
+  currentFreePortraitEvent = data && data.length ? data[0] : null;
+
+  if (currentFreePortraitEvent) {
+    loadFreePortraitIntoForm(currentFreePortraitEvent);
+    freePortraitMessage.textContent = "";
+  } else {
+    clearFreePortraitForm(true);
+    freePortraitMessage.textContent = "No saved free portrait plan yet. Complete the form and save when ready.";
+  }
+}
+
+function loadFreePortraitIntoForm(event) {
+  freePortraitIdInput.value = event.id || "";
+  freePortraitActiveInput.checked = Boolean(event.is_active);
+  freePortraitTitleInput.value = event.title || "";
+  freePortraitDateInput.value = event.event_date || "";
+  freePortraitStartInput.value = event.start_time ? String(event.start_time).slice(0, 5) : "";
+  freePortraitEndInput.value = event.end_time ? String(event.end_time).slice(0, 5) : "";
+  freePortraitLocationNameInput.value = event.location_name || "";
+  freePortraitLocationAddressInput.value = event.location_address || "";
+  freePortraitLatitudeInput.value = event.latitude ?? "";
+  freePortraitLongitudeInput.value = event.longitude ?? "";
+  freePortraitMapNoteInput.value = event.map_note || "";
+  freePortraitSummaryInput.value = event.session_summary || "";
+  freePortraitWhoInput.value = event.who_is_it_for || "";
+  freePortraitBringInput.value = event.what_to_bring || "";
+  freePortraitDeliveryInput.value = event.delivery_time || "";
+  freePortraitCapacityInput.value = event.capacity_note || "";
+  freePortraitWeatherInput.value = event.weather_note || "";
+  freePortraitSignupInput.value = event.signup_note || "";
+  freePortraitContactInput.value = event.contact_note || "";
+
+  renderFreePortraitAdminStatus(event);
+  renderFreePortraitAdminMap();
+}
+
+function clearFreePortraitForm(empty) {
+  if (!freePortraitForm) {
+    return;
+  }
+
+  freePortraitForm.reset();
+  freePortraitIdInput.value = "";
+  freePortraitActiveInput.checked = false;
+  freePortraitTitleInput.value = empty ? "" : "Free Individual Portrait Session";
+  freePortraitSummaryInput.value = empty ? "" : "A relaxed, one-person portrait opportunity by Memory Lane Photo Studio.";
+  freePortraitWhoInput.value = empty ? "" : "One individual person at a time. This is not a family, couple or group photoshoot.";
+  freePortraitBringInput.value = empty ? "" : "Wear something simple and comfortable. Bring yourself, a tidy look and an honest smile.";
+  freePortraitDeliveryInput.value = empty ? "" : "Selected images may be available during the session or later the same day where possible.";
+  freePortraitCapacityInput.value = empty ? "" : "Limited availability. One person per short portrait moment.";
+  freePortraitWeatherInput.value = empty ? "" : "Outdoor sessions may move, change time or be postponed if weather is not suitable.";
+  freePortraitSignupInput.value = empty ? "" : "Please contact us before attending so we can manage timing.";
+  freePortraitContactInput.value = empty ? "" : "Use the website contact form to ask about the session.";
+
+  renderFreePortraitAdminStatus(null);
+  renderFreePortraitAdminMap();
+}
+
+async function handleFreePortraitSave(event) {
+  event.preventDefault();
+
+  const payload = buildFreePortraitPayload();
+
+  if (!payload.title) {
+    freePortraitMessage.textContent = "Please enter a session title.";
+    return;
+  }
+
+  if (payload.is_active && (!payload.event_date || !payload.start_time || !payload.location_name)) {
+    freePortraitMessage.textContent = "To publish a plan, please enter at least date, start time and location name.";
+    return;
+  }
+
+  const existingId = freePortraitIdInput.value.trim();
+
+  freePortraitMessage.classList.remove("success");
+  freePortraitMessage.textContent = "Saving free portrait plan...";
+
+  const saveFreePortraitButton = document.getElementById("saveFreePortraitButton");
+  saveFreePortraitButton.disabled = true;
+  saveFreePortraitButton.textContent = "Saving...";
+
+  let response;
+
+  if (existingId) {
+    response = await supabaseClient
+      .from("free_portrait_events")
+      .update(payload)
+      .eq("id", existingId)
+      .select("*")
+      .single();
+  } else {
+    response = await supabaseClient
+      .from("free_portrait_events")
+      .insert([payload])
+      .select("*")
+      .single();
+  }
+
+  saveFreePortraitButton.disabled = false;
+  saveFreePortraitButton.textContent = "Save Free Portrait Plan";
+
+  if (response.error) {
+    freePortraitMessage.textContent = response.error.message;
+    return;
+  }
+
+  currentFreePortraitEvent = response.data;
+  loadFreePortraitIntoForm(currentFreePortraitEvent);
+
+  freePortraitMessage.classList.add("success");
+  freePortraitMessage.textContent = currentFreePortraitEvent.is_active
+    ? "Free portrait plan saved and published."
+    : "Free portrait plan saved as not published.";
+
+  setTimeout(() => {
+    freePortraitMessage.classList.remove("success");
+    freePortraitMessage.textContent = "";
+  }, 2400);
+}
+
+async function handleFreePortraitNoPlan() {
+  const confirmed = window.confirm("Show 'No current free portrait plan' on the public Free Portrait page? Existing details will be kept but unpublished.");
+
+  if (!confirmed) {
+    return;
+  }
+
+  const existingId = freePortraitIdInput.value.trim();
+  const payload = buildFreePortraitPayload();
+  payload.is_active = false;
+
+  if (!payload.title) {
+    payload.title = "Free Individual Portrait Session";
+  }
+
+  freePortraitMessage.classList.remove("success");
+  freePortraitMessage.textContent = "Updating public page to no current plan...";
+
+  let response;
+
+  if (existingId) {
+    response = await supabaseClient
+      .from("free_portrait_events")
+      .update({ ...payload, is_active: false })
+      .eq("id", existingId)
+      .select("*")
+      .single();
+  } else {
+    response = await supabaseClient
+      .from("free_portrait_events")
+      .insert([{ ...payload, is_active: false }])
+      .select("*")
+      .single();
+  }
+
+  if (response.error) {
+    freePortraitMessage.textContent = response.error.message;
+    return;
+  }
+
+  currentFreePortraitEvent = response.data;
+  loadFreePortraitIntoForm(currentFreePortraitEvent);
+
+  freePortraitMessage.classList.add("success");
+  freePortraitMessage.textContent = "The public Free Portrait page will now show no current plan.";
+}
+
+function buildFreePortraitPayload() {
+  return {
+    is_active: Boolean(freePortraitActiveInput.checked),
+    title: freePortraitTitleInput.value.trim() || "Free Individual Portrait Session",
+    event_date: freePortraitDateInput.value || null,
+    start_time: freePortraitStartInput.value || null,
+    end_time: freePortraitEndInput.value || null,
+    location_name: freePortraitLocationNameInput.value.trim() || null,
+    location_address: freePortraitLocationAddressInput.value.trim() || null,
+    latitude: parseCoordinate(freePortraitLatitudeInput.value),
+    longitude: parseCoordinate(freePortraitLongitudeInput.value),
+    map_note: freePortraitMapNoteInput.value.trim() || null,
+    session_summary: freePortraitSummaryInput.value.trim() || null,
+    who_is_it_for: freePortraitWhoInput.value.trim() || null,
+    what_to_bring: freePortraitBringInput.value.trim() || null,
+    delivery_time: freePortraitDeliveryInput.value.trim() || null,
+    capacity_note: freePortraitCapacityInput.value.trim() || null,
+    weather_note: freePortraitWeatherInput.value.trim() || null,
+    signup_note: freePortraitSignupInput.value.trim() || null,
+    contact_note: freePortraitContactInput.value.trim() || null
+  };
+}
+
+function renderFreePortraitAdminStatus(event, errorMessage) {
+  if (!freePortraitStatusPreview) {
+    return;
+  }
+
+  if (errorMessage) {
+    freePortraitStatusPreview.innerHTML = `
+      <strong>Setup needed</strong>
+      <p>${escapeHtml(errorMessage)}</p>
+      <p>If this says the table does not exist, run the SQL file included in the update package inside Supabase.</p>
+    `;
+    return;
+  }
+
+  if (!event) {
+    freePortraitStatusPreview.innerHTML = `
+      <strong>No saved plan</strong>
+      <p>The public page will show a calm “no current plan” message until a published plan is saved.</p>
+    `;
+    return;
+  }
+
+  const statusText = event.is_active ? "Published on website" : "No current plan shown";
+  const dateText = event.event_date ? formatDate(event.event_date) : "No date";
+  const timeText = [formatTimeValue(event.start_time), formatTimeValue(event.end_time)]
+    .filter(Boolean)
+    .join(" - ") || "No time";
+
+  freePortraitStatusPreview.innerHTML = `
+    <strong>${escapeHtml(statusText)}</strong>
+    <p>${escapeHtml(event.title || "Free Portrait Session")}</p>
+    <p>${escapeHtml(dateText)} · ${escapeHtml(timeText)}</p>
+    <p>${escapeHtml(event.location_name || "No location set")}</p>
+  `;
+}
+
+function renderFreePortraitAdminMap() {
+  if (!freePortraitMapPreview) {
+    return;
+  }
+
+  const latitude = parseCoordinate(freePortraitLatitudeInput.value);
+  const longitude = parseCoordinate(freePortraitLongitudeInput.value);
+
+  if (latitude === null || longitude === null) {
+    freePortraitMapPreview.innerHTML = "Enter latitude and longitude to preview the map.";
+    return;
+  }
+
+  freePortraitMapPreview.innerHTML = `
+    <iframe
+      title="Free portrait session map preview"
+      loading="lazy"
+      src="${escapeAttribute(buildOpenStreetMapEmbedUrl(latitude, longitude))}">
+    </iframe>
+  `;
+}
+
+function parseCoordinate(value) {
+  const trimmed = String(value || "").trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const parsed = Number(trimmed);
+
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function buildOpenStreetMapEmbedUrl(latitude, longitude) {
+  const lat = Number(latitude);
+  const lon = Number(longitude);
+  const delta = 0.008;
+
+  const bbox = [
+    lon - delta,
+    lat - delta,
+    lon + delta,
+    lat + delta
+  ].join(",");
+
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik&marker=${encodeURIComponent(`${lat},${lon}`)}`;
+}
+
+function formatTimeValue(value) {
+  if (!value) {
+    return "";
+  }
+
+  const timeParts = String(value).split(":");
+
+  if (timeParts.length < 2) {
+    return String(value);
+  }
+
+  return `${timeParts[0]}:${timeParts[1]}`;
+}
 
 
 function renderCharts(bookings) {
