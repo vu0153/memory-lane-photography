@@ -48,7 +48,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Allura&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260619-final">
+  <link rel="stylesheet" href="css/style.css?v=20260619-mobile-menu">
 </head>
 <body>
 
@@ -66,12 +66,30 @@
       <a href="#services">Services</a>
       <a href="#pricing">Pricing</a>
       <a href="#gallery">Gallery</a>
+      <a href="freeportrait.html">Free Portrait</a>
       <a href="#tips">Photography Tips</a>
       <a href="aboutus.html">About Us</a>
       <a href="#contact">Contact</a>
     </nav>
 
     <a class="nav-button" href="#contact">Book Now</a>
+
+    <button class="mobile-menu-toggle" type="button" aria-label="Open menu" aria-controls="mobileMenu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav id="mobileMenu" class="mobile-menu-panel" aria-label="Mobile navigation" hidden>
+      <a href="#home">Home</a>
+      <a href="#services">Services</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#gallery">Gallery</a>
+      <a href="freeportrait.html">Free Portrait</a>
+      <a href="#tips">Photography Tips</a>
+      <a href="aboutus.html">About Us</a>
+      <a href="#contact">Contact</a>
+    </nav>
   </header>
 
   <main>
@@ -138,11 +156,13 @@
         </div>
 
         <aside class="services-photo-showcase" aria-label="Featured photography slideshow">
-          
+          <div id="servicesHeroSlider" class="services-hero-slider">
             <div class="services-hero-slide active">
               <img src="assets/images/hero-photographer-duo.png" alt="Memory Lane Photo Studio photography team in Adelaide">
             </div>
-          
+          </div>
+
+          <div class="services-showcase-label">
             <span>Featured Moments</span>
             <strong>Real people. Natural light. Adelaide stories.</strong>
           </div>
@@ -410,7 +430,6 @@
         <a href="#services">Services</a>
         <a href="#pricing">Pricing</a>
         <a href="#gallery">Gallery</a>
-        <a href="aboutus.html">About Us</a>
         <a href="#contact">Contact</a>
       </div>
 
@@ -437,5 +456,54 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/main.js"></script>
+  <script>
+    (function () {
+      const header = document.querySelector('.site-header');
+      const toggle = document.querySelector('.mobile-menu-toggle');
+      const menu = document.querySelector('#mobileMenu');
+
+      if (!header || !toggle || !menu) {
+        return;
+      }
+
+      function closeMenu() {
+        header.classList.remove('mobile-menu-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        menu.hidden = true;
+      }
+
+      function openMenu() {
+        header.classList.add('mobile-menu-open');
+        toggle.setAttribute('aria-expanded', 'true');
+        menu.hidden = false;
+      }
+
+      toggle.addEventListener('click', function () {
+        const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+        if (isOpen) {
+          closeMenu();
+        } else {
+          openMenu();
+        }
+      });
+
+      menu.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', closeMenu);
+      });
+
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+          closeMenu();
+        }
+      });
+
+      document.addEventListener('click', function (event) {
+        if (!header.contains(event.target)) {
+          closeMenu();
+        }
+      });
+    }());
+  </script>
+
 </body>
 </html>
