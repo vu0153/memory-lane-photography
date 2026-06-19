@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Allura&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/style.css?v=20260619-freeportrait-plan-fix" />
+  <link rel="stylesheet" href="css/style.css?v=20260619-google-map-link" />
 
   <style>
     body {
@@ -1479,9 +1479,9 @@
         </div>
 
         <div class="admin-field">
-          <label for="freePortraitCoordinatesInput">Google Maps coordinate or map link</label>
-          <input id="freePortraitCoordinatesInput" type="text" placeholder="Example: 34°58'52.5&quot;S 138°30'41.1&quot;E or -34.9806, 138.5110" />
-          <small class="admin-help-text">Copy one coordinate line or a Google Maps link. The website will convert it into a map location automatically.</small>
+          <label for="freePortraitCoordinatesInput">Google Maps link</label>
+          <input id="freePortraitCoordinatesInput" type="url" placeholder="Paste the Google Maps share link here" />
+          <small class="admin-help-text">Open Google Maps, choose the exact location, press Share, copy the link, then paste it here. Visitors will use this button to open the location in Google Maps on their phone.</small>
           <input id="freePortraitLatitudeInput" type="hidden" />
           <input id="freePortraitLongitudeInput" type="hidden" />
         </div>
@@ -1556,11 +1556,11 @@
       </div>
 
       <div id="freePortraitMapPreview" class="free-portrait-preview-map">
-        Paste Google Maps coordinates to preview the map.
+        Paste a Google Maps link to preview the public location button.
       </div>
 
       <ul class="free-portrait-help-list">
-        <li>Paste a Google Maps coordinate such as 34°58'52.5&quot;S 138°30'41.1&quot;E, decimal coordinates, or a Google Maps link.</li>
+        <li>Paste a Google Maps share link copied from the exact location.</li>
         <li>If “Publish” is off, the public page will show “No current plan”.</li>
         <li>This free portrait offer is for one individual person, not a family or group session.</li>
       </ul>

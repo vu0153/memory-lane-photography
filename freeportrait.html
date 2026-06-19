@@ -42,7 +42,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Allura&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260619-aboutus-freeportrait-polish">
+  <link rel="stylesheet" href="css/style.css?v=20260619-google-map-link">
 </head>
 <body>
 
@@ -351,28 +351,51 @@
     }
 
     function buildPublicMapMarkup(event) {
+      const googleMapsUrl = buildPublicGoogleMapsUrl(event);
+      const locationTitle = event.location_name || "Location to be confirmed";
+      const addressText = event.location_address || "Exact meeting point will be shared with the session details.";
+      const meetingNote = event.map_note || "Please check the final meeting note before you arrive.";
+
+      if (!googleMapsUrl) {
+        return `
+          <div class="free-polish-google-map-card free-polish-google-map-card-empty">
+            <span>Location</span>
+            <strong>${escapePublicHtml(locationTitle)}</strong>
+            <p>${escapePublicHtml(addressText)}</p>
+            <p>${escapePublicHtml(meetingNote)}</p>
+            <small>Google Maps link will be added once the exact location is confirmed.</small>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="free-polish-google-map-card">
+          <span>Location</span>
+          <strong>${escapePublicHtml(locationTitle)}</strong>
+          <p>${escapePublicHtml(addressText)}</p>
+          ${event.map_note ? `<p>${escapePublicHtml(event.map_note)}</p>` : ""}
+          <a class="free-polish-map-link" href="${escapePublicAttribute(googleMapsUrl)}" target="_blank" rel="noopener">
+            Open in Google Maps
+          </a>
+        </div>
+      `;
+    }
+
+    function buildPublicGoogleMapsUrl(event) {
+      if (!event) { return ""; }
+
+      if (event.google_maps_url) {
+        return event.google_maps_url;
+      }
+
       const latitude = parsePublicCoordinate(event.latitude);
       const longitude = parsePublicCoordinate(event.longitude);
 
       if (latitude === null || longitude === null) {
-        return `<div class="free-polish-map-placeholder">Map will appear once the exact location is confirmed.</div>`;
+        return "";
       }
 
-      const mapUrl = buildPublicOpenStreetMapEmbedUrl(latitude, longitude);
-      const openMapUrl = `https://www.openstreetmap.org/?mlat=${encodeURIComponent(latitude)}&mlon=${encodeURIComponent(longitude)}#map=16/${encodeURIComponent(latitude)}/${encodeURIComponent(longitude)}`;
-
-      return `
-        <iframe title="Free portrait session location map" loading="lazy" src="${escapePublicAttribute(mapUrl)}"></iframe>
-        <a class="free-polish-map-link" href="${escapePublicAttribute(openMapUrl)}" target="_blank" rel="noopener">Open larger map</a>
-      `;
-    }
-
-    function buildPublicOpenStreetMapEmbedUrl(latitude, longitude) {
-      const lat = Number(latitude);
-      const lon = Number(longitude);
-      const delta = 0.006;
-      const bbox = [lon - delta, lat - delta, lon + delta, lat + delta].join(",");
-      return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik&marker=${encodeURIComponent(`${lat},${lon}`)}`;
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${latitude},${longitude}`)}`;
     }
 
     function parsePublicCoordinate(value) {

@@ -2397,7 +2397,7 @@ function loadFreePortraitIntoForm(event) {
   freePortraitLatitudeInput.value = event.latitude ?? "";
   freePortraitLongitudeInput.value = event.longitude ?? "";
   if (freePortraitCoordinatesInput) {
-    freePortraitCoordinatesInput.value = formatCoordinatePair(event.latitude, event.longitude);
+    freePortraitCoordinatesInput.value = event.google_maps_url || buildGoogleMapsSearchUrlFromCoordinates(event.latitude, event.longitude) || "";
   }
   freePortraitMapNoteInput.value = event.map_note || "";
   freePortraitSummaryInput.value = event.session_summary || "";
@@ -2565,6 +2565,7 @@ function buildFreePortraitPayload() {
     end_time: freePortraitEndInput.value || null,
     location_name: freePortraitLocationNameInput.value.trim() || null,
     location_address: freePortraitLocationAddressInput.value.trim() || null,
+    google_maps_url: buildGoogleMapsUrlFromInput(freePortraitCoordinatesInput ? freePortraitCoordinatesInput.value.trim() : "") || null,
     latitude: getFreePortraitCoordinates()?.latitude ?? null,
     longitude: getFreePortraitCoordinates()?.longitude ?? null,
     map_note: freePortraitMapNoteInput.value.trim() || null,
@@ -2607,11 +2608,17 @@ function renderFreePortraitAdminStatus(event, errorMessage) {
     .filter(Boolean)
     .join(" - ") || "No time";
 
+  const googleMapsUrl = buildGoogleMapsUrlFromEvent(event);
+  const mapLinkMarkup = googleMapsUrl
+    ? `<a class="free-portrait-preview-link" href="${escapeAttribute(googleMapsUrl)}" target="_blank" rel="noopener">Open Google Maps</a>`
+    : `<p class="free-portrait-preview-warning">No Google Maps link added yet.</p>`;
+
   freePortraitStatusPreview.innerHTML = `
     <strong>${escapeHtml(statusText)}</strong>
     <p>${escapeHtml(event.title || "Free Portrait Session")}</p>
     <p>${escapeHtml(dateText)} · ${escapeHtml(timeText)}</p>
     <p>${escapeHtml(event.location_name || "No location set")}</p>
+    ${mapLinkMarkup}
   `;
 }
 
@@ -2620,31 +2627,82 @@ function renderFreePortraitAdminMap() {
     return;
   }
 
-  const coordinates = getFreePortraitCoordinates();
+  const googleMapsUrl = buildGoogleMapsUrlFromInput(freePortraitCoordinatesInput ? freePortraitCoordinatesInput.value.trim() : "");
 
-  if (!coordinates) {
+  if (!googleMapsUrl) {
     freePortraitMapPreview.innerHTML = `
       <div class="free-portrait-preview-map-empty">
-        Paste a Google Maps coordinate or map link to preview the location.
+        Paste the Google Maps share link for the exact location. The public page will show an “Open in Google Maps” button.
       </div>
     `;
     return;
   }
 
-  const { latitude, longitude } = coordinates;
-  const openMapUrl = `https://www.openstreetmap.org/?mlat=${encodeURIComponent(latitude)}&mlon=${encodeURIComponent(longitude)}#map=16/${encodeURIComponent(latitude)}/${encodeURIComponent(longitude)}`;
-
   freePortraitMapPreview.innerHTML = `
-    <iframe
-      title="Free portrait session map preview"
-      loading="lazy"
-      referrerpolicy="no-referrer-when-downgrade"
-      src="${escapeAttribute(buildOpenStreetMapEmbedUrl(latitude, longitude))}">
-    </iframe>
-    <a class="free-portrait-map-link" href="${escapeAttribute(openMapUrl)}" target="_blank" rel="noopener">
-      Open larger map
-    </a>
+    <div class="free-portrait-preview-map-ready">
+      <span>Google Maps link ready</span>
+      <strong>${escapeHtml(freePortraitLocationNameInput.value.trim() || "Location selected")}</strong>
+      <p>Visitors will be able to open this location directly in Google Maps.</p>
+      <a class="free-portrait-preview-link" href="${escapeAttribute(googleMapsUrl)}" target="_blank" rel="noopener">
+        Test Google Maps Link
+      </a>
+    </div>
   `;
+}
+
+
+function buildGoogleMapsUrlFromInput(value) {
+  const raw = String(value || "").trim();
+
+  if (!raw) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(raw)) {
+    try {
+      const parsedUrl = new URL(raw);
+      const host = parsedUrl.hostname.toLowerCase();
+
+      if (host.includes("google.") || host.includes("goo.gl") || host.includes("maps.app.goo.gl")) {
+        return parsedUrl.href;
+      }
+
+      return "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  const coordinates = parseCoordinatePair(raw);
+
+  if (coordinates) {
+    return buildGoogleMapsSearchUrlFromCoordinates(coordinates.latitude, coordinates.longitude);
+  }
+
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(raw)}`;
+}
+
+function buildGoogleMapsUrlFromEvent(event) {
+  if (!event) {
+    return "";
+  }
+
+  if (event.google_maps_url) {
+    return buildGoogleMapsUrlFromInput(event.google_maps_url) || event.google_maps_url;
+  }
+
+  return buildGoogleMapsSearchUrlFromCoordinates(event.latitude, event.longitude);
+}
+
+function buildGoogleMapsSearchUrlFromCoordinates(latitude, longitude) {
+  const lat = parseCoordinate(latitude);
+  const lon = parseCoordinate(longitude);
+
+  if (lat === null || lon === null) {
+    return "";
+  }
+
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lat},${lon}`)}`;
 }
 
 function getFreePortraitCoordinates() {
