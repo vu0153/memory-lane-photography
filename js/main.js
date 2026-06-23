@@ -81,13 +81,7 @@ if (bookingForm) {
 
 const servicesHeroSlider = document.querySelector("#servicesHeroSlider");
 
-const fallbackServicesHeroImages = [
-  {
-    image_url: "assets/images/hero-photographer-duo.png",
-    alt_text: "Memory Lane Photo Studio photography team in Adelaide",
-    sort_order: 1
-  }
-];
+const fallbackServicesHeroImages = [];
 
 let servicesHeroSlides = [];
 let servicesHeroDots = [];
@@ -100,7 +94,7 @@ async function loadServicesHeroImages() {
   }
 
   if (typeof supabaseClient === "undefined") {
-    renderServicesHeroSlider(fallbackServicesHeroImages);
+    renderServicesHeroPlaceholder("Featured image carousel is unavailable while the gallery system is offline.");
     return;
   }
 
@@ -113,17 +107,45 @@ async function loadServicesHeroImages() {
 
   if (error) {
     console.error(error);
-    renderServicesHeroSlider(fallbackServicesHeroImages);
+    renderServicesHeroPlaceholder("Featured moments will appear here soon.");
     return;
   }
 
-  const heroImages = data && data.length ? data : fallbackServicesHeroImages;
+  if (!data || data.length === 0) {
+    renderServicesHeroPlaceholder("Add active images in the Admin Hero section to show the carousel here.");
+    return;
+  }
 
-  renderServicesHeroSlider(heroImages);
+  renderServicesHeroSlider(data);
+}
+
+function renderServicesHeroPlaceholder(message) {
+  if (!servicesHeroSlider) {
+    return;
+  }
+
+  clearInterval(servicesHeroTimer);
+  servicesHeroTimer = null;
+  servicesHeroCurrentSlide = 0;
+
+  servicesHeroSlider.innerHTML = `
+    <div class="services-hero-loading">
+      <span>Featured Moments</span>
+      <strong>${escapeHtml(message || "Loading recent photography...")}</strong>
+    </div>
+  `;
+
+  servicesHeroSlides = [];
+  servicesHeroDots = [];
 }
 
 function renderServicesHeroSlider(images) {
-  if (!servicesHeroSlider || !images.length) {
+  if (!servicesHeroSlider) {
+    return;
+  }
+
+  if (!images || images.length === 0) {
+    renderServicesHeroPlaceholder("Add active images in the Admin Hero section to show the carousel here.");
     return;
   }
 
