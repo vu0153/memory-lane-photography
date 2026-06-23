@@ -4119,3 +4119,825 @@ p {
     max-width: 68vw !important;
   }
 }
+
+
+/* =========================================================
+   ABOUT US + FREE PORTRAIT FINAL POLISH - 20260623-about-free-final
+   Purpose: restore proper editorial layout for aboutus.html and freeportrait.html.
+   Keep this block at the very end of the file.
+   ========================================================= */
+
+.about-polish-page,
+.free-portrait-polish-page {
+  background: #f7f4ee !important;
+}
+
+.about-polish-page .section,
+.free-portrait-polish-page .section {
+  padding: clamp(58px, 7vw, 98px) max(6%, 28px) !important;
+}
+
+.about-polish-hero,
+.free-polish-hero {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(310px, 0.46fr) !important;
+  align-items: center !important;
+  gap: clamp(28px, 5vw, 70px) !important;
+  min-height: 560px !important;
+  background:
+    radial-gradient(circle at 82% 44%, rgba(123, 130, 107, 0.12), transparent 33%),
+    linear-gradient(135deg, #fffaf5 0%, #f4eee5 100%) !important;
+  overflow: hidden !important;
+}
+
+.about-polish-copy,
+.free-polish-hero-copy,
+.free-polish-copy-block,
+.about-polish-kicker-block {
+  min-width: 0 !important;
+}
+
+.about-polish-hero h1,
+.free-polish-hero h1,
+.about-polish-story h2,
+.about-polish-community h2,
+.about-polish-team h2,
+.about-polish-values h2,
+.about-polish-cta-card h2,
+.free-polish-section-heading h2,
+.free-polish-copy-block h2,
+.free-polish-cta-card h2 {
+  margin: 10px 0 18px !important;
+  font-family: Georgia, serif !important;
+  color: #2d2d2b !important;
+  line-height: 0.98 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.about-polish-hero h1,
+.free-polish-hero h1 {
+  max-width: 780px !important;
+  font-size: clamp(44px, 6.3vw, 86px) !important;
+}
+
+.about-polish-copy p:not(.eyebrow),
+.free-polish-hero-copy p:not(.eyebrow),
+.about-polish-story-copy p,
+.about-polish-community p,
+.free-polish-copy-block p,
+.free-polish-section-heading p,
+.free-polish-cta-card p {
+  max-width: 760px !important;
+  color: #4f4a44 !important;
+  font-size: 1.04rem !important;
+  line-height: 1.78 !important;
+}
+
+.about-polish-actions,
+.free-polish-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  margin-top: 28px !important;
+}
+
+.about-polish-actions .primary-button,
+.about-polish-actions .secondary-button,
+.free-polish-actions .primary-button,
+.free-polish-actions .secondary-button {
+  width: auto !important;
+}
+
+.about-polish-card,
+.free-polish-promise-card {
+  padding: clamp(26px, 3.2vw, 42px) !important;
+  border: 1px solid rgba(123, 130, 107, 0.16) !important;
+  border-radius: 32px !important;
+  background: linear-gradient(135deg, rgba(255,250,245,0.95), rgba(255,250,245,0.72)) !important;
+  box-shadow: 0 28px 72px rgba(42, 31, 24, 0.12) !important;
+}
+
+.about-polish-card span,
+.free-polish-promise-card span {
+  display: block !important;
+  margin-bottom: 12px !important;
+  color: #6f765f !important;
+  font-size: .72rem !important;
+  font-weight: 900 !important;
+  letter-spacing: .18em !important;
+  text-transform: uppercase !important;
+}
+
+.about-polish-card strong,
+.free-polish-promise-card strong {
+  display: block !important;
+  margin-bottom: 12px !important;
+  font-family: Georgia, serif !important;
+  color: #2d2d2b !important;
+  font-size: clamp(25px, 2.3vw, 36px) !important;
+  line-height: 1.06 !important;
+}
+
+.about-polish-story {
+  background: #f7f4ee !important;
+}
+
+.about-polish-story-grid {
+  display: grid !important;
+  grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1fr) !important;
+  gap: clamp(28px, 5vw, 70px) !important;
+  align-items: start !important;
+}
+
+.about-polish-story h2,
+.about-polish-community h2,
+.free-polish-copy-block h2,
+.free-polish-section-heading h2,
+.free-polish-cta-card h2 {
+  font-size: clamp(34px, 4.5vw, 64px) !important;
+}
+
+.about-polish-story-copy {
+  padding: clamp(22px, 3vw, 34px) !important;
+  border-left: 3px solid rgba(123, 130, 107, 0.48) !important;
+  border-radius: 0 26px 26px 0 !important;
+  background: rgba(255, 250, 245, 0.58) !important;
+}
+
+.about-polish-community {
+  background: #efe8dc !important;
+}
+
+.about-polish-community-card {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, .62fr) !important;
+  gap: clamp(24px, 4vw, 54px) !important;
+  padding: clamp(28px, 4vw, 54px) !important;
+  border: 1px solid rgba(123, 130, 107, 0.16) !important;
+  border-radius: 36px !important;
+  background: rgba(255, 250, 245, 0.70) !important;
+  box-shadow: 0 24px 70px rgba(42, 31, 24, 0.10) !important;
+}
+
+.about-polish-mini-list {
+  display: grid !important;
+  gap: 14px !important;
+}
+
+.about-polish-mini-list article,
+.about-polish-values-grid article,
+.free-polish-steps article {
+  padding: 20px !important;
+  border: 1px solid rgba(123, 130, 107, 0.14) !important;
+  border-radius: 22px !important;
+  background: rgba(255,255,255,0.62) !important;
+}
+
+.about-polish-mini-list span,
+.about-polish-values-grid span,
+.free-polish-steps span {
+  display: inline-flex !important;
+  margin-bottom: 10px !important;
+  color: #6f765f !important;
+  font-weight: 900 !important;
+  letter-spacing: .12em !important;
+}
+
+.about-polish-mini-list strong,
+.free-polish-steps strong {
+  display: block !important;
+  margin-bottom: 6px !important;
+  color: #2d2d2b !important;
+}
+
+.about-polish-team {
+  background: linear-gradient(180deg, #efe8dc 0%, #f7f4ee 100%) !important;
+}
+
+.about-polish-profile-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: clamp(22px, 3vw, 36px) !important;
+  margin-top: 38px !important;
+}
+
+.about-polish-profile-card {
+  display: grid !important;
+  grid-template-rows: auto 1fr !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(123, 130, 107, 0.16) !important;
+  border-radius: 34px !important;
+  background: rgba(255, 250, 245, 0.78) !important;
+  box-shadow: 0 24px 70px rgba(42, 31, 24, 0.10) !important;
+}
+
+.about-polish-portrait {
+  position: relative !important;
+  width: 100% !important;
+  height: clamp(300px, 34vw, 460px) !important;
+  overflow: hidden !important;
+  background: #e9e1d4 !important;
+}
+
+.about-polish-portrait img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 34% !important;
+}
+
+.about-polish-profile-copy {
+  padding: clamp(22px, 3vw, 34px) !important;
+}
+
+.profile-role {
+  margin: 0 0 12px !important;
+  color: #6f765f !important;
+  font-size: .76rem !important;
+  font-weight: 900 !important;
+  letter-spacing: .14em !important;
+  text-transform: uppercase !important;
+}
+
+.about-polish-profile-copy h3 {
+  margin: 0 0 14px !important;
+  font-family: Georgia, serif !important;
+  font-size: clamp(34px, 4vw, 54px) !important;
+  line-height: 0.95 !important;
+  color: #2d2d2b !important;
+}
+
+.profile-tags {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 9px !important;
+  margin-top: 18px !important;
+}
+
+.profile-tags span {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 32px !important;
+  padding: 0 12px !important;
+  border: 1px solid rgba(123, 130, 107, 0.22) !important;
+  border-radius: 999px !important;
+  background: rgba(123, 130, 107, 0.08) !important;
+  color: #5f6653 !important;
+  font-size: .72rem !important;
+  font-weight: 900 !important;
+  letter-spacing: .10em !important;
+  text-transform: uppercase !important;
+}
+
+.portrait-placeholder {
+  display: none;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: #6f765f;
+  font-family: Georgia, serif;
+  font-size: 58px;
+  background: #e9e1d4;
+}
+
+.about-polish-values-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+}
+
+.about-polish-values-grid h3 {
+  margin: 0 0 10px !important;
+  font-family: Georgia, serif !important;
+  font-size: 22px !important;
+}
+
+.about-polish-values-grid p {
+  margin: 0 !important;
+  color: #5f5a53 !important;
+}
+
+.about-polish-cta-section,
+.free-polish-cta-section {
+  background: #efe8dc !important;
+}
+
+.about-polish-cta-card,
+.free-polish-cta-card {
+  padding: clamp(28px, 4vw, 50px) !important;
+  border: 1px solid rgba(123, 130, 107, 0.12) !important;
+  border-radius: 34px !important;
+  background: rgba(255, 250, 245, 0.72) !important;
+  box-shadow: 0 22px 64px rgba(42,31,24,.09) !important;
+}
+
+/* Free portrait page */
+.free-polish-hero {
+  min-height: 520px !important;
+}
+
+.free-polish-plan-section {
+  padding-top: 72px !important;
+  padding-bottom: 78px !important;
+  background:
+    radial-gradient(circle at 88% 12%, rgba(123, 130, 107, 0.14), transparent 28%),
+    linear-gradient(180deg, #efe8dc 0%, #f4efe7 100%) !important;
+}
+
+.free-polish-section-heading {
+  max-width: 760px !important;
+  margin-bottom: 30px !important;
+}
+
+.free-polish-plan-card {
+  border: 1px solid rgba(123, 130, 107, 0.16) !important;
+  border-radius: 32px !important;
+  background: rgba(255,250,245,.78) !important;
+  box-shadow: 0 24px 70px rgba(42,31,24,.11) !important;
+}
+
+.free-polish-loading-card,
+.free-polish-no-plan-card {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 24px !important;
+  padding: clamp(24px, 4vw, 42px) !important;
+}
+
+.free-polish-no-plan-card h3,
+.free-polish-active-plan-card h3 {
+  margin: 12px 0 !important;
+  font-family: Georgia, serif !important;
+  color: #2d2d2b !important;
+  font-size: clamp(30px, 3.6vw, 52px) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -.035em !important;
+}
+
+.free-polish-plan-status {
+  display: inline-flex !important;
+  min-height: 30px !important;
+  align-items: center !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  background: rgba(123,130,107,.12) !important;
+  color: #5f6653 !important;
+  font-size: .70rem !important;
+  font-weight: 900 !important;
+  letter-spacing: .12em !important;
+  text-transform: uppercase !important;
+}
+
+.free-polish-plan-summary {
+  max-width: 680px !important;
+  margin: 0 0 24px !important;
+  color: #5f5a53 !important;
+  font-size: 1.04rem !important;
+  line-height: 1.72 !important;
+}
+
+.free-polish-active-plan-card.free-polish-invitation-layout {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.72fr) !important;
+  gap: clamp(22px, 3vw, 38px) !important;
+  align-items: stretch !important;
+  padding: clamp(24px, 3.4vw, 42px) !important;
+  border: 1px solid rgba(123, 130, 107, 0.18) !important;
+  border-radius: 34px !important;
+  background:
+    linear-gradient(135deg, rgba(255, 250, 245, 0.96), rgba(255, 250, 245, 0.76)),
+    radial-gradient(circle at 8% 0%, rgba(123, 130, 107, 0.14), transparent 35%) !important;
+  box-shadow: 0 28px 76px rgba(42, 31, 24, 0.12) !important;
+}
+
+.free-polish-plan-main-content {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+}
+
+.free-polish-plan-main-content h3 {
+  max-width: 720px !important;
+  margin: 16px 0 12px !important;
+  font-size: clamp(34px, 4.2vw, 60px) !important;
+  line-height: 0.98 !important;
+}
+
+.free-polish-plan-details.free-polish-plan-details-refined {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin: 0 0 18px !important;
+}
+
+.free-polish-plan-details-refined div {
+  min-height: 96px !important;
+  padding: 17px 18px !important;
+  border: 1px solid rgba(123, 130, 107, 0.16) !important;
+  border-radius: 20px !important;
+  background: rgba(255, 255, 255, 0.62) !important;
+  box-shadow: 0 10px 24px rgba(42, 31, 24, 0.05) !important;
+}
+
+.free-polish-plan-details-refined strong {
+  display: block !important;
+  margin-bottom: 8px !important;
+  color: #69705d !important;
+  font-size: 0.68rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+}
+
+.free-polish-plan-details-refined span {
+  color: #342f2a !important;
+  font-size: 1rem !important;
+  line-height: 1.45 !important;
+}
+
+.free-polish-plan-notes.free-polish-plan-notes-refined {
+  width: 100% !important;
+  display: grid !important;
+  gap: 10px !important;
+  margin: 2px 0 26px !important;
+}
+
+.free-polish-plan-notes-refined p {
+  display: grid !important;
+  grid-template-columns: 150px minmax(0, 1fr) !important;
+  gap: 16px !important;
+  align-items: start !important;
+  margin: 0 !important;
+  padding: 14px 0 !important;
+  border-bottom: 1px solid rgba(123, 130, 107, 0.13) !important;
+  color: #5f5a53 !important;
+}
+
+.free-polish-plan-notes-refined p:last-child {
+  border-bottom: 0 !important;
+}
+
+.free-polish-plan-notes-refined strong {
+  color: #3f4738 !important;
+  font-size: 0.76rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.12em !important;
+  line-height: 1.4 !important;
+  text-transform: uppercase !important;
+}
+
+.free-polish-plan-notes-refined span {
+  color: #5f5a53 !important;
+  line-height: 1.62 !important;
+}
+
+.free-polish-invitation-aside {
+  align-self: stretch !important;
+  display: flex !important;
+  min-height: 100% !important;
+  border-radius: 30px !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+.free-polish-google-map-card.free-polish-invitation-card {
+  position: relative !important;
+  width: 100% !important;
+  min-height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 16px !important;
+  padding: clamp(28px, 3.5vw, 42px) !important;
+  border: 1px solid rgba(255, 250, 245, 0.24) !important;
+  border-radius: 30px !important;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 250, 245, 0.19), transparent 32%),
+    linear-gradient(145deg, #4f583f 0%, #68705b 55%, #7b826b 100%) !important;
+  color: #fffaf5 !important;
+  box-shadow: 0 26px 58px rgba(42, 31, 24, 0.20), inset 0 0 0 1px rgba(255, 250, 245, 0.10) !important;
+  overflow: hidden !important;
+}
+
+.free-polish-google-map-card.free-polish-invitation-card::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 18px !important;
+  border: 1px solid rgba(255, 250, 245, 0.20) !important;
+  border-radius: 22px !important;
+  pointer-events: none !important;
+}
+
+.free-polish-google-map-card.free-polish-invitation-card::after {
+  content: "ML" !important;
+  position: absolute !important;
+  right: -18px !important;
+  bottom: -24px !important;
+  color: rgba(255, 250, 245, 0.08) !important;
+  font-family: Georgia, serif !important;
+  font-size: 112px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  pointer-events: none !important;
+}
+
+.free-polish-invitation-topline {
+  position: relative !important;
+  z-index: 1 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  align-items: center !important;
+  padding-bottom: 12px !important;
+  border-bottom: 1px solid rgba(255, 250, 245, 0.20) !important;
+}
+
+.free-polish-invitation-topline span,
+.free-polish-invitation-topline small {
+  color: rgba(255, 250, 245, 0.82) !important;
+  font-size: 0.68rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+}
+
+.free-polish-google-map-card.free-polish-invitation-card > strong {
+  position: relative !important;
+  z-index: 1 !important;
+  margin-top: 4px !important;
+  color: #fffaf5 !important;
+  font-family: Georgia, serif !important;
+  font-size: clamp(32px, 3.8vw, 48px) !important;
+  line-height: 0.98 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.free-polish-google-map-card.free-polish-invitation-card p {
+  position: relative !important;
+  z-index: 1 !important;
+  margin: 0 !important;
+  color: rgba(255, 250, 245, 0.84) !important;
+  line-height: 1.62 !important;
+}
+
+.free-polish-location-address {
+  font-size: 1.02rem !important;
+  font-weight: 700 !important;
+}
+
+.free-polish-location-note {
+  padding-left: 14px !important;
+  border-left: 2px solid rgba(255, 250, 245, 0.30) !important;
+}
+
+.free-polish-map-link {
+  position: relative !important;
+  z-index: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: fit-content !important;
+  min-height: 48px !important;
+  margin-top: 4px !important;
+  padding: 0 22px !important;
+  border-radius: 999px !important;
+  background: #fffaf5 !important;
+  color: #4f583f !important;
+  font-weight: 900 !important;
+  text-decoration: none !important;
+  box-shadow: 0 16px 34px rgba(42, 31, 24, 0.18) !important;
+}
+
+.free-polish-map-link:hover {
+  background: #efe8dc !important;
+  color: #2f362a !important;
+}
+
+.free-polish-invitation-small {
+  position: relative !important;
+  z-index: 1 !important;
+  display: block !important;
+  max-width: 280px !important;
+  color: rgba(255, 250, 245, 0.72) !important;
+  font-size: 0.82rem !important;
+  line-height: 1.5 !important;
+}
+
+.free-polish-google-map-card-empty.free-polish-invitation-card {
+  background: radial-gradient(circle at 100% 0%, rgba(123, 130, 107, 0.16), transparent 34%), linear-gradient(145deg, #fffaf5 0%, #eee6d9 100%) !important;
+  border-color: rgba(93, 68, 54, 0.12) !important;
+  color: #342f2a !important;
+}
+
+.free-polish-google-map-card-empty.free-polish-invitation-card .free-polish-invitation-topline,
+.free-polish-google-map-card-empty.free-polish-invitation-card p,
+.free-polish-google-map-card-empty.free-polish-invitation-card > strong,
+.free-polish-google-map-card-empty.free-polish-invitation-card .free-polish-invitation-small,
+.free-polish-google-map-card-empty.free-polish-invitation-card .free-polish-invitation-topline span,
+.free-polish-google-map-card-empty.free-polish-invitation-card .free-polish-invitation-topline small {
+  color: #4f4a44 !important;
+}
+
+.free-polish-editorial {
+  display: grid !important;
+  grid-template-columns: minmax(0, .92fr) minmax(280px, .62fr) !important;
+  gap: clamp(28px, 5vw, 70px) !important;
+  align-items: center !important;
+  background: #f7f4ee !important;
+  border-top: 1px solid rgba(123,130,107,.10) !important;
+}
+
+.free-polish-editorial-reverse {
+  grid-template-columns: minmax(280px, .62fr) minmax(0, .92fr) !important;
+}
+
+.free-polish-editorial-reverse .free-polish-copy-block {
+  order: 2 !important;
+}
+
+.free-polish-editorial-reverse .free-polish-image-card {
+  order: 1 !important;
+}
+
+.free-polish-image-card {
+  position: relative !important;
+  overflow: hidden !important;
+  height: clamp(300px, 34vw, 470px) !important;
+  margin: 0 !important;
+  border-radius: 32px !important;
+  background: #e9e1d4 !important;
+  box-shadow: 0 24px 70px rgba(42,31,24,.12) !important;
+}
+
+.free-polish-image-card img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 35% !important;
+}
+
+.free-polish-steps {
+  display: grid !important;
+  gap: 12px !important;
+  margin-top: 22px !important;
+}
+
+.free-polish-steps article p {
+  margin: 0 !important;
+  color: #5f5a53 !important;
+}
+
+.free-polish-note-box {
+  display: grid !important;
+  gap: 6px !important;
+  margin-top: 22px !important;
+  padding: 18px 20px !important;
+  border-left: 3px solid #7b826b !important;
+  border-radius: 0 20px 20px 0 !important;
+  background: rgba(255,250,245,.68) !important;
+}
+
+@media (max-width: 1040px) {
+  .free-polish-active-plan-card.free-polish-invitation-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .free-polish-invitation-aside {
+    min-height: auto !important;
+  }
+
+  .free-polish-google-map-card.free-polish-invitation-card {
+    min-height: 300px !important;
+  }
+}
+
+@media (max-width: 980px) {
+  .about-polish-hero,
+  .free-polish-hero,
+  .about-polish-story-grid,
+  .about-polish-community-card,
+  .free-polish-editorial,
+  .free-polish-editorial-reverse {
+    grid-template-columns: 1fr !important;
+  }
+
+  .free-polish-editorial-reverse .free-polish-copy-block,
+  .free-polish-editorial-reverse .free-polish-image-card {
+    order: initial !important;
+  }
+
+  .about-polish-profile-grid,
+  .about-polish-values-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .about-polish-page .section,
+  .free-portrait-polish-page .section {
+    padding: 48px 20px !important;
+  }
+
+  .about-polish-hero,
+  .free-polish-hero {
+    min-height: auto !important;
+    padding-top: 48px !important;
+    padding-bottom: 54px !important;
+  }
+
+  .about-polish-hero h1,
+  .free-polish-hero h1 {
+    font-size: clamp(38px, 10.6vw, 56px) !important;
+    line-height: 1 !important;
+  }
+
+  .about-polish-actions .primary-button,
+  .about-polish-actions .secondary-button,
+  .free-polish-actions .primary-button,
+  .free-polish-actions .secondary-button {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  .about-polish-card,
+  .free-polish-promise-card,
+  .about-polish-community-card,
+  .free-polish-plan-card,
+  .about-polish-cta-card,
+  .free-polish-cta-card {
+    border-radius: 24px !important;
+  }
+
+  .about-polish-story-copy {
+    padding: 22px !important;
+    border-left-width: 2px !important;
+  }
+
+  .about-polish-profile-grid,
+  .about-polish-values-grid,
+  .free-polish-plan-details.free-polish-plan-details-refined {
+    grid-template-columns: 1fr !important;
+  }
+
+  .about-polish-portrait,
+  .free-polish-image-card {
+    height: 320px !important;
+    border-radius: 24px !important;
+  }
+
+  .free-polish-loading-card,
+  .free-polish-no-plan-card {
+    display: grid !important;
+  }
+
+  .free-polish-active-plan-card.free-polish-invitation-layout {
+    padding: 20px !important;
+    border-radius: 26px !important;
+  }
+
+  .free-polish-plan-main-content h3 {
+    font-size: clamp(31px, 9vw, 42px) !important;
+  }
+
+  .free-polish-plan-notes-refined p {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+  }
+
+  .free-polish-google-map-card.free-polish-invitation-card {
+    min-height: 290px !important;
+    padding: 28px 24px !important;
+    border-radius: 24px !important;
+  }
+
+  .free-polish-google-map-card.free-polish-invitation-card::before {
+    inset: 14px !important;
+    border-radius: 18px !important;
+  }
+
+  .free-polish-invitation-topline {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .free-polish-map-link {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .about-polish-hero h1,
+  .free-polish-hero h1 {
+    font-size: clamp(34px, 10.5vw, 46px) !important;
+  }
+
+  .about-polish-portrait,
+  .free-polish-image-card {
+    height: 280px !important;
+  }
+}
+/* END ABOUT US + FREE PORTRAIT FINAL POLISH */

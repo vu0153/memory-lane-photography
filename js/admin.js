@@ -2444,12 +2444,6 @@ async function handleFreePortraitSave(event) {
   event.preventDefault();
 
   const payload = buildFreePortraitPayload();
-  const coordinateText = freePortraitCoordinatesInput ? freePortraitCoordinatesInput.value.trim() : "";
-
-  if (coordinateText && (payload.latitude === null || payload.longitude === null)) {
-    freePortraitMessage.textContent = "Please check the Google Maps coordinate. Example: 34°58'52.5\"S 138°30'41.1\"E or -34.9806, 138.5110.";
-    return;
-  }
 
   if (!payload.title) {
     freePortraitMessage.textContent = "Please enter a session title.";
