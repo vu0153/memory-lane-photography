@@ -42,6 +42,9 @@ const freePortraitWeatherInput = document.getElementById("freePortraitWeatherInp
 const freePortraitSignupInput = document.getElementById("freePortraitSignupInput");
 const freePortraitContactInput = document.getElementById("freePortraitContactInput");
 const clearFreePortraitFormButton = document.getElementById("clearFreePortraitFormButton");
+const newFreePortraitEventButton = document.getElementById("newFreePortraitEventButton");
+const freePortraitHistorySummary = document.getElementById("freePortraitHistorySummary");
+const freePortraitEventsTableBody = document.getElementById("freePortraitEventsTableBody");
 const freePortraitStatusPreview = document.getElementById("freePortraitStatusPreview");
 const freePortraitMapPreview = document.getElementById("freePortraitMapPreview");
 
@@ -163,6 +166,8 @@ const statusLabels = {
   cancelled: "Cancelled"
 };
 
+const FREE_PORTRAIT_SERVICE_VALUE = "Free Portrait Session";
+
 
 const galleryCategories = [
   "Family",
@@ -177,6 +182,8 @@ let allBookings = [];
 let allPosts = [];
 let allGalleryImages = [];
 let allHeroImages = [];
+let allFreePortraitEvents = [];
+let freePortraitRegistrationCounts = {};
 let currentFreePortraitEvent = null;
 let detailModal = null;
 let detailModalBody = null;
@@ -250,9 +257,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   heroTableBody.addEventListener("click", handleHeroTableClick);
   closeHeroModalButton.addEventListener("click", closeHeroModal);
 
-refreshFreePortraitButton.addEventListener("click", loadFreePortraitEvent);
+refreshFreePortraitButton.addEventListener("click", function () {
+  loadFreePortraitEvent(currentFreePortraitEvent ? currentFreePortraitEvent.id : null);
+});
 setNoFreePortraitPlanButton.addEventListener("click", handleFreePortraitNoPlan);
 freePortraitForm.addEventListener("submit", handleFreePortraitSave);
+if (newFreePortraitEventButton) {
+  newFreePortraitEventButton.addEventListener("click", function () {
+    currentFreePortraitEvent = null;
+    clearFreePortraitForm(false);
+    freePortraitMessage.classList.remove("success");
+    freePortraitMessage.textContent = "New Free Portrait session ready. Complete the form and save.";
+  });
+}
+if (freePortraitEventsTableBody) {
+  freePortraitEventsTableBody.addEventListener("click", handleFreePortraitHistoryClick);
+}
 clearFreePortraitFormButton.addEventListener("click", function () {
   clearFreePortraitForm(false);
 });
@@ -2451,35 +2471,300 @@ function clearHeroUploadMessage() {
 
 
 
-async function loadFreePortraitEvent() {
+async function loadFreePortraitEvent(selectedEventId) {
   if (!freePortraitMessage) {
     return;
   }
 
   freePortraitMessage.classList.remove("success");
-  freePortraitMessage.textContent = "Loading free portrait plan...";
+  freePortraitMessage.textContent = "Loading free portrait sessions...";
 
   const { data, error } = await supabaseClient
     .from("free_portrait_events")
     .select("*")
-    .order("updated_at", { ascending: false })
-    .limit(1);
+    .order("event_date", { ascending: false })
+    .order("start_time", { ascending: false })
+    .order("updated_at", { ascending: false });
 
   if (error) {
     freePortraitMessage.textContent = error.message;
     renderFreePortraitAdminStatus(null, error.message);
+    renderFreePortraitHistoryList([], {}, error.message);
     return;
   }
 
-  currentFreePortraitEvent = data && data.length ? data[0] : null;
+  allFreePortraitEvents = data || [];
+  freePortraitRegistrationCounts = await loadFreePortraitRegistrationCounts(allFreePortraitEvents);
+
+  currentFreePortraitEvent = findFreePortraitEventForForm(allFreePortraitEvents, selectedEventId);
 
   if (currentFreePortraitEvent) {
     loadFreePortraitIntoForm(currentFreePortraitEvent);
     freePortraitMessage.textContent = "";
   } else {
     clearFreePortraitForm(true);
-    freePortraitMessage.textContent = "No saved free portrait plan yet. Complete the form and save when ready.";
+    freePortraitMessage.textContent = "No saved free portrait sessions yet. Complete the form and save when ready.";
   }
+
+  renderFreePortraitHistoryList(allFreePortraitEvents, freePortraitRegistrationCounts);
+}
+
+function findFreePortraitEventForForm(events, selectedEventId) {
+  if (!events || !events.length) {
+    return null;
+  }
+
+  if (selectedEventId) {
+    const selectedEvent = events.find((item) => String(item.id) === String(selectedEventId));
+
+    if (selectedEvent) {
+      return selectedEvent;
+    }
+  }
+
+  const activeUpcoming = events
+    .filter((item) => item.is_active && !isFreePortraitEventEnded(item))
+    .sort(compareFreePortraitEventsAscending)[0];
+
+  return activeUpcoming || events[0];
+}
+
+function compareFreePortraitEventsAscending(a, b) {
+  const dateA = `${a.event_date || "9999-12-31"} ${a.start_time || "23:59"}`;
+  const dateB = `${b.event_date || "9999-12-31"} ${b.start_time || "23:59"}`;
+  return dateA.localeCompare(dateB);
+}
+
+async function loadFreePortraitRegistrationCounts(events) {
+  const emptyCounts = {};
+
+  events.forEach((event) => {
+    if (event && event.id) {
+      emptyCounts[String(event.id)] = 0;
+    }
+  });
+
+  if (!events.length) {
+    return emptyCounts;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("bookings")
+    .select("id, created_at, service_type, preferred_date, free_portrait_event_id")
+    .eq("service_type", FREE_PORTRAIT_SERVICE_VALUE);
+
+  if (error) {
+    console.error(error);
+    freePortraitMessage.textContent = `${error.message}. Run the Free Portrait history SQL update if registration counts are not loading.`;
+    return emptyCounts;
+  }
+
+  const eventsById = new Map(events.map((event) => [String(event.id), event]));
+
+  (data || []).forEach((booking) => {
+    const event = findBestFreePortraitEventForBooking(booking, events, eventsById);
+
+    if (!event || !event.id) {
+      return;
+    }
+
+    if (!isBookingCountedForFreePortraitEvent(booking, event)) {
+      return;
+    }
+
+    const eventId = String(event.id);
+    emptyCounts[eventId] = (emptyCounts[eventId] || 0) + 1;
+  });
+
+  return emptyCounts;
+}
+
+function findBestFreePortraitEventForBooking(booking, events, eventsById) {
+  if (!booking) {
+    return null;
+  }
+
+  const linkedEventId = booking.free_portrait_event_id ? String(booking.free_portrait_event_id) : "";
+  const linkedEvent = linkedEventId ? eventsById.get(linkedEventId) : null;
+  const preferredDateEvent = findLegacyFreePortraitEventForBooking(booking, events);
+
+  if (!linkedEvent) {
+    return preferredDateEvent;
+  }
+
+  if (!preferredDateEvent) {
+    return linkedEvent;
+  }
+
+  const linkedDate = String(linkedEvent.event_date || "").slice(0, 10);
+  const preferredDate = String(booking.preferred_date || "").slice(0, 10);
+
+  if (preferredDate && linkedDate && preferredDate !== linkedDate) {
+    return preferredDateEvent;
+  }
+
+  return linkedEvent;
+}
+
+function findLegacyFreePortraitEventForBooking(booking, events) {
+  if (!booking || !booking.preferred_date) {
+    return null;
+  }
+
+  const preferredDate = String(booking.preferred_date).slice(0, 10);
+
+  return events.find((event) => String(event.event_date || "").slice(0, 10) === preferredDate) || null;
+}
+
+function isBookingCountedForFreePortraitEvent(booking, event) {
+  const eventEndDate = getFreePortraitEventEndDate(event);
+
+  if (!eventEndDate || !booking.created_at) {
+    return true;
+  }
+
+  const bookingCreatedAt = new Date(booking.created_at);
+
+  if (Number.isNaN(bookingCreatedAt.getTime())) {
+    return true;
+  }
+
+  return bookingCreatedAt.getTime() <= eventEndDate.getTime();
+}
+
+function getFreePortraitEventEndDate(event) {
+  if (!event || !event.event_date) {
+    return null;
+  }
+
+  const eventDate = String(event.event_date).slice(0, 10);
+  const eventEndTime = event.end_time ? String(event.end_time).slice(0, 5) : "23:59";
+  const endDate = new Date(`${eventDate}T${eventEndTime}:59`);
+
+  if (Number.isNaN(endDate.getTime())) {
+    return null;
+  }
+
+  return endDate;
+}
+
+function isFreePortraitEventEnded(event) {
+  const eventEndDate = getFreePortraitEventEndDate(event);
+
+  if (!eventEndDate) {
+    return false;
+  }
+
+  return Date.now() > eventEndDate.getTime();
+}
+
+function getFreePortraitEventStatus(event) {
+  if (!event) {
+    return { label: "Draft", className: "draft" };
+  }
+
+  if (isFreePortraitEventEnded(event)) {
+    return { label: event.is_active ? "Ended" : "Ended draft", className: "ended" };
+  }
+
+  if (event.is_active) {
+    return { label: "Published", className: "published" };
+  }
+
+  return { label: "Draft", className: "draft" };
+}
+
+function renderFreePortraitHistoryList(events, counts, errorMessage) {
+  if (!freePortraitEventsTableBody) {
+    return;
+  }
+
+  if (errorMessage) {
+    freePortraitEventsTableBody.innerHTML = `
+      <tr>
+        <td colspan="6" class="empty-state">${escapeHtml(errorMessage)}</td>
+      </tr>
+    `;
+    return;
+  }
+
+  if (!events.length) {
+    freePortraitEventsTableBody.innerHTML = `
+      <tr>
+        <td colspan="6" class="empty-state">No Free Portrait sessions saved yet.</td>
+      </tr>
+    `;
+
+    if (freePortraitHistorySummary) {
+      freePortraitHistorySummary.textContent = "0 sessions saved";
+    }
+
+    return;
+  }
+
+  const totalRegistrations = events.reduce((total, event) => {
+    return total + Number(counts[String(event.id)] || 0);
+  }, 0);
+
+  if (freePortraitHistorySummary) {
+    freePortraitHistorySummary.textContent = `${events.length} sessions saved · ${totalRegistrations} registrations`;
+  }
+
+  freePortraitEventsTableBody.innerHTML = events.map((event) => {
+    const status = getFreePortraitEventStatus(event);
+    const timeText = [formatTimeValue(event.start_time), formatTimeValue(event.end_time)]
+      .filter(Boolean)
+      .join(" - ") || "No time";
+    const registrationCount = Number(counts[String(event.id)] || 0);
+
+    return `
+      <tr>
+        <td>
+          <span class="free-portrait-event-title">${escapeHtml(event.title || "Free Portrait Session")}</span>
+          <span class="free-portrait-event-meta">${escapeHtml(event.session_summary || "No summary saved")}</span>
+        </td>
+        <td>
+          <strong>${escapeHtml(event.event_date ? formatDate(event.event_date) : "No date")}</strong>
+          <span class="free-portrait-event-meta">${escapeHtml(timeText)}</span>
+        </td>
+        <td>
+          <strong>${escapeHtml(event.location_name || "No location")}</strong>
+          <span class="free-portrait-event-meta">${escapeHtml(event.location_address || "No address")}</span>
+        </td>
+        <td>
+          <span class="free-portrait-session-status ${status.className}">${escapeHtml(status.label)}</span>
+        </td>
+        <td>
+          <span class="free-portrait-registration-count">${registrationCount}</span>
+        </td>
+        <td>
+          <button class="detail-button edit-free-portrait-event-button" type="button" data-free-portrait-id="${escapeAttribute(event.id)}">
+            Edit
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function handleFreePortraitHistoryClick(event) {
+  const editButton = event.target.closest(".edit-free-portrait-event-button");
+
+  if (!editButton) {
+    return;
+  }
+
+  const eventId = editButton.dataset.freePortraitId;
+  const selectedEvent = allFreePortraitEvents.find((item) => String(item.id) === String(eventId));
+
+  if (!selectedEvent) {
+    return;
+  }
+
+  currentFreePortraitEvent = selectedEvent;
+  loadFreePortraitIntoForm(selectedEvent);
+  freePortraitMessage.classList.remove("success");
+  freePortraitMessage.textContent = "Session loaded for editing.";
 }
 
 function loadFreePortraitIntoForm(event) {
@@ -2548,14 +2833,14 @@ async function handleFreePortraitSave(event) {
   }
 
   if (payload.is_active && (!payload.event_date || !payload.start_time || !payload.location_name)) {
-    freePortraitMessage.textContent = "To publish a plan, please enter at least date, start time and location name.";
+    freePortraitMessage.textContent = "To publish a session, please enter at least date, start time and location name.";
     return;
   }
 
   const existingId = freePortraitIdInput.value.trim();
 
   freePortraitMessage.classList.remove("success");
-  freePortraitMessage.textContent = "Saving free portrait plan...";
+  freePortraitMessage.textContent = "Saving free portrait session...";
 
   const saveFreePortraitButton = document.getElementById("saveFreePortraitButton");
   saveFreePortraitButton.disabled = true;
@@ -2587,12 +2872,12 @@ async function handleFreePortraitSave(event) {
   }
 
   currentFreePortraitEvent = response.data;
-  loadFreePortraitIntoForm(currentFreePortraitEvent);
+  await loadFreePortraitEvent(currentFreePortraitEvent.id);
 
   freePortraitMessage.classList.add("success");
   freePortraitMessage.textContent = currentFreePortraitEvent.is_active
-    ? "Free portrait plan saved and published."
-    : "Free portrait plan saved as not published.";
+    ? "Free portrait session saved and published."
+    : "Free portrait session saved as draft.";
 
   setTimeout(() => {
     freePortraitMessage.classList.remove("success");
@@ -2601,39 +2886,29 @@ async function handleFreePortraitSave(event) {
 }
 
 async function handleFreePortraitNoPlan() {
-  const confirmed = window.confirm("Show 'No current free portrait plan' on the public Free Portrait page? Existing details will be kept but unpublished.");
+  const confirmed = window.confirm("Unpublish the selected Free Portrait session? It will stay in session history.");
 
   if (!confirmed) {
     return;
   }
 
   const existingId = freePortraitIdInput.value.trim();
-  const payload = buildFreePortraitPayload();
-  payload.is_active = false;
 
-  if (!payload.title) {
-    payload.title = "Free Individual Portrait Session";
+  if (!existingId) {
+    freePortraitActiveInput.checked = false;
+    freePortraitMessage.textContent = "No saved session selected. Choose a session from history or save this form first.";
+    return;
   }
 
   freePortraitMessage.classList.remove("success");
-  freePortraitMessage.textContent = "Updating public page to no current plan...";
+  freePortraitMessage.textContent = "Unpublishing selected session...";
 
-  let response;
-
-  if (existingId) {
-    response = await supabaseClient
-      .from("free_portrait_events")
-      .update({ ...payload, is_active: false })
-      .eq("id", existingId)
-      .select("*")
-      .single();
-  } else {
-    response = await supabaseClient
-      .from("free_portrait_events")
-      .insert([{ ...payload, is_active: false }])
-      .select("*")
-      .single();
-  }
+  const response = await supabaseClient
+    .from("free_portrait_events")
+    .update({ is_active: false })
+    .eq("id", existingId)
+    .select("*")
+    .single();
 
   if (response.error) {
     freePortraitMessage.textContent = response.error.message;
@@ -2641,13 +2916,15 @@ async function handleFreePortraitNoPlan() {
   }
 
   currentFreePortraitEvent = response.data;
-  loadFreePortraitIntoForm(currentFreePortraitEvent);
+  await loadFreePortraitEvent(currentFreePortraitEvent.id);
 
   freePortraitMessage.classList.add("success");
-  freePortraitMessage.textContent = "The public Free Portrait page will now show no current plan.";
+  freePortraitMessage.textContent = "Selected Free Portrait session unpublished.";
 }
 
 function buildFreePortraitPayload() {
+  const coordinates = getFreePortraitCoordinates();
+
   return {
     is_active: Boolean(freePortraitActiveInput.checked),
     title: freePortraitTitleInput.value.trim() || "Free Individual Portrait Session",
@@ -2657,8 +2934,8 @@ function buildFreePortraitPayload() {
     location_name: freePortraitLocationNameInput.value.trim() || null,
     location_address: freePortraitLocationAddressInput.value.trim() || null,
     google_maps_url: buildGoogleMapsUrlFromInput(freePortraitCoordinatesInput ? freePortraitCoordinatesInput.value.trim() : "") || null,
-    latitude: getFreePortraitCoordinates()?.latitude ?? null,
-    longitude: getFreePortraitCoordinates()?.longitude ?? null,
+    latitude: coordinates?.latitude ?? null,
+    longitude: coordinates?.longitude ?? null,
     map_note: freePortraitMapNoteInput.value.trim() || null,
     session_summary: freePortraitSummaryInput.value.trim() || null,
     who_is_it_for: freePortraitWhoInput.value.trim() || null,
@@ -2680,24 +2957,25 @@ function renderFreePortraitAdminStatus(event, errorMessage) {
     freePortraitStatusPreview.innerHTML = `
       <strong>Setup needed</strong>
       <p>${escapeHtml(errorMessage)}</p>
-      <p>If this says the table does not exist, run the SQL file included in the update package inside Supabase.</p>
+      <p>If this says a column does not exist, run the SQL file included in the update package inside Supabase.</p>
     `;
     return;
   }
 
   if (!event) {
     freePortraitStatusPreview.innerHTML = `
-      <strong>No saved plan</strong>
-      <p>The public page will show a calm “no current plan” message until a published plan is saved.</p>
+      <strong>No session selected</strong>
+      <p>Create a new session or select a saved session from the history table below.</p>
     `;
     return;
   }
 
-  const statusText = event.is_active ? "Published on website" : "No current plan shown";
+  const status = getFreePortraitEventStatus(event);
   const dateText = event.event_date ? formatDate(event.event_date) : "No date";
   const timeText = [formatTimeValue(event.start_time), formatTimeValue(event.end_time)]
     .filter(Boolean)
     .join(" - ") || "No time";
+  const registrationCount = Number(freePortraitRegistrationCounts[String(event.id)] || 0);
 
   const googleMapsUrl = buildGoogleMapsUrlFromEvent(event);
   const mapLinkMarkup = googleMapsUrl
@@ -2705,10 +2983,11 @@ function renderFreePortraitAdminStatus(event, errorMessage) {
     : `<p class="free-portrait-preview-warning">No Google Maps link added yet.</p>`;
 
   freePortraitStatusPreview.innerHTML = `
-    <strong>${escapeHtml(statusText)}</strong>
+    <strong>${escapeHtml(status.label)}</strong>
     <p>${escapeHtml(event.title || "Free Portrait Session")}</p>
     <p>${escapeHtml(dateText)} · ${escapeHtml(timeText)}</p>
     <p>${escapeHtml(event.location_name || "No location set")}</p>
+    <p><strong>${registrationCount}</strong> registrations counted for this session.</p>
     ${mapLinkMarkup}
   `;
 }

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Allura&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/style.css?v=20260619-google-map-link" />
+  <link rel="stylesheet" href="css/style.css?v=20260624-free-portrait-date-match" />
 
   <style>
     body {
@@ -1058,6 +1058,116 @@
   line-height: 1.6;
 }
 
+
+.free-portrait-history-card {
+  margin-top: 18px;
+}
+
+.free-portrait-history-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.free-portrait-history-summary {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(93, 68, 54, 0.09);
+  color: #5d4436;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.free-portrait-events-table-wrap {
+  overflow-x: auto;
+  border-radius: 18px;
+  border: 1px solid rgba(81, 65, 56, 0.12);
+  background: #fff;
+}
+
+.free-portrait-events-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+}
+
+.free-portrait-events-table th,
+.free-portrait-events-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(81, 65, 56, 0.1);
+  text-align: left;
+  vertical-align: top;
+  font-size: 14px;
+}
+
+.free-portrait-events-table th {
+  background: #f8f0ea;
+  color: #5d4436;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.free-portrait-events-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.free-portrait-event-title {
+  display: block;
+  margin-bottom: 4px;
+  color: #2d241f;
+  font-weight: 800;
+}
+
+.free-portrait-event-meta {
+  display: block;
+  color: #77665b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.free-portrait-session-status {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.free-portrait-session-status.published {
+  background: rgba(47, 109, 60, 0.12);
+  color: #2f6d3c;
+}
+
+.free-portrait-session-status.draft {
+  background: rgba(124, 63, 49, 0.1);
+  color: #7c3f31;
+}
+
+.free-portrait-session-status.ended {
+  background: rgba(93, 68, 54, 0.1);
+  color: #5d4436;
+}
+
+.free-portrait-registration-count {
+  color: #2d241f;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+@media (max-width: 720px) {
+  .free-portrait-history-header {
+    flex-direction: column;
+  }
+}
+
 @media (max-width: 980px) {
   .free-portrait-admin-layout,
   .free-portrait-form-row,
@@ -1444,17 +1554,21 @@
   <div class="posts-toolbar">
     <div class="posts-toolbar-title">
       <h2>Free Portrait Planner</h2>
-      <p>Control what appears on the Free Portrait page. Publish a planned session, or show that there is no current plan.</p>
+      <p>Create and manage each Free Portrait session. The history below keeps past sessions and shows registration counts per session.</p>
       <div id="freePortraitMessage" class="admin-message"></div>
     </div>
 
     <div class="posts-toolbar-actions">
+      <button id="newFreePortraitEventButton" class="admin-button light small" type="button">
+        New Session
+      </button>
+
       <button id="refreshFreePortraitButton" class="admin-button small" type="button">
-        Refresh Plan
+        Refresh Sessions
       </button>
 
       <button id="setNoFreePortraitPlanButton" class="admin-button danger small" type="button">
-        Set No Current Plan
+        Unpublish Selected Session
       </button>
     </div>
   </div>
@@ -1463,7 +1577,7 @@
     <section class="free-portrait-admin-card">
       <h2>Session details</h2>
       <p>
-        Use this form when you have a confirmed free individual portrait session. If there is no planned session yet, use “Set No Current Plan”.
+        Use this form for one Free Portrait session at a time. Save a new session, edit an old session, or publish the session you want visitors to book.
       </p>
 
       <form id="freePortraitForm" class="free-portrait-form-grid">
@@ -1471,7 +1585,7 @@
 
         <label class="checkbox-field">
           <input id="freePortraitActiveInput" type="checkbox" />
-          Publish this free portrait plan on the website
+          Publish this session on the website
         </label>
 
         <div class="admin-field">
@@ -1591,12 +1705,42 @@
 
       <ul class="free-portrait-help-list">
         <li>Paste a Google Maps share link copied from the exact location.</li>
-        <li>If “Publish” is off, the public page will show “No current plan”.</li>
+        <li>The public booking form uses the earliest active upcoming session.</li>
         <li>This free portrait offer is for one individual person, not a family or group session.</li>
       </ul>
     </aside>
   </div>
-</section>
+
+  <section class="free-portrait-admin-card free-portrait-history-card">
+    <div class="free-portrait-history-header">
+      <div>
+        <h2>Session history</h2>
+        <p>Each saved session stays here for later review. Registration count uses bookings linked to that session, counted up to the session end time.</p>
+      </div>
+
+      <span id="freePortraitHistorySummary" class="free-portrait-history-summary">No sessions loaded</span>
+    </div>
+
+    <div class="free-portrait-events-table-wrap">
+      <table class="free-portrait-events-table">
+        <thead>
+          <tr>
+            <th>Session</th>
+            <th>Date / Time</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Registered</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="freePortraitEventsTableBody">
+          <tr>
+            <td colspan="6" class="empty-state">Load Free Portrait sessions to begin.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
       </section>
     </div>
   </main>
@@ -1883,7 +2027,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=20260624-free-portrait-sync"></script>
-  <script src="js/admin.js?v=20260624-free-portrait-sync"></script>
+  <script src="js/supabase.js?v=20260624-free-portrait-date-match"></script>
+  <script src="js/admin.js?v=20260624-free-portrait-date-match"></script>
 </body>
 </html>

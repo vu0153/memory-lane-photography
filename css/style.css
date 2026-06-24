@@ -4946,3 +4946,319 @@ p {
   }
 }
 /* END ABOUT US + FREE PORTRAIT FINAL POLISH */
+
+
+/* =========================================================
+   FREE PORTRAIT SESSION LIST - 20260624-free-session-list
+   Shows every active upcoming free portrait session as selectable cards.
+   Keep this block at the very end of the file.
+   ========================================================= */
+
+.free-polish-session-list-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 24px !important;
+  align-items: flex-start !important;
+  margin-bottom: 22px !important;
+}
+
+.free-polish-session-list-header h3 {
+  margin: 14px 0 8px !important;
+  font-family: Georgia, serif !important;
+  color: #2d2d2b !important;
+  font-size: clamp(30px, 3.4vw, 48px) !important;
+  line-height: 1.04 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.free-polish-session-list-header p {
+  max-width: 680px !important;
+  margin: 0 !important;
+  color: #5f5a53 !important;
+  font-size: 1rem !important;
+  line-height: 1.65 !important;
+}
+
+.free-polish-session-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+  gap: 18px !important;
+  align-items: stretch !important;
+}
+
+.free-polish-session-card {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20px !important;
+  min-height: 100% !important;
+  padding: clamp(22px, 2.7vw, 34px) !important;
+  border-radius: 30px !important;
+  background:
+    linear-gradient(135deg, rgba(255, 250, 245, 0.96), rgba(255, 250, 245, 0.76)),
+    radial-gradient(circle at 0% 0%, rgba(123, 130, 107, 0.12), transparent 34%) !important;
+}
+
+.free-polish-session-card.featured {
+  border-color: rgba(123, 130, 107, 0.34) !important;
+  box-shadow:
+    0 30px 80px rgba(42, 31, 24, 0.14),
+    inset 0 0 0 1px rgba(123, 130, 107, 0.10) !important;
+}
+
+.free-polish-session-card-top {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  align-items: center !important;
+}
+
+.free-polish-session-card-top small {
+  color: #6f665e !important;
+  font-size: 0.78rem !important;
+  font-weight: 900 !important;
+  line-height: 1.4 !important;
+  text-align: right !important;
+}
+
+.free-polish-session-card-body {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+}
+
+.free-polish-session-card h3 {
+  margin: 0 0 12px !important;
+  font-family: Georgia, serif !important;
+  color: #2d2d2b !important;
+  font-size: clamp(30px, 3.3vw, 48px) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.free-polish-session-detail-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  margin: 0 0 16px !important;
+}
+
+.free-polish-session-detail-grid div {
+  min-height: 88px !important;
+  padding: 14px 15px !important;
+  border: 1px solid rgba(123, 130, 107, 0.15) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.66) !important;
+}
+
+.free-polish-session-detail-grid strong {
+  display: block !important;
+  margin-bottom: 7px !important;
+  color: #69705d !important;
+  font-size: 0.66rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+}
+
+.free-polish-session-detail-grid span {
+  display: block !important;
+  color: #342f2a !important;
+  font-size: 0.98rem !important;
+  line-height: 1.45 !important;
+}
+
+.free-polish-session-location-card {
+  display: grid !important;
+  gap: 6px !important;
+  margin: 0 0 16px !important;
+  padding: 16px 18px !important;
+  border-left: 3px solid rgba(123, 130, 107, 0.62) !important;
+  border-radius: 0 20px 20px 0 !important;
+  background: rgba(123, 130, 107, 0.08) !important;
+}
+
+.free-polish-session-location-card strong {
+  color: #2d2d2b !important;
+  font-family: Georgia, serif !important;
+  font-size: 20px !important;
+  line-height: 1.1 !important;
+}
+
+.free-polish-session-location-card span,
+.free-polish-session-location-card em {
+  color: #5f5a53 !important;
+  font-size: 0.94rem !important;
+  line-height: 1.55 !important;
+}
+
+.free-polish-session-location-card em {
+  font-style: normal !important;
+}
+
+.free-polish-session-notes {
+  display: grid !important;
+  gap: 8px !important;
+  margin-top: auto !important;
+}
+
+.free-polish-session-notes p {
+  display: grid !important;
+  grid-template-columns: 132px minmax(0, 1fr) !important;
+  gap: 12px !important;
+  align-items: start !important;
+  margin: 0 !important;
+  padding: 10px 0 !important;
+  border-bottom: 1px solid rgba(123, 130, 107, 0.12) !important;
+}
+
+.free-polish-session-notes p:last-child {
+  border-bottom: 0 !important;
+}
+
+.free-polish-session-notes strong {
+  color: #3f4738 !important;
+  font-size: 0.70rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.12em !important;
+  line-height: 1.45 !important;
+  text-transform: uppercase !important;
+}
+
+.free-polish-session-notes span {
+  color: #5f5a53 !important;
+  font-size: 0.94rem !important;
+  line-height: 1.58 !important;
+}
+
+.free-polish-session-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-top: auto !important;
+}
+
+.free-polish-session-actions .primary-button,
+.free-polish-session-actions .secondary-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 48px !important;
+  text-align: center !important;
+}
+
+@media (max-width: 760px) {
+  .free-polish-session-list-header {
+    display: grid !important;
+    margin-bottom: 18px !important;
+  }
+
+  .free-polish-session-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .free-polish-session-card {
+    padding: 20px !important;
+    border-radius: 26px !important;
+  }
+
+  .free-polish-session-card-top {
+    align-items: flex-start !important;
+  }
+
+  .free-polish-session-card-top small {
+    max-width: 140px !important;
+  }
+
+  .free-polish-session-detail-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .free-polish-session-notes p {
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+  }
+
+  .free-polish-session-actions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .free-polish-session-actions .primary-button,
+  .free-polish-session-actions .secondary-button {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .free-polish-session-card {
+    padding: 18px !important;
+  }
+
+  .free-polish-session-card h3 {
+    font-size: clamp(28px, 9vw, 38px) !important;
+  }
+}
+/* END FREE PORTRAIT SESSION LIST */
+
+
+/* =========================================================
+   FREE PORTRAIT COMPACT SESSION CARDS - 20260624-free-session-compact
+   Removes forced vertical stretching so multiple session cards stay compact.
+   Keep this block at the very end of the file.
+   ========================================================= */
+
+.free-polish-session-grid {
+  align-items: start !important;
+}
+
+.free-polish-session-card {
+  min-height: 0 !important;
+  height: auto !important;
+  gap: 16px !important;
+}
+
+.free-polish-session-card-body {
+  flex: 0 0 auto !important;
+}
+
+.free-polish-session-card .free-polish-plan-summary {
+  margin-bottom: 16px !important;
+}
+
+.free-polish-session-detail-grid {
+  margin-bottom: 14px !important;
+}
+
+.free-polish-session-detail-grid div {
+  min-height: 76px !important;
+}
+
+.free-polish-session-location-card {
+  margin-bottom: 14px !important;
+}
+
+.free-polish-session-notes {
+  margin-top: 0 !important;
+  gap: 0 !important;
+}
+
+.free-polish-session-notes p {
+  padding: 9px 0 !important;
+}
+
+.free-polish-session-actions {
+  margin-top: 4px !important;
+}
+
+@media (max-width: 760px) {
+  .free-polish-session-card {
+    gap: 14px !important;
+  }
+
+  .free-polish-session-detail-grid div {
+    min-height: 0 !important;
+  }
+}
+
+/* END FREE PORTRAIT COMPACT SESSION CARDS */
