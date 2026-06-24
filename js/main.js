@@ -1,4 +1,117 @@
 const bookingForm = document.querySelector(".booking-form");
+const FREE_PORTRAIT_SERVICE_VALUE = "Free Portrait Session";
+let freePortraitBookingIsOpen = false;
+
+function getFreePortraitBookingOption() {
+  if (!bookingForm) {
+    return null;
+  }
+
+  return bookingForm.querySelector("[data-free-portrait-option]");
+}
+
+function setFreePortraitBookingOption(isOpen, label, title) {
+  const freePortraitOption = getFreePortraitBookingOption();
+
+  if (!freePortraitOption) {
+    return;
+  }
+
+  freePortraitBookingIsOpen = Boolean(isOpen);
+  freePortraitOption.disabled = !freePortraitBookingIsOpen;
+  freePortraitOption.textContent = label;
+  freePortraitOption.title = title || "";
+}
+
+async function loadFreePortraitBookingOption() {
+  const freePortraitOption = getFreePortraitBookingOption();
+
+  if (!freePortraitOption) {
+    return;
+  }
+
+  setFreePortraitBookingOption(false, "Free Portrait Session (checking availability)", "Checking upcoming free portrait availability.");
+
+  if (typeof supabaseClient === "undefined") {
+    setFreePortraitBookingOption(false, "Free Portrait Session (not available)", "Free portrait booking is unavailable while the schedule is offline.");
+    return;
+  }
+
+  const today = getLocalDateValue(new Date());
+  const { data, error } = await supabaseClient
+    .from("free_portrait_events")
+    .select("id, title, event_date, start_time, end_time, is_active")
+    .eq("is_active", true)
+    .gte("event_date", today)
+    .order("event_date", { ascending: true })
+    .order("start_time", { ascending: true })
+    .limit(10);
+
+  if (error) {
+    console.error(error);
+    setFreePortraitBookingOption(false, "Free Portrait Session (not available)", "Free portrait booking is unavailable at the moment.");
+    return;
+  }
+
+  const upcomingEvent = (data || []).find(isFreePortraitEventAvailableForBooking);
+
+  if (!upcomingEvent) {
+    setFreePortraitBookingOption(false, "Free Portrait Session (no active event)", "This option is available only when an active upcoming free portrait event exists.");
+    return;
+  }
+
+  setFreePortraitBookingOption(true, "Free Portrait Session", upcomingEvent.title || "Free portrait booking is available for the upcoming event.");
+}
+
+function isFreePortraitEventAvailableForBooking(event) {
+  if (!event || !event.event_date) {
+    return false;
+  }
+
+  const now = new Date();
+  const today = getLocalDateValue(now);
+  const eventDate = String(event.event_date);
+
+  if (eventDate > today) {
+    return true;
+  }
+
+  if (eventDate < today) {
+    return false;
+  }
+
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const endMinutes = parseTimeToMinutes(event.end_time) ?? (24 * 60 - 1);
+
+  return currentMinutes <= endMinutes;
+}
+
+function getLocalDateValue(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parseTimeToMinutes(value) {
+  if (!value) {
+    return null;
+  }
+
+  const parts = String(value).split(":");
+  if (parts.length < 2) {
+    return null;
+  }
+
+  const hours = Number(parts[0]);
+  const minutes = Number(parts[1]);
+
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+}
 
 if (bookingForm) {
   const submitButton = bookingForm.querySelector("button[type='submit']");
@@ -49,6 +162,12 @@ if (bookingForm) {
       return;
     }
 
+    if (booking.service_type === FREE_PORTRAIT_SERVICE_VALUE && !freePortraitBookingIsOpen) {
+      formMessage.textContent = "Free Portrait can only be selected while an active upcoming free portrait event is available.";
+      formMessage.classList.add("error");
+      return;
+    }
+
     if (typeof supabaseClient === "undefined") {
       formMessage.textContent = "Booking system is not connected yet. Please try again later.";
       formMessage.classList.add("error");
@@ -76,6 +195,8 @@ if (bookingForm) {
     formMessage.textContent = "Thank you. Your enquiry has been sent.";
     formMessage.classList.add("success");
   });
+
+  loadFreePortraitBookingOption();
 }
 
 

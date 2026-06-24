@@ -657,6 +657,11 @@ p {
   resize: vertical;
 }
 
+.booking-form select option:disabled {
+  color: #9b9187;
+  background: #f0ece5;
+}
+
 .site-footer {
   padding: 54px 6% 24px;
   background: var(--charcoal);

@@ -405,6 +405,10 @@
       width: 220px;
     }
 
+    .admin-filters input[type="date"] {
+      width: 150px;
+    }
+
     .admin-filters input:focus,
     .admin-filters select:focus {
       border-color: #9b765f;
@@ -426,7 +430,7 @@
     }
 
     .bookings-table {
-      min-width: 1080px;
+      min-width: 1180px;
     }
 
     .posts-table {
@@ -495,6 +499,28 @@
       font-size: 13px;
       font-weight: 600;
       color: #5d4436;
+    }
+
+    .booking-row-actions {
+      display: grid;
+      gap: 8px;
+      min-width: 92px;
+    }
+
+    .delete-row-button {
+      border: 0;
+      border-radius: 999px;
+      background: rgba(139, 79, 69, 0.12);
+      color: #7c3f31;
+      padding: 8px 12px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .delete-row-button:hover {
+      background: rgba(139, 79, 69, 0.2);
     }
 
     .empty-state {
@@ -1187,6 +1213,9 @@
             <div class="admin-filters">
               <input id="bookingSearchInput" type="search" placeholder="Search enquiries..." />
 
+              <input id="bookingDateFromInput" type="date" aria-label="Submitted from date" title="Submitted from date" />
+              <input id="bookingDateToInput" type="date" aria-label="Submitted to date" title="Submitted to date" />
+
               <select id="statusFilterSelect">
                 <option value="all">All status</option>
                 <option value="new">New</option>
@@ -1215,11 +1244,12 @@
                   <th>Quoted Price</th>
                   <th>Message</th>
                   <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="bookingsTableBody">
                 <tr>
-                  <td colspan="8" class="empty-state">
+                  <td colspan="9" class="empty-state">
                     Login to load bookings.
                   </td>
                 </tr>

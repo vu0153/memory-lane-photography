@@ -51,6 +51,8 @@ const totalBookings = document.getElementById("totalBookings");
 const newBookings = document.getElementById("newBookings");
 const lastUpdated = document.getElementById("lastUpdated");
 const bookingSearchInput = document.getElementById("bookingSearchInput");
+const bookingDateFromInput = document.getElementById("bookingDateFromInput");
+const bookingDateToInput = document.getElementById("bookingDateToInput");
 const statusFilterSelect = document.getElementById("statusFilterSelect");
 const clearFiltersButton = document.getElementById("clearFiltersButton");
 
@@ -201,6 +203,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   bookingsTableBody.addEventListener("change", handleStatusChange);
   bookingsTableBody.addEventListener("click", handleBookingTableClick);
   bookingSearchInput.addEventListener("input", applyFilters);
+  bookingDateFromInput.addEventListener("change", applyFilters);
+  bookingDateToInput.addEventListener("change", applyFilters);
   statusFilterSelect.addEventListener("change", applyFilters);
   clearFiltersButton.addEventListener("click", clearFilters);
 
@@ -577,6 +581,8 @@ async function handleLogout() {
 
   bookingSearchInput.value = "";
   statusFilterSelect.value = "all";
+  bookingDateFromInput.value = "";
+  bookingDateToInput.value = "";
   postSearchInput.value = "";
   postPublishedFilter.value = "all";
   gallerySearchInput.value = "";
@@ -597,7 +603,7 @@ async function handleLogout() {
 
   bookingsTableBody.innerHTML = `
     <tr>
-      <td colspan="8" class="empty-state">Login to load bookings.</td>
+      <td colspan="9" class="empty-state">Login to load bookings.</td>
     </tr>
   `;
 
@@ -699,7 +705,7 @@ async function loadBookings() {
 
     bookingsTableBody.innerHTML = `
       <tr>
-        <td colspan="8" class="empty-state">Unable to load bookings.</td>
+        <td colspan="9" class="empty-state">Unable to load bookings.</td>
       </tr>
     `;
 
@@ -719,12 +725,18 @@ async function loadBookings() {
 function applyFilters() {
   const searchTerm = bookingSearchInput.value.trim().toLowerCase();
   const statusFilter = statusFilterSelect.value;
+  const submittedFrom = bookingDateFromInput.value || "";
+  const submittedTo = bookingDateToInput.value || "";
 
   const filteredBookings = allBookings.filter((booking) => {
     const bookingStatus = booking.status || "new";
 
     const matchesStatus =
       statusFilter === "all" || bookingStatus === statusFilter;
+
+    const submittedDate = getDateOnlyValue(booking.created_at);
+    const matchesSubmittedFrom = !submittedFrom || (submittedDate && submittedDate >= submittedFrom);
+    const matchesSubmittedTo = !submittedTo || (submittedDate && submittedDate <= submittedTo);
 
     const searchableText = [
       booking.full_name,
@@ -745,7 +757,7 @@ function applyFilters() {
     const matchesSearch =
       !searchTerm || searchableText.includes(searchTerm);
 
-    return matchesStatus && matchesSearch;
+    return matchesStatus && matchesSubmittedFrom && matchesSubmittedTo && matchesSearch;
   });
 
   renderBookings(filteredBookings);
@@ -753,8 +765,28 @@ function applyFilters() {
 
 function clearFilters() {
   bookingSearchInput.value = "";
+  bookingDateFromInput.value = "";
+  bookingDateToInput.value = "";
   statusFilterSelect.value = "all";
   applyFilters();
+}
+
+function getDateOnlyValue(value) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
 function updateSummary(bookings) {
@@ -803,7 +835,7 @@ function renderBookings(bookings) {
   if (!bookings.length) {
     bookingsTableBody.innerHTML = `
       <tr>
-        <td colspan="8" class="empty-state">No bookings found.</td>
+        <td colspan="9" class="empty-state">No bookings found.</td>
       </tr>
     `;
 
@@ -849,17 +881,33 @@ function renderBookings(bookings) {
             `).join("")}
           </select>
         </td>
+        <td>
+          <div class="booking-row-actions">
+            <button class="delete-row-button delete-booking-button" type="button" data-booking-id="${booking.id}">
+              Delete
+            </button>
+          </div>
+        </td>
       </tr>
     `;
   }).join("");
 }
 
 function handleBookingTableClick(event) {
-  if (!event.target.classList.contains("detail-button")) {
+  const deleteButton = event.target.closest(".delete-booking-button");
+
+  if (deleteButton) {
+    deleteBookingFromTable(deleteButton.dataset.bookingId);
     return;
   }
 
-  const bookingId = event.target.dataset.bookingId;
+  const detailButton = event.target.closest(".detail-button");
+
+  if (!detailButton) {
+    return;
+  }
+
+  const bookingId = detailButton.dataset.bookingId;
   const booking = allBookings.find((item) => String(item.id) === String(bookingId));
 
   if (!booking) {
@@ -867,6 +915,52 @@ function handleBookingTableClick(event) {
   }
 
   openBookingDetails(booking);
+}
+
+async function deleteBookingFromTable(bookingId) {
+  if (!bookingId) {
+    return;
+  }
+
+  const booking = allBookings.find((item) => String(item.id) === String(bookingId));
+  const clientName = booking && booking.full_name ? booking.full_name : "this booking";
+  const confirmed = window.confirm(`Delete ${clientName}? This cannot be undone.`);
+
+  if (!confirmed) {
+    return;
+  }
+
+  dashboardMessage.classList.remove("success");
+  dashboardMessage.textContent = "Deleting booking...";
+
+  const { error } = await supabaseClient
+    .from("bookings")
+    .delete()
+    .eq("id", bookingId);
+
+  if (error) {
+    dashboardMessage.textContent = error.message;
+    return;
+  }
+
+  allBookings = allBookings.filter((item) => String(item.id) !== String(bookingId));
+
+  if (String(activeDetailBookingId) === String(bookingId)) {
+    closeBookingDetails();
+  }
+
+  updateSummary(allBookings);
+  updateStatistics(allBookings);
+  renderCharts(allBookings);
+  applyFilters();
+
+  dashboardMessage.classList.add("success");
+  dashboardMessage.textContent = "Booking deleted.";
+
+  setTimeout(() => {
+    dashboardMessage.classList.remove("success");
+    dashboardMessage.textContent = "";
+  }, 1800);
 }
 
 function openBookingDetails(booking) {
