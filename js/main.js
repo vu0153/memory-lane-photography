@@ -1,6 +1,9 @@
 const bookingForm = document.querySelector(".booking-form");
 const FREE_PORTRAIT_SERVICE_VALUE = "Free Portrait Session";
+const FREE_PORTRAIT_CHECK_INTERVAL_MS = 5 * 60 * 1000;
 let freePortraitBookingIsOpen = false;
+let freePortraitLastCheckedAt = 0;
+let freePortraitAvailabilityRequestId = 0;
 
 function getFreePortraitBookingOption() {
   if (!bookingForm) {
@@ -21,14 +24,30 @@ function setFreePortraitBookingOption(isOpen, label, title) {
   freePortraitOption.disabled = !freePortraitBookingIsOpen;
   freePortraitOption.textContent = label;
   freePortraitOption.title = title || "";
+  freePortraitOption.setAttribute("aria-disabled", String(!freePortraitBookingIsOpen));
+
+  const serviceSelect = freePortraitOption.closest("select");
+
+  if (!freePortraitBookingIsOpen && serviceSelect && serviceSelect.value === FREE_PORTRAIT_SERVICE_VALUE) {
+    serviceSelect.value = "";
+  }
 }
 
-async function loadFreePortraitBookingOption() {
+async function loadFreePortraitBookingOption(forceRefresh) {
   const freePortraitOption = getFreePortraitBookingOption();
 
   if (!freePortraitOption) {
     return;
   }
+
+  const now = Date.now();
+
+  if (!forceRefresh && freePortraitLastCheckedAt && now - freePortraitLastCheckedAt < FREE_PORTRAIT_CHECK_INTERVAL_MS) {
+    return;
+  }
+
+  const requestId = ++freePortraitAvailabilityRequestId;
+  freePortraitLastCheckedAt = now;
 
   setFreePortraitBookingOption(false, "Free Portrait Session (checking availability)", "Checking upcoming free portrait availability.");
 
@@ -37,40 +56,49 @@ async function loadFreePortraitBookingOption() {
     return;
   }
 
-  const today = getLocalDateValue(new Date());
-  const { data, error } = await supabaseClient
-    .from("free_portrait_events")
-    .select("id, title, event_date, start_time, end_time, is_active")
-    .eq("is_active", true)
-    .gte("event_date", today)
-    .order("event_date", { ascending: true })
-    .order("start_time", { ascending: true })
-    .limit(10);
+  try {
+    const today = getLocalDateValue(new Date());
+    const { data, error } = await supabaseClient
+      .from("free_portrait_events")
+      .select("id, title, event_date, start_time, end_time, is_active")
+      .eq("is_active", true)
+      .gte("event_date", today)
+      .order("event_date", { ascending: true })
+      .order("start_time", { ascending: true })
+      .limit(10);
 
-  if (error) {
+    if (requestId !== freePortraitAvailabilityRequestId) {
+      return;
+    }
+
+    if (error) {
+      console.error(error);
+      setFreePortraitBookingOption(false, "Free Portrait Session (not available)", "Free portrait booking is unavailable at the moment.");
+      return;
+    }
+
+    const upcomingEvent = (data || []).find(isFreePortraitEventAvailableForBooking);
+
+    if (!upcomingEvent) {
+      setFreePortraitBookingOption(false, "Free Portrait Session (no active event)", "This option is available only when an active upcoming free portrait event exists.");
+      return;
+    }
+
+    setFreePortraitBookingOption(true, "Free Portrait Session", upcomingEvent.title || "Free portrait booking is available for the upcoming event.");
+  } catch (error) {
     console.error(error);
     setFreePortraitBookingOption(false, "Free Portrait Session (not available)", "Free portrait booking is unavailable at the moment.");
-    return;
   }
-
-  const upcomingEvent = (data || []).find(isFreePortraitEventAvailableForBooking);
-
-  if (!upcomingEvent) {
-    setFreePortraitBookingOption(false, "Free Portrait Session (no active event)", "This option is available only when an active upcoming free portrait event exists.");
-    return;
-  }
-
-  setFreePortraitBookingOption(true, "Free Portrait Session", upcomingEvent.title || "Free portrait booking is available for the upcoming event.");
 }
 
 function isFreePortraitEventAvailableForBooking(event) {
-  if (!event || !event.event_date) {
+  if (!event || !event.event_date || event.is_active === false) {
     return false;
   }
 
   const now = new Date();
   const today = getLocalDateValue(now);
-  const eventDate = String(event.event_date);
+  const eventDate = String(event.event_date).slice(0, 10);
 
   if (eventDate > today) {
     return true;
@@ -196,7 +224,29 @@ if (bookingForm) {
     formMessage.classList.add("success");
   });
 
-  loadFreePortraitBookingOption();
+  const serviceSelect = bookingForm.querySelector("select");
+
+  if (serviceSelect) {
+    serviceSelect.addEventListener("focus", function () {
+      loadFreePortraitBookingOption(false);
+    });
+
+    serviceSelect.addEventListener("pointerdown", function () {
+      loadFreePortraitBookingOption(false);
+    });
+  }
+
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) {
+      loadFreePortraitBookingOption(true);
+    }
+  });
+
+  window.addEventListener("focus", function () {
+    loadFreePortraitBookingOption(true);
+  });
+
+  loadFreePortraitBookingOption(true);
 }
 
 

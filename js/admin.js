@@ -933,26 +933,29 @@ async function deleteBookingFromTable(bookingId) {
   dashboardMessage.classList.remove("success");
   dashboardMessage.textContent = "Deleting booking...";
 
-  const { error } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("bookings")
     .delete()
-    .eq("id", bookingId);
+    .eq("id", bookingId)
+    .select("id");
 
   if (error) {
     dashboardMessage.textContent = error.message;
+    await loadBookings();
     return;
   }
 
-  allBookings = allBookings.filter((item) => String(item.id) !== String(bookingId));
+  if (!data || data.length === 0) {
+    dashboardMessage.textContent = "Booking was not deleted. Please check the Supabase delete policy for the bookings table.";
+    await loadBookings();
+    return;
+  }
 
   if (String(activeDetailBookingId) === String(bookingId)) {
     closeBookingDetails();
   }
 
-  updateSummary(allBookings);
-  updateStatistics(allBookings);
-  renderCharts(allBookings);
-  applyFilters();
+  await loadBookings();
 
   dashboardMessage.classList.add("success");
   dashboardMessage.textContent = "Booking deleted.";
