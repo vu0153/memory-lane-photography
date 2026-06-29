@@ -5262,3 +5262,127 @@ p {
 }
 
 /* END FREE PORTRAIT COMPACT SESSION CARDS */
+
+
+/* =========================================================
+   SOCIAL LINKS - 20260629-social-links
+   ========================================================= */
+
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.social-link {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 42px;
+  margin: 0 !important;
+  padding: 0 15px;
+  border: 1px solid rgba(123, 130, 107, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 250, 245, 0.56);
+  color: #3f4738;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+.social-link svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+
+.social-link:hover,
+.social-link:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(63, 71, 56, 0.52);
+  background: #3f4738;
+  color: #fffaf5;
+  box-shadow: 0 12px 24px rgba(42, 31, 24, 0.12);
+  outline: none;
+}
+
+.contact-social-card {
+  margin-top: 18px;
+  padding: 20px 22px;
+  border: 1px solid rgba(123, 130, 107, 0.18);
+  border-radius: 22px;
+  background: rgba(255, 250, 245, 0.68);
+  box-shadow: 0 14px 34px rgba(42, 31, 24, 0.07);
+}
+
+.contact-social-kicker {
+  display: block;
+  margin-bottom: 6px;
+  color: #3f4738;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.contact-social-card p {
+  margin: 0;
+  color: #6f6a61;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.contact-social-card .social-links {
+  margin-top: 14px;
+}
+
+.site-footer .social-links {
+  margin-top: 18px;
+}
+
+.site-footer .social-link {
+  width: auto;
+  color: rgba(247, 244, 238, 0.86) !important;
+  border-color: rgba(247, 244, 238, 0.22);
+  background: rgba(247, 244, 238, 0.08);
+}
+
+.site-footer .social-link:hover,
+.site-footer .social-link:focus-visible {
+  color: #3f4738 !important;
+  border-color: #fffaf5;
+  background: #fffaf5;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+}
+
+@media (max-width: 760px) {
+  .contact-social-card {
+    margin-top: 16px;
+    padding: 18px 16px;
+    border-radius: 18px;
+  }
+
+  .social-link {
+    min-height: 44px;
+    padding: 0 14px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 430px) {
+  .contact-social-card .social-links,
+  .site-footer .social-links {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .contact-social-card .social-link,
+  .site-footer .social-link {
+    width: 100%;
+  }
+}
