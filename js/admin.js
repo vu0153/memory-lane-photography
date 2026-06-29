@@ -56,8 +56,10 @@ const lastUpdated = document.getElementById("lastUpdated");
 const bookingSearchInput = document.getElementById("bookingSearchInput");
 const bookingDateFromInput = document.getElementById("bookingDateFromInput");
 const bookingDateToInput = document.getElementById("bookingDateToInput");
+const serviceFilterSelect = document.getElementById("serviceFilterSelect");
 const statusFilterSelect = document.getElementById("statusFilterSelect");
 const clearFiltersButton = document.getElementById("clearFiltersButton");
+const exportBookingsPdfButton = document.getElementById("exportBookingsPdfButton");
 
 const quotedPipelineValue = document.getElementById("quotedPipelineValue");
 const bookedRevenueValue = document.getElementById("bookedRevenueValue");
@@ -179,6 +181,7 @@ const galleryCategories = [
 
 
 let allBookings = [];
+let currentFilteredBookings = [];
 let allPosts = [];
 let allGalleryImages = [];
 let allHeroImages = [];
@@ -212,8 +215,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   bookingSearchInput.addEventListener("input", applyFilters);
   bookingDateFromInput.addEventListener("change", applyFilters);
   bookingDateToInput.addEventListener("change", applyFilters);
+  serviceFilterSelect.addEventListener("change", applyFilters);
   statusFilterSelect.addEventListener("change", applyFilters);
   clearFiltersButton.addEventListener("click", clearFilters);
+  if (exportBookingsPdfButton) {
+    exportBookingsPdfButton.addEventListener("click", exportFilteredBookingsPdf);
+  }
 
   postSearchInput.addEventListener("input", applyPostFilters);
   postPublishedFilter.addEventListener("change", applyPostFilters);
@@ -594,12 +601,14 @@ async function handleLogout() {
   await supabaseClient.auth.signOut();
 
   allBookings = [];
+  currentFilteredBookings = [];
   allPosts = [];
   allGalleryImages = [];
   allHeroImages = [];
   activeDetailBookingId = null;
 
   bookingSearchInput.value = "";
+  serviceFilterSelect.value = "all";
   statusFilterSelect.value = "all";
   bookingDateFromInput.value = "";
   bookingDateToInput.value = "";
@@ -733,6 +742,7 @@ async function loadBookings() {
   }
 
   allBookings = data || [];
+  populateServiceFilterOptions(allBookings);
 
   updateSummary(allBookings);
   updateStatistics(allBookings);
@@ -743,16 +753,26 @@ async function loadBookings() {
 }
 
 function applyFilters() {
+  currentFilteredBookings = getFilteredBookings();
+  renderBookings(currentFilteredBookings);
+}
+
+function getFilteredBookings() {
   const searchTerm = bookingSearchInput.value.trim().toLowerCase();
+  const serviceFilter = serviceFilterSelect.value;
   const statusFilter = statusFilterSelect.value;
   const submittedFrom = bookingDateFromInput.value || "";
   const submittedTo = bookingDateToInput.value || "";
 
-  const filteredBookings = allBookings.filter((booking) => {
+  return allBookings.filter((booking) => {
     const bookingStatus = booking.status || "new";
 
     const matchesStatus =
       statusFilter === "all" || bookingStatus === statusFilter;
+
+    const bookingService = booking.service_type || "Not provided";
+    const matchesService =
+      serviceFilter === "all" || bookingService === serviceFilter;
 
     const submittedDate = getDateOnlyValue(booking.created_at);
     const matchesSubmittedFrom = !submittedFrom || (submittedDate && submittedDate >= submittedFrom);
@@ -777,16 +797,449 @@ function applyFilters() {
     const matchesSearch =
       !searchTerm || searchableText.includes(searchTerm);
 
-    return matchesStatus && matchesSubmittedFrom && matchesSubmittedTo && matchesSearch;
+    return matchesStatus && matchesService && matchesSubmittedFrom && matchesSubmittedTo && matchesSearch;
   });
+}
 
-  renderBookings(filteredBookings);
+function populateServiceFilterOptions(bookings) {
+  if (!serviceFilterSelect) {
+    return;
+  }
+
+  const currentValue = serviceFilterSelect.value || "all";
+  const services = [...new Set(bookings
+    .map((booking) => booking.service_type || "Not provided")
+    .filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b));
+
+  serviceFilterSelect.innerHTML = `
+    <option value="all">All services</option>
+    ${services.map((service) => `
+      <option value="${escapeAttribute(service)}">${escapeHtml(service)}</option>
+    `).join("")}
+  `;
+
+  const hasPreviousValue = services.includes(currentValue);
+  serviceFilterSelect.value = hasPreviousValue ? currentValue : "all";
+}
+
+function exportFilteredBookingsPdf() {
+  const bookings = getFilteredBookings();
+
+  if (!bookings.length) {
+    dashboardMessage.classList.remove("success");
+    dashboardMessage.textContent = "No bookings match the current filters to export.";
+    return;
+  }
+
+  dashboardMessage.textContent = "";
+  const reportWindow = window.open("", "_blank", "width=980,height=1200");
+
+  if (!reportWindow) {
+    dashboardMessage.classList.remove("success");
+    dashboardMessage.textContent = "Popup blocked. Please allow popups for this site, then try Export PDF again.";
+    return;
+  }
+
+  const reportHtml = buildBookingReportHtml(bookings);
+  reportWindow.document.open();
+  reportWindow.document.write(reportHtml);
+  reportWindow.document.close();
+  reportWindow.focus();
+}
+
+function buildBookingReportHtml(bookings) {
+  const generatedAt = formatDateTime(new Date().toISOString());
+  const dateRangeLabel = getBookingReportDateRangeLabel();
+  const serviceLabel = serviceFilterSelect.value === "all"
+    ? "All services"
+    : serviceFilterSelect.options[serviceFilterSelect.selectedIndex]?.text || serviceFilterSelect.value;
+  const statusLabel = statusFilterSelect.value === "all"
+    ? "All status"
+    : formatStatus(statusFilterSelect.value);
+  const totalQuoted = bookings.reduce((total, booking) => total + parseMoney(booking.quoted_price), 0);
+  const logoUrl = new URL("assets/logo/ml-logo-icon.svg", window.location.href).href;
+  const statusSummary = statusOptions
+    .map((status) => {
+      const count = bookings.filter((booking) => (booking.status || "new") === status).length;
+      return `${escapeHtml(formatStatus(status))}: ${count}`;
+    })
+    .join(" · ");
+
+  const rows = bookings.map((booking, index) => {
+    const contactItems = [booking.phone, booking.email]
+      .filter(Boolean)
+      .map((item) => escapeHtml(item))
+      .join("<br>") || "Not provided";
+
+    return `
+      <tr>
+        <td class="number-cell">${index + 1}</td>
+        <td>${escapeHtml(booking.full_name || "Unknown")}</td>
+        <td>${contactItems}</td>
+        <td>${escapeHtml(booking.service_type || "Not provided")}</td>
+        <td>${escapeHtml(formatDateTime(booking.created_at))}</td>
+        <td>${escapeHtml(formatDate(booking.preferred_date))}</td>
+        <td>${escapeHtml(formatStatus(booking.status || "new"))}</td>
+        <td class="money-cell">${escapeHtml(formatCurrency(parseMoney(booking.quoted_price)))}</td>
+      </tr>
+    `;
+  }).join("");
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory Lane Booking Report</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 13mm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #ffffff;
+      color: #000000;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    .report-page {
+      width: 100%;
+      min-height: 100vh;
+      background: #ffffff;
+      padding: 18px;
+    }
+
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #000000;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      filter: grayscale(1) contrast(1.05);
+    }
+
+    .brand-title {
+      margin: 0;
+      color: #000000;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .brand-subtitle {
+      margin-top: 4px;
+      color: #000000;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .report-meta {
+      text-align: right;
+      color: #000000;
+      font-size: 9px;
+    }
+
+    .report-title-block {
+      margin: 18px 0 12px;
+    }
+
+    .report-title-block h2 {
+      margin: 0;
+      color: #000000;
+      font-size: 21px;
+      line-height: 1.15;
+    }
+
+    .report-title-block p {
+      margin: 5px 0 0;
+      color: #000000;
+      font-size: 10px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      margin: 12px 0 10px;
+    }
+
+    .summary-card {
+      min-height: 48px;
+      padding: 9px;
+      border: 1px solid #000000;
+      background: #ffffff;
+    }
+
+    .summary-card span {
+      display: block;
+      color: #000000;
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .summary-card strong {
+      display: block;
+      margin-top: 5px;
+      color: #000000;
+      font-size: 12px;
+    }
+
+    .status-summary {
+      margin: 0 0 12px;
+      color: #000000;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      background: #ffffff;
+      border: 1px solid #000000;
+    }
+
+    th,
+    td {
+      padding: 7px 6px;
+      border-bottom: 1px solid #000000;
+      border-right: 1px solid #000000;
+      text-align: left;
+      vertical-align: top;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: 0;
+    }
+
+    thead th {
+      background: #ffffff;
+      color: #000000;
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .number-cell {
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .money-cell {
+      text-align: right;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .col-no { width: 5%; }
+    .col-client { width: 13%; }
+    .col-contact { width: 21%; }
+    .col-service { width: 15%; }
+    .col-submitted { width: 15%; }
+    .col-preferred { width: 13%; }
+    .col-status { width: 9%; }
+    .col-price { width: 9%; }
+
+    .report-footer {
+      margin-top: 12px;
+      padding-top: 8px;
+      border-top: 1px solid #000000;
+      color: #000000;
+      font-size: 8.5px;
+      text-align: right;
+    }
+
+    .print-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .print-actions button {
+      border: 1px solid #000000;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #000000;
+      padding: 9px 14px;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        -webkit-print-color-adjust: economy;
+        print-color-adjust: economy;
+      }
+
+      .report-page {
+        min-height: auto;
+        padding: 0;
+      }
+
+      .print-actions {
+        display: none;
+      }
+
+      table {
+        page-break-inside: auto;
+      }
+
+      tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="report-page">
+    <div class="print-actions">
+      <button type="button" onclick="window.print()">Save as PDF</button>
+      <button type="button" onclick="window.close()">Close</button>
+    </div>
+
+    <header class="report-header">
+      <div class="brand">
+        <img src="${escapeAttribute(logoUrl)}" alt="Memory Lane logo" />
+        <div>
+          <h1 class="brand-title">Memory Lane</h1>
+          <div class="brand-subtitle">Photo Studio</div>
+        </div>
+      </div>
+
+      <div class="report-meta">
+        <strong>Generated</strong><br>
+        ${escapeHtml(generatedAt)}
+      </div>
+    </header>
+
+    <section class="report-title-block">
+      <h2>Booking Report</h2>
+      <p>Filtered booking export from the Memory Lane admin dashboard.</p>
+    </section>
+
+    <section class="summary-grid" aria-label="Report summary">
+      <div class="summary-card">
+        <span>Date range</span>
+        <strong>${escapeHtml(dateRangeLabel)}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Service filter</span>
+        <strong>${escapeHtml(serviceLabel)}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Status filter</span>
+        <strong>${escapeHtml(statusLabel)}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Total bookings</span>
+        <strong>${bookings.length}</strong>
+      </div>
+      <div class="summary-card">
+        <span>Total quoted</span>
+        <strong>${escapeHtml(formatCurrency(totalQuoted))}</strong>
+      </div>
+    </section>
+
+    <section class="status-summary" aria-label="Status summary">
+      ${statusSummary}
+    </section>
+
+    <table aria-label="Booking report table">
+      <thead>
+        <tr>
+          <th class="col-no">No.</th>
+          <th class="col-client">Client</th>
+          <th class="col-contact">Contact</th>
+          <th class="col-service">Service</th>
+          <th class="col-submitted">Submitted date</th>
+          <th class="col-preferred">Preferred date</th>
+          <th class="col-status">Status</th>
+          <th class="col-price">Quoted price</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+      </tbody>
+    </table>
+
+    <footer class="report-footer">
+      Memory Lane Photo Studio booking report · ${escapeHtml(generatedAt)}
+    </footer>
+  </div>
+
+  <script>
+    window.addEventListener("load", function () {
+      setTimeout(function () {
+        window.print();
+      }, 350);
+    });
+  </script>
+</body>
+</html>`;
+}
+
+function getBookingReportDateRangeLabel() {
+  const submittedFrom = bookingDateFromInput.value || "";
+  const submittedTo = bookingDateToInput.value || "";
+
+  if (submittedFrom && submittedTo) {
+    return `${formatDate(submittedFrom)} – ${formatDate(submittedTo)}`;
+  }
+
+  if (submittedFrom) {
+    return `From ${formatDate(submittedFrom)}`;
+  }
+
+  if (submittedTo) {
+    return `Up to ${formatDate(submittedTo)}`;
+  }
+
+  return "All submitted dates";
 }
 
 function clearFilters() {
   bookingSearchInput.value = "";
   bookingDateFromInput.value = "";
   bookingDateToInput.value = "";
+  serviceFilterSelect.value = "all";
   statusFilterSelect.value = "all";
   applyFilters();
 }

@@ -1375,6 +1375,10 @@
               <input id="bookingDateFromInput" type="date" aria-label="Submitted from date" title="Submitted from date" />
               <input id="bookingDateToInput" type="date" aria-label="Submitted to date" title="Submitted to date" />
 
+              <select id="serviceFilterSelect" aria-label="Filter by service" title="Filter by service">
+                <option value="all">All services</option>
+              </select>
+
               <select id="statusFilterSelect">
                 <option value="all">All status</option>
                 <option value="new">New</option>
@@ -1387,6 +1391,10 @@
 
               <button id="clearFiltersButton" class="admin-button small" type="button">
                 Clear
+              </button>
+
+              <button id="exportBookingsPdfButton" class="admin-button small light" type="button">
+                Export PDF
               </button>
             </div>
           </div>
@@ -2077,6 +2085,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js?v=20260624-free-portrait-date-match"></script>
-  <script src="js/admin.js?v=20260624-free-portrait-date-match"></script>
+  <script src="js/admin.js?v=20260629-booking-service-filter"></script>
 </body>
 </html>
