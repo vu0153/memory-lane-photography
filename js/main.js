@@ -1248,3 +1248,144 @@ createImageViewer();
 createPostModal();
 loadGalleryPreview();
 loadHelpfulAdvicePosts();
+/* =========================================================
+   SITE-WIDE SCROLL REVEAL - 20260701
+   Applies the same premium fade-up behaviour used on Free Portrait.
+   ========================================================= */
+(function initMemoryLaneScrollReveal() {
+  const revealSelectors = [
+    ".public-clean-page .hero-content > .eyebrow",
+    ".public-clean-page .hero-content h1",
+    ".public-clean-page .hero-divider",
+    ".public-clean-page .hero-editorial-note",
+    ".public-clean-page .hero-buttons",
+    ".public-clean-page .hero-static-visual",
+    ".public-clean-page .section-heading",
+    ".public-clean-page .split-heading",
+    ".public-clean-page .services-showcase-layout > *",
+    ".public-clean-page .service-card",
+    ".public-clean-page .price-card",
+    ".public-clean-page .pricing-note-block",
+    ".public-clean-page .gallery-card",
+    ".public-clean-page .tip-card",
+    ".public-clean-page .why-grid article",
+    ".public-clean-page .testimonial-card",
+    ".public-clean-page .contact-copy",
+    ".public-clean-page .booking-form",
+    ".public-clean-page .about-polish-copy > *",
+    ".public-clean-page .about-polish-card",
+    ".public-clean-page .about-polish-kicker-block",
+    ".public-clean-page .about-polish-story-copy",
+    ".public-clean-page .about-polish-community-card > *",
+    ".public-clean-page .about-polish-mini-list article",
+    ".public-clean-page .about-polish-profile-card",
+    ".public-clean-page .about-polish-values-grid article",
+    ".public-clean-page .about-polish-cta-card"
+  ];
+
+  const cardSelectors = [
+    ".service-card",
+    ".price-card",
+    ".gallery-card",
+    ".tip-card",
+    ".testimonial-card",
+    ".booking-form",
+    ".about-polish-card",
+    ".about-polish-community-card",
+    ".about-polish-profile-card",
+    ".about-polish-values-grid article",
+    ".about-polish-mini-list article",
+    ".about-polish-cta-card"
+  ];
+
+  const revealQuery = revealSelectors.join(",");
+  const cardQuery = cardSelectors.join(",");
+  const observedElements = new WeakSet();
+  let intersectionObserver;
+
+  function shouldReveal(element) {
+    return element && element.nodeType === 1 && element.matches(revealQuery);
+  }
+
+  function collectRevealElements(root) {
+    const elements = [];
+
+    if (shouldReveal(root)) {
+      elements.push(root);
+    }
+
+    if (root && root.querySelectorAll) {
+      root.querySelectorAll(revealQuery).forEach(function (element) {
+        elements.push(element);
+      });
+    }
+
+    return elements;
+  }
+
+  function prepareElement(element, index) {
+    if (!element || observedElements.has(element)) {
+      return;
+    }
+
+    observedElements.add(element);
+    element.classList.add("ml-scroll-reveal");
+
+    if (element.matches(cardQuery)) {
+      element.classList.add("ml-card-reveal");
+    }
+
+    if (!element.style.getPropertyValue("--ml-reveal-delay")) {
+      element.style.setProperty("--ml-reveal-delay", `${Math.min(index % 4, 3) * 70}ms`);
+    }
+
+    if (intersectionObserver) {
+      intersectionObserver.observe(element);
+    } else {
+      element.classList.add("in-view");
+    }
+  }
+
+  function prepareRevealElements(root) {
+    collectRevealElements(root || document).forEach(prepareElement);
+  }
+
+  if (!document.querySelector(".public-clean-page")) {
+    return;
+  }
+
+  document.documentElement.classList.add("ml-reveal-ready");
+
+  if ("IntersectionObserver" in window) {
+    intersectionObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in-view");
+          intersectionObserver.unobserve(entry.target);
+        }
+      });
+    }, {
+      root: null,
+      rootMargin: "0px 0px -10% 0px",
+      threshold: 0.12
+    });
+  }
+
+  prepareRevealElements(document);
+
+  if ("MutationObserver" in window) {
+    const mutationObserver = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        mutation.addedNodes.forEach(function (node) {
+          prepareRevealElements(node);
+        });
+      });
+    });
+
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+}());
+/* END SITE-WIDE SCROLL REVEAL */
