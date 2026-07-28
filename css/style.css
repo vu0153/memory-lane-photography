@@ -7541,3 +7541,139 @@ p {
   }
 }
 /* END SITE-WIDE CLEAN PREMIUM POLISH + SCROLL REVEAL */
+
+/* =========================================================
+   MOBILE GALLERY MODAL GRID STABILITY - 20260728
+   Prevents iOS Safari thumbnails from collapsing and visually
+   overlapping when mixed portrait and landscape images load.
+   Keep this block at the very end of the file.
+   ========================================================= */
+@media (max-width: 760px) {
+  body .gallery-modal {
+    overflow: hidden !important;
+  }
+
+  body .gallery-modal-panel {
+    inset: 12px !important;
+    width: auto !important;
+    max-width: none !important;
+    height: calc(100vh - 24px) !important;
+    height: calc(100dvh - 24px) !important;
+    max-height: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    border-radius: 26px !important;
+  }
+
+  body .gallery-modal-header {
+    position: relative !important;
+    z-index: 2 !important;
+    flex: 0 0 auto !important;
+    gap: 18px !important;
+    padding: 22px 20px 18px !important;
+    background: rgba(247, 244, 238, 0.96) !important;
+    backdrop-filter: blur(14px) !important;
+  }
+
+  body .gallery-modal-header .eyebrow {
+    margin-bottom: 7px !important;
+    font-size: 11px !important;
+    letter-spacing: 0.22em !important;
+  }
+
+  body .gallery-modal-header h2 {
+    max-width: calc(100vw - 120px) !important;
+    font-size: clamp(32px, 9vw, 44px) !important;
+    line-height: 0.98 !important;
+    text-wrap: balance !important;
+  }
+
+  body .gallery-modal-close {
+    width: 46px !important;
+    height: 46px !important;
+    flex: 0 0 46px !important;
+  }
+
+  body .gallery-modal-grid {
+    position: relative !important;
+    flex: 1 1 auto !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-auto-flow: row !important;
+    grid-auto-rows: clamp(138px, 40vw, 190px) !important;
+    align-items: stretch !important;
+    align-content: start !important;
+    justify-items: stretch !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 18px 20px 24px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  body .gallery-modal-item {
+    position: relative !important;
+    isolation: isolate !important;
+    contain: layout paint !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    border-radius: 16px !important;
+    background: #e9e3d9 !important;
+    box-shadow: 0 10px 24px rgba(42, 31, 24, 0.10) !important;
+    transform: translateZ(0) !important;
+  }
+
+  body .gallery-modal-item img {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    border-radius: inherit !important;
+    transform: none !important;
+  }
+
+  body .gallery-modal-item:active img {
+    transform: scale(0.985) !important;
+  }
+}
+
+@media (max-width: 360px) {
+  body .gallery-modal-panel {
+    inset: 8px !important;
+    height: calc(100vh - 16px) !important;
+    height: calc(100dvh - 16px) !important;
+    border-radius: 22px !important;
+  }
+
+  body .gallery-modal-header {
+    padding: 20px 16px 16px !important;
+  }
+
+  body .gallery-modal-grid {
+    grid-auto-rows: 132px !important;
+    gap: 10px !important;
+    padding: 16px 16px 20px !important;
+  }
+
+  body .gallery-modal-item {
+    border-radius: 14px !important;
+  }
+}

@@ -733,7 +733,7 @@ function renderGalleryPreview(groups) {
 
     return `
       <article class="gallery-card ${largeClass}" data-category="${escapeAttribute(group.category)}">
-        <img src="${escapeAttribute(group.coverImage.src)}" alt="${escapeAttribute(group.coverImage.alt)}">
+        <img src="${escapeAttribute(group.coverImage.src)}" alt="${escapeAttribute(group.coverImage.alt)}" loading="lazy" decoding="async" draggable="false">
         <div class="gallery-card-content">
           <span>${escapeHtml(group.category)}</span>
           <small>${group.count} ${photoLabel}</small>
@@ -841,7 +841,7 @@ function openGalleryModal(category) {
   grid.innerHTML = images.map(function (image, index) {
     return `
       <article class="gallery-modal-item" data-index="${index}">
-        <img src="${escapeAttribute(image.src)}" alt="${escapeAttribute(image.alt)}">
+        <img src="${escapeAttribute(image.src)}" alt="${escapeAttribute(image.alt)}" loading="lazy" decoding="async" draggable="false">
       </article>
     `;
   }).join("");
