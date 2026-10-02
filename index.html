@@ -56,6 +56,30 @@
 </head>
 <body>
 
+  <div id="awardPopup" class="award-popup-overlay" role="dialog" aria-modal="true" aria-labelledby="awardPopupTitle" aria-describedby="awardPopupDescription">
+    <div class="award-popup-card">
+      <button class="award-popup-close" type="button" aria-label="Close announcement" data-award-popup-close>×</button>
+
+      <div class="award-popup-media">
+        <span class="award-popup-ribbon">2026 Royal Adelaide Show</span>
+        <img src="assets/images/awards/adelaide-show-2026-champion-wildlife.jpg" alt="Ricky Vu holding the Champion Wildlife Print in Show ribbon beside his award-winning photograph at the 2026 Royal Adelaide Show">
+      </div>
+
+      <div class="award-popup-body">
+        <p class="eyebrow">Exciting News</p>
+        <h2 id="awardPopupTitle">We're Champions at the Royal Adelaide Show!</h2>
+        <p id="awardPopupDescription">
+          Ricky Vu's photograph "Little Gull" has been awarded <strong>Champion Wildlife Print in Show</strong> at the 2026 Royal Adelaide Show, presented by the Royal Agricultural &amp; Horticultural Society of SA. Thank you to everyone who has supported Memory Lane Photo Studio along the way.
+        </p>
+
+        <div class="award-popup-actions">
+          <a href="#gallery" class="primary-button" data-award-popup-close>See Our Work</a>
+          <button type="button" class="secondary-button" data-award-popup-close>Continue to Website</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <header class="site-header">
     <a href="#home" class="logo">
       <img class="logo-image" src="assets/logo/ml-logo-icon.svg" alt="Memory Lane Photo Studio logo">
@@ -532,6 +556,65 @@
           closeMenu();
         }
       });
+    }());
+  </script>
+
+  <script>
+    (function () {
+      var popup = document.querySelector('#awardPopup');
+
+      if (!popup) {
+        return;
+      }
+
+      var STORAGE_KEY = 'mlAwardPopupSeen-adelaide-show-2026';
+      var closeTriggers = popup.querySelectorAll('[data-award-popup-close]');
+
+      function openPopup() {
+        popup.classList.add('open');
+        document.body.classList.add('modal-open');
+      }
+
+      function closePopup() {
+        popup.classList.remove('open');
+        document.body.classList.remove('modal-open');
+      }
+
+      closeTriggers.forEach(function (trigger) {
+        trigger.addEventListener('click', closePopup);
+      });
+
+      popup.addEventListener('click', function (event) {
+        if (event.target === popup) {
+          closePopup();
+        }
+      });
+
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && popup.classList.contains('open')) {
+          closePopup();
+        }
+      });
+
+      var alreadySeen = false;
+
+      try {
+        alreadySeen = sessionStorage.getItem(STORAGE_KEY) === 'true';
+      } catch (error) {
+        alreadySeen = false;
+      }
+
+      if (!alreadySeen) {
+        window.setTimeout(function () {
+          openPopup();
+
+          try {
+            sessionStorage.setItem(STORAGE_KEY, 'true');
+          } catch (error) {
+            /* Private browsing or storage disabled: popup will simply show again next visit. */
+          }
+        }, 500);
+      }
     }());
   </script>
 </body>
