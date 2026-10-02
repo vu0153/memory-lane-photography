@@ -7699,6 +7699,7 @@ p {
 
 .award-popup-card {
   position: relative;
+  z-index: 1;
   width: min(760px, 100%);
   max-height: calc(100vh - 40px);
   overflow: auto;
@@ -7707,6 +7708,13 @@ p {
   background: var(--white);
   border-radius: 24px;
   box-shadow: var(--shadow-strong);
+}
+
+.award-confetti-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .award-popup-media {
