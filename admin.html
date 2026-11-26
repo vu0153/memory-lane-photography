@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Allura&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/style.css?v=20260629-admin-centered-duo" />
+  <link rel="stylesheet" href="css/ai-inbox.css?v=1" />
 
   <style>
     body {
@@ -1315,8 +1316,42 @@
 <button id="freePortraitTabButton" class="admin-tab-button" type="button" data-tab="freePortrait">
   Free Portrait
 </button>
+<button id="aiInboxTabButton" class="admin-tab-button" type="button" data-tab="aiInbox">AI Inbox</button>
 
         </nav>
+
+        <section id="aiInboxPanel" class="admin-panel" aria-label="AI Inbox and quote requests">
+          <h2>AI Inbox &amp; Quote Review</h2>
+          <p>Review enquiries collected by the virtual chat assistants. You decide the
+             price and email wording. This preview does not send quote emails.</p>
+          <button type="button" id="aiInboxRefresh" class="admin-button small">Refresh queue</button>
+          <p class="ai-inbox-status" id="aiInboxMessage" role="status"></p>
+          <div class="ai-inbox-shell">
+            <div class="ai-inbox-queue">
+              <h3>Quote requests</h3>
+              <div id="aiInboxQueue" class="ai-inbox-queue-list"></div>
+            </div>
+            <div class="ai-inbox-editor">
+              <h3>Quote draft editor</h3>
+              <form id="aiQuoteDraftForm" hidden>
+                <p id="aiQuoteCustomer" class="ai-inbox-info"></p>
+                <label>Conversation context</label>
+                <p id="aiQuoteContext" class="ai-inbox-info"></p>
+                <label for="aiQuotePrice">Approved price (AUD)</label>
+                <input id="aiQuotePrice" type="number" min="0" max="100000" step=".01" inputmode="decimal"
+                  placeholder="Enter your personalised quote">
+                <label for="aiQuoteSubject">Email subject</label>
+                <input id="aiQuoteSubject" maxlength="150" type="text" required>
+                <label for="aiQuoteBody">Email content</label>
+                <textarea id="aiQuoteBody" maxlength="6000" required></textarea>
+                <p class="ai-inbox-note">Draft only. Quotes must be manually approved and sent
+                  after the outbound email integration has been configured and tested.</p>
+                <button id="aiQuoteDraftSave" class="admin-button" type="submit">Save draft for review</button>
+              </form>
+              <p class="ai-inbox-note">Your quote will not be displayed in live chat.</p>
+            </div>
+          </div>
+        </section>
 
         <section id="bookingsPanel" class="admin-panel active">
           <section class="stats-section" aria-label="Booking statistics">
@@ -2093,5 +2128,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js?v=20260624-free-portrait-date-match"></script>
   <script src="js/admin.js?v=20260629-booking-service-filter"></script>
+  <script src="js/ai-inbox.js?v=1"></script>
 </body>
 </html>
