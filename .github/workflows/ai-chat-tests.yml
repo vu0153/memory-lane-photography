@@ -21,6 +21,8 @@ jobs:
         run: |
           node --check js/ai-chat.js
           node --check js/ai-inbox.js
+          node --check js/main.js
+          node --check js/admin.js
           node --check functions/api/ai/chat.js
           node --check functions/api/ai/admin/quotes.js
       - name: Test fail-closed API behavior
