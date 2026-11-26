@@ -47,7 +47,7 @@ async function verifyTurnstile(env,request,token){
  const r=await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify",{method:"POST",body:form});
  if(!r.ok)return false;
  const result=await r.json();
- return result.success===true;
+ return result.success===true && result.hostname===new URL(request.url).hostname;
 }
 function validateOrigin(request){
  const origin=request.headers.get("Origin");
