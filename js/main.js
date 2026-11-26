@@ -238,6 +238,17 @@ if (bookingForm) {
   bookingForm.addEventListener("submit", async function (event) {
     event.preventDefault();
 
+    // Cloudflare branch previews still load the legacy production Supabase client.
+    // Block form writes until the preview environment is fully isolated.
+    if (window.location.hostname.endsWith(".memory-lane-photography.pages.dev")) {
+      const message = bookingForm.querySelector(".form-message");
+      if (message) {
+        message.textContent = "This is a test preview. Booking submissions are disabled here. Please use memorylaneadelaide.com for real enquiries.";
+        message.classList.add("error");
+      }
+      return;
+    }
+
     const fullNameInput = bookingForm.querySelector("input[type='text']");
     const phoneInput = bookingForm.querySelector("input[type='tel']");
     const emailInput = bookingForm.querySelector("input[type='email']");
