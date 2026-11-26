@@ -196,6 +196,14 @@ let monthlyEnquiriesChart = null;
 let monthlyIncomeChart = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // Prevent accidental production edits from Cloudflare branch previews.
+  // Preview Admin requires a separate staging Supabase Auth configuration.
+  if (window.location.hostname.endsWith(".memory-lane-photography.pages.dev")) {
+    const banner = document.getElementById("loginMessage");
+    if (banner) banner.textContent = "Admin is disabled on branch preview until staging credentials are configured. Do not edit production data from preview.";
+    document.querySelectorAll("#loginForm input, #loginForm button").forEach((el) => { el.disabled = true; });
+    return;
+  }
   createDetailsModal();
 
   await checkSession();
