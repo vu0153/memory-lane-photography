@@ -209,6 +209,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   galleryTabButton.addEventListener("click", () => switchAdminTab("gallery"));
   heroTabButton.addEventListener("click", () => switchAdminTab("hero"));
   freePortraitTabButton.addEventListener("click", () => switchAdminTab("freePortrait"));
+  document.getElementById("aiInboxTabButton").addEventListener("click", () => switchAdminTab("aiInbox"));
 
   bookingsTableBody.addEventListener("change", handleStatusChange);
   bookingsTableBody.addEventListener("click", handleBookingTableClick);
@@ -683,12 +684,16 @@ function switchAdminTab(tabName) {
   const isGallery = tabName === "gallery";
   const isHero = tabName === "hero";
   const isFreePortrait = tabName === "freePortrait";
+  const isAIInbox = tabName === "aiInbox";
 
   bookingsTabButton.classList.toggle("active", isBookings);
   postsTabButton.classList.toggle("active", isPosts);
   galleryTabButton.classList.toggle("active", isGallery);
   heroTabButton.classList.toggle("active", isHero);
   freePortraitTabButton.classList.toggle("active", isFreePortrait);
+  document.getElementById("aiInboxTabButton").classList.toggle("active", isAIInbox);
+  document.getElementById("aiInboxPanel").classList.toggle("active", isAIInbox);
+  if (isAIInbox && window.memoryLaneAIInbox) window.memoryLaneAIInbox.refresh();
   bookingsPanel.classList.toggle("active", isBookings);
   postsPanel.classList.toggle("active", isPosts);
   galleryPanel.classList.toggle("active", isGallery);
@@ -697,6 +702,10 @@ function switchAdminTab(tabName) {
 }
 
 async function refreshCurrentTab() {
+  if (document.getElementById("aiInboxPanel").classList.contains("active")) {
+    if (window.memoryLaneAIInbox) await window.memoryLaneAIInbox.refresh();
+    return;
+  }
   if (freePortraitPanel.classList.contains("active")) {
     await loadFreePortraitEvent();
     return;
