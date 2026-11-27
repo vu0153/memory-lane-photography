@@ -37,13 +37,14 @@ async function authorize(env,request){
  return admins.length?user:null;
 }
 async function dashboard(env,user){
- const [agents,policies,tasks,recent]=await Promise.all([
+ const [agents,policies,tasks,recent,profiles]=await Promise.all([
   database(env,"ai_agent_registry",{query:"?select=slug,display_name,purpose,launch_state&order=slug.asc"}),
   database(env,"ai_policy_versions",{query:"?select=id,policy_key,version,title,body,published_at&state=eq.active&order=policy_key.asc"}),
   database(env,"ai_manager_tasks",{query:"?select=id,agent_slug,title,instructions,status,created_at&requested_by=eq."+encodeURIComponent(user.id)+"&order=created_at.desc&limit=25"}),
-  database(env,"ai_manager_messages",{query:"?select=role,body,created_at&user_id=eq."+encodeURIComponent(user.id)+"&order=created_at.desc,id.desc&limit=25"})
+  database(env,"ai_manager_messages",{query:"?select=role,body,created_at&user_id=eq."+encodeURIComponent(user.id)+"&order=created_at.desc,id.desc&limit=25"}),
+  database(env,"ai_admin_profiles",{query:"?select=display_name,locale&user_id=eq."+encodeURIComponent(user.id)+"&limit=1"})
  ]);
- return {agents,policies,tasks,messages:recent.reverse(),
+ return {agents,policies,tasks,messages:recent.reverse(),profile:profiles[0]||{display_name:"Studio Owner",locale:"en-AU"},
    managerEnabled:env.AI_MANAGER_ENABLED==="true" && !!env.OPENAI_API_KEY};
 }
 async function claimManagerBudget(env,userId){
@@ -57,10 +58,10 @@ async function claimManagerBudget(env,userId){
  });
  return result===true;
 }
-async function askManager(env,message,messages,policies,tasks){
+async function askManager(env,message,messages,policies,tasks,profile){
  const hardRules=[
  "You are the Memory Lane Photo Studio AI Manager, the single internal point of contact for the studio owner.",
- "The owner generally uses Vietnamese. Answer in Vietnamese unless asked to use another language.",
+ "The signed-in owner is "+profile.display_name+". Their preferred language is "+(profile.locale==="vi-VN"?"Vietnamese (vi-VN)":"Australian English (en-AU)")+". Respond in this language unless the owner explicitly requests otherwise.",
  "You COORDINATE and PLAN. Currently all departments other than Customer Service are planned, and none of the proposed tasks are automatically executed.",
  "State clearly that every task you assign is a PROPOSAL awaiting implementation or owner review, never claim the work was completed.",
  "A customer quote cannot be given in live chat. Customer Service must gather details; any price or outgoing quote needs studio owner review and email approval.",
@@ -144,7 +145,7 @@ export async function onRequestPost({request,env}){
   if(!await claimManagerBudget(env,user.id))
     return respond({error:"Manager message limit reached. Please try later."},429);
   const state=await dashboard(env,user);
-  const result=await askManager(env,body.message.trim(),state.messages,state.policies,state.tasks);
+  const result=await askManager(env,body.message.trim(),state.messages,state.policies,state.tasks,state.profile);
   // Stage 1: task delegation is a plan only. No tasks are executed automatically.
   await database(env,"ai_manager_messages",{method:"POST",body:{user_id:user.id,role:"owner",body:body.message.trim()}});
   await database(env,"ai_manager_messages",{method:"POST",body:{user_id:user.id,role:"manager",body:result.reply}});
