@@ -11,10 +11,25 @@ Status: **Staged feature, not production ready.** No production database changes
 - Admin AI Inbox in js/ai-inbox.js and css/ai-inbox.css. Can save email/price drafts; cannot send emails.
 - .gitignore protection for local secrets.
 
-## Required staging setup
+## Staging project now provisioned (27 November 2026)
 
-1. Create a separate Supabase preview project with NO real customer records.
-2. Review and run docs/sql/ai-chat-preview-schema.sql in the preview project.
+- Supabase project: memory-lane-ai-staging
+- Project ref: livorstsjtixdgksuzou
+- Organization: MemoryLane
+- Region: ap-southeast-2 (Sydney)
+- Monthly project creation cost quoted by Supabase: USD 0
+- Migration: create_ai_chat_staging_schema (20261127052723)
+- Tables: ai_chat_sessions, ai_chat_messages, ai_quote_requests, admin_users
+- All four tables have RLS enabled, with no anon or authenticated table access.
+- Synthetic insert tests passed inside a transaction that was rolled back; all three AI content tables remain empty.
+- No changes were made to the production Supabase project.
+
+WARNING: Do not configure a Cloudflare preview with production Supabase secrets. The preview credentials must be scoped to the staging project above.
+
+## Remaining staging setup
+
+1. Completed: separate Supabase preview project created with NO real customer records.
+2. Completed: reviewed schema applied to the staging project; migration recorded.
 3. Create a test Admin and add the test user to admin_users (needs same schema as production).
 4. In Cloudflare Pages Preview environment only, configure:
    - AI_CHAT_ENABLED=true (only after staging tests)
