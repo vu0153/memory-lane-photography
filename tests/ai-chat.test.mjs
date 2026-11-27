@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import {onRequestGet as chatGet,onRequestPost as chatPost} from "../functions/api/ai/chat.js";
 import {onRequestGet as adminGet,onRequestPatch as adminPatch} from "../functions/api/ai/admin/quotes.js";
 
-const base = "https://preview.example.com/api/ai/chat";
+const base = "https://feature-ai-live-chat.memory-lane-photography.pages.dev/api/ai/chat";
 const enabledEnv = {
- AI_CHAT_ENABLED:"true", OPENAI_API_KEY:"fake", SUPABASE_URL:"https://preview.example.com",
+ AI_CHAT_ENABLED:"true", OPENAI_API_KEY:"fake", SUPABASE_URL:"https://livorstsjtixdgksuzou.supabase.co",
  SUPABASE_SERVICE_ROLE_KEY:"fake", SUPABASE_ANON_KEY:"fake",
  TURNSTILE_SECRET_KEY:"fake", AI_CHAT_TURNSTILE_SITE_KEY:"fake"
 };
@@ -31,7 +31,7 @@ test("chat refuses an invalid request origin before any network call",async()=>{
  assert.equal(response.status,403);
 });
 test("chat refuses a non-JSON body",async()=>{
- const request=new Request(base,{method:"POST",headers:{Origin:"https://preview.example.com","Content-Type":"text/plain"},body:"hi"});
+ const request=new Request(base,{method:"POST",headers:{Origin:"https://feature-ai-live-chat.memory-lane-photography.pages.dev","Content-Type":"text/plain"},body:"hi"});
  const response=await chatPost({request,env:enabledEnv});
  assert.equal(response.status,415);
 });
