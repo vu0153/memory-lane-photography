@@ -48,7 +48,7 @@ RLS is enabled. Anonymous and general authenticated users do not receive direct 
 
 ## Next prerequisites for an owner-operated staging test
 
-1. Set up a staging Auth user in Supabase Authentication and add the user UUID to `admin_users` using secure backend/SQL.
+1. Completed: staging Auth user created and email confirmed; user granted access in staging `admin_users` (verified 28 November 2026).
 2. Set `AI_MANAGER_ENABLED=true` in **Cloudflare Preview only**, after confirming staging Supabase public and secret keys are configured.
 3. Confirm the OpenAI key belongs to Memory Lane's API project and has a low usage budget.
 4. Open the branch Preview `admin.html`, sign in with the staging user, open AI Manager, ask it to propose a Customer Service task.
