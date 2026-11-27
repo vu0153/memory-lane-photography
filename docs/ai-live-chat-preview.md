@@ -34,13 +34,13 @@ WARNING: Do not configure a Cloudflare preview with production Supabase secrets.
 1. Completed: separate Supabase preview project created with NO real customer records.
 2. Completed: reviewed schema applied to the staging project; migration recorded.
 3. Create a TEST Auth user in the staging project Dashboard (Authentication > Users > Add user), then add their UUID to the staging admin_users table. Do not share the user's password with ChatGPT.
-4. In Cloudflare Pages Preview environment only, configure:
+4. In Cloudflare Pages Preview environment only, configure the **modern** Supabase API keys (not legacy service_role/anon):
    - AI_CHAT_ENABLED=true (only after staging tests)
    - OPENAI_API_KEY (secret, low spend cap)
    - AI_CHAT_MODEL=gpt-4.1-mini (check availability)
    - SUPABASE_URL (preview project URL, never production)
-   - SUPABASE_SERVICE_ROLE_KEY (preview secret, server only)
-   - SUPABASE_ANON_KEY (preview publishable or anon key for Auth verification)
+   - SUPABASE_SECRET_KEY (staging-only sb_secret_ key, encrypted in Cloudflare Preview; backend uses apikey header, never Bearer)
+   - SUPABASE_PUBLISHABLE_KEY (staging-only sb_publishable_ key, for server-side Auth verification)
    - TURNSTILE_SECRET_KEY (secret)
    - AI_CHAT_TURNSTILE_SITE_KEY (site key with preview hostname)
 5. Test UI and API using fictitious clients and email addresses only.
