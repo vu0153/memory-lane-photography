@@ -93,6 +93,30 @@ function agentStatus(item){
 function statusLabel(status){return status==="preview"?t("Preview","Thử nghiệm"):status==="planned"?t("Planned","Dự kiến"):status==="unavailable"?t("Unavailable","Chưa bật"):t("Live","Đang chạy");}
 function renderProfile(){
  const p=state.profile;
+ const navText={
+  overview:["Dashboard","Tổng quan"],
+  manager:["AI Manager","AI Manager"],
+  inbox:["AI Inbox","Hộp thư AI"],
+  policy:["Policies & Knowledge","Chính sách & Kiến thức"]
+ };
+ for(const btn of stage.querySelectorAll(".ml-side-link[data-ml-go]")){
+  const label=btn.querySelector(".ml-nav-label"),names=navText[btn.dataset.mlGo];
+  if(label&&names)label.textContent=vi()?names[1]:names[0];
+ }
+ const planned=[
+  ["Bookings","Đặt lịch"],["Studio Operations","Vận hành Studio"],
+  ["Marketing","Marketing"],["Finance & Reports","Tài chính & Báo cáo"]
+ ];
+ let index=0;
+ for(const btn of stage.querySelectorAll(".ml-side-link[disabled]")){
+  const label=btn.querySelector(".ml-nav-label"),note=btn.querySelector(".ml-nav-note");
+  if(label&&planned[index])label.textContent=vi()?planned[index][1]:planned[index][0];
+  if(note)note.textContent=t("Planned","Dự kiến");index++;
+ }
+ set("mlStageLabel",t("STAGING PREVIEW","MÔI TRƯỜNG THỬ NGHIỆM"));
+ $("mlRefresh").title=t("Refresh dashboard","Tải lại dashboard");
+ $("mlUpload").title=t("Upload your portrait","Cập nhật ảnh chân dung");
+ $("mlLogout").title=t("Sign out","Đăng xuất");
  for(const id of ["mlHeroAvatar","mlSideAvatar","mlTopAvatar"])showAvatar($(id));
  for(const id of ["mlSideName","mlTopName","mlOwnerNode"])set(id,p.display_name);
  set("mlGreeting",timeOfDay()+", "+p.display_name);
