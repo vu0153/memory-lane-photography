@@ -39,15 +39,21 @@ function item(parent,title,detail,chip){
 }
 function displayPolicies(){
  const previous=policySelect.value;policySelect.textContent="";
- for(const p of policies){
-  const opt=document.createElement("option");opt.value=p.policy_key;opt.textContent=p.title+" · v"+p.version;policySelect.appendChild(opt);
+ const names={brand_voice:"Brand Voice",services:"Services & Packages",customer_service:"Customer Service",
+  booking:"Booking & Scheduling",studio_operations:"Studio Operations",marketing:"Brand & Marketing",finance:"Finance & Analytics"};
+ for(const [key,name] of Object.entries(names)){
+  const p=policies.find(p=>p.policy_key===key);
+  const opt=document.createElement("option");opt.value=key;
+  opt.textContent=name+(p?" · v"+p.version:" · new policy");
+  policySelect.appendChild(opt);
  }
  if(policies.some(p=>p.policy_key===previous))policySelect.value=previous;
  showPolicy();
 }
 function showPolicy(){
  const p=policies.find(p=>p.policy_key===policySelect.value);
- policyTitle.value=p?.title||"";
+ const selectedTitle=policySelect.options[policySelect.selectedIndex]?.textContent||"New policy";
+ policyTitle.value=p?.title||selectedTitle.split(" ·")[0];
  policyBody.value=p?.body||"";
 }
 function render(result){
