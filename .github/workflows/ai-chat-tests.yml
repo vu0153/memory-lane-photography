@@ -21,9 +21,10 @@ jobs:
         run: |
           node --check js/ai-chat.js
           node --check js/ai-inbox.js
+          node --check js/supabase.js
           node --check js/main.js
           node --check js/admin.js
           node --check functions/api/ai/chat.js
           node --check functions/api/ai/admin/quotes.js
       - name: Test fail-closed API behavior
-        run: node --test tests/ai-chat.test.mjs
+        run: node --test tests/*.test.mjs
