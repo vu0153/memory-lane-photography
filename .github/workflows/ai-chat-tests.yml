@@ -22,6 +22,8 @@ jobs:
           node --check js/ai-chat.js
           node --check js/ai-inbox.js
           node --check js/ai-manager.js
+          node --check js/ai-dashboard.js
+          node --check functions/api/ai/admin/overview.js
           node --check functions/api/ai/admin/manager.js
           node --check js/supabase.js
           node --check js/main.js
