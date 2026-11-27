@@ -12,6 +12,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Allura&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/style.css?v=20260629-admin-centered-duo" />
+  <link rel="stylesheet" href="css/ai-inbox.css?v=1" />
+  <link rel="stylesheet" href="css/ai-manager.css?v=1" />
+  <link rel="stylesheet" href="css/ai-dashboard.css?v=1" />
 
   <style>
     body {
@@ -1252,6 +1255,70 @@
         </button>
       </header>
 
+
+      <!-- AI Management preview UI. Internal Admin only, hidden for production. -->
+      <section id="aiDashboardStage" class="hidden" aria-label="Memory Lane AI Management Dashboard">
+        <div class="ml-app">
+          <aside class="ml-side" aria-label="AI management navigation">
+            <div class="ml-brand"><div class="ml-brand-icon" data-ml-icon="camera"></div><span>Memory Lane</span><small>Photo Studio · Adelaide</small></div>
+            <nav class="ml-side-nav" aria-label="Dashboard sections">
+              <button type="button" class="ml-side-link" data-ml-go="overview"><span data-ml-icon="dashboard"></span><span class="ml-nav-label">Dashboard</span></button>
+              <button type="button" class="ml-side-link" data-ml-go="manager"><span data-ml-icon="network"></span><span class="ml-nav-label">AI Manager</span></button>
+              <button type="button" class="ml-side-link" data-ml-go="inbox"><span data-ml-icon="chat"></span><span class="ml-nav-label">AI Inbox</span></button>
+              <button type="button" class="ml-side-link" data-ml-go="policy"><span data-ml-icon="book"></span><span class="ml-nav-label">Policies &amp; Knowledge</span></button>
+              <button type="button" class="ml-side-link" disabled><span data-ml-icon="calendar"></span><span class="ml-nav-label">Bookings</span><small class="ml-nav-note">Planned</small></button>
+              <button type="button" class="ml-side-link" disabled><span data-ml-icon="camera"></span><span class="ml-nav-label">Studio Operations</span><small class="ml-nav-note">Planned</small></button>
+              <button type="button" class="ml-side-link" disabled><span data-ml-icon="voice"></span><span class="ml-nav-label">Marketing</span><small class="ml-nav-note">Planned</small></button>
+              <button type="button" class="ml-side-link" disabled><span data-ml-icon="stats"></span><span class="ml-nav-label">Finance &amp; Reports</span><small class="ml-nav-note">Planned</small></button>
+            </nav>
+            <div class="ml-side-bottom">
+              <div id="mlSideAvatar" class="ml-avatar tiny">ML</div>
+              <div class="ml-side-person"><strong id="mlSideName">Studio Owner</strong><small id="mlSideRole">Verified admin</small></div>
+            </div>
+          </aside>
+          <main class="ml-main">
+            <header class="ml-topbar">
+              <div><span class="ml-kicker">Memory Lane Photo Studio</span><h1 id="mlPageTitle">AI Management System</h1><span class="ml-subline" id="mlPageSubtitle">Internal company management · Staging Preview</span></div>
+              <div class="ml-top-actions">
+                <button type="button" class="ml-square-action" id="mlRefresh" title="Refresh dashboard" aria-label="Refresh dashboard"><span data-ml-icon="refresh"></span></button>
+                <button type="button" class="ml-square-action" id="mlUpload" title="Upload your portrait" aria-label="Upload your portrait"><span data-ml-icon="upload"></span></button>
+                <input type="file" accept="image/jpeg,image/png,image/webp" id="mlPortraitFile" hidden>
+                <div class="ml-user-pill"><div id="mlTopAvatar" class="ml-avatar tiny">ML</div><span id="mlTopName">Owner</span></div>
+                <button type="button" class="ml-square-action" id="mlLogout" title="Sign out" aria-label="Sign out"><span data-ml-icon="logout"></span></button>
+              </div>
+            </header>
+            <section id="mlOverviewPanel" class="ml-view" aria-label="Company overview">
+              <div class="ml-hero">
+                <div class="ml-hero-photo"><div class="ml-avatar large" id="mlHeroAvatar">ML</div></div>
+                <div class="ml-hero-text">
+                  <h2 id="mlGreeting">Welcome to Memory Lane</h2>
+                  <p class="ml-hero-sub" id="mlHeroSubtitle">Your AI Manager briefing</p>
+                  <div class="ml-manager-message"><span class="ml-manager-bot" data-ml-icon="sparkle"></span><span id="mlHeroBriefing">Loading verified studio information…</span></div>
+                </div>
+              </div>
+              <div class="ml-section-head"><div><h2 id="mlOrgTitle">AI Company Organisational Structure</h2><p id="mlOrgSubtitle">One AI Manager, five specialist departments</p></div><span class="ml-mode-note" id="mlStageLabel">STAGING PREVIEW</span></div>
+              <section class="ml-org-card" aria-label="Interactive organisation chart">
+                <div class="ml-org-center">
+                  <div class="ml-owner-chip"><span data-ml-icon="user"></span><span><strong id="mlOwnerNode">Studio Owner</strong><br><span id="mlOwnerLabel">Studio leadership</span></span></div>
+                  <div class="ml-stem"></div>
+                  <button type="button" class="ml-manager-tile" id="mlManagerTile"><strong><span data-ml-icon="sparkle"></span><span id="mlManagerName">AI Manager</span></strong><small id="mlManagerDesc">Central coordination &amp; operations</small></button>
+                </div>
+                <div class="ml-org-down"></div>
+                <div id="mlDepartmentGrid" class="ml-dept-grid"></div>
+                <aside id="mlDepartmentDetail" class="ml-detail" hidden aria-label="Department responsibilities"></aside>
+              </section>
+              <div class="ml-metric-row">
+                <article class="ml-metric"><div class="ml-metric-head"><span class="ml-metric-icon" data-ml-icon="book"></span><div><strong id="mlBriefTitle">Manager Briefing</strong><small id="mlBriefSubtitle">Verified studio activity</small></div></div><div class="ml-metric-body" id="mlBriefItems"></div></article>
+                <article class="ml-metric"><div class="ml-metric-head"><span class="ml-metric-icon" data-ml-icon="clock"></span><div><strong id="mlApprovalTitle">Needs Your Approval</strong><small id="mlApprovalSubtitle">Review before action</small></div></div><div class="ml-metric-body" id="mlApprovals"></div></article>
+                <article class="ml-metric"><div class="ml-metric-head"><span class="ml-metric-icon" data-ml-icon="network"></span><div><strong id="mlUpdatesTitle">Department Updates</strong><small id="mlUpdatesSubtitle">Verified status only</small></div></div><div class="ml-metric-body" id="mlUpdates"></div></article>
+              </div>
+              <footer class="ml-bottom-actions"><span id="mlFreshness" role="status">Data not loaded</span><div class="ml-actions-inline"><button type="button" class="ml-action secondary" data-ml-go="inbox" id="mlOpenInbox">Open AI Inbox</button><button type="button" class="ml-action" data-ml-go="manager" id="mlAskManager">Talk to AI Manager</button></div></footer>
+            </section>
+          </main>
+        </div>
+        <div id="mlToast" class="ml-toast" role="status" hidden></div>
+      </section>
+
       <section id="loginSection" class="admin-card login-card">
         <h1>Admin Login</h1>
         <p>Sign in to view and manage photography enquiries.</p>
@@ -1315,8 +1382,87 @@
 <button id="freePortraitTabButton" class="admin-tab-button" type="button" data-tab="freePortrait">
   Free Portrait
 </button>
+<button id="aiManagerTabButton" class="admin-tab-button" type="button" data-tab="aiManager">AI Manager</button>
+<button id="aiInboxTabButton" class="admin-tab-button" type="button" data-tab="aiInbox">AI Inbox</button>
 
         </nav>
+
+        <section id="aiManagerPanel" class="admin-panel" aria-label="AI Manager">
+          <h2>AI Manager Control Centre</h2>
+          <p>Speak to the AI Manager here. It coordinates department task proposals and
+             shares approved policies with the studio assistants. This staging version
+             does not execute tasks, approve bookings or send customer emails.</p>
+          <button type="button" id="aiManagerRefresh" class="admin-button small">Refresh Manager</button>
+          <p class="ai-manager-status" id="aiManagerStatus" role="status"></p>
+          <div class="ai-manager-layout">
+            <div class="ai-manager-card">
+              <h3>Speak to AI Manager</h3>
+              <div id="aiManagerThread" class="ai-manager-thread" role="log" aria-live="polite"></div>
+              <form id="aiManagerForm" class="ai-manager-form">
+                <label for="aiManagerInput">Your instruction</label>
+                <textarea id="aiManagerInput" maxlength="1500" required
+                  placeholder="Ví dụ: Hãy cập nhật hướng dẫn tư vấn khách chụp ảnh gia đình và giao nhiệm vụ cho bộ phận chăm sóc khách hàng."></textarea>
+                <button id="aiManagerSend" type="submit" disabled>Send to AI Manager</button>
+              </form>
+              <p class="ai-manager-explainer">This is an internal assistant. All department tasks remain proposals until implementation is reviewed.</p>
+            </div>
+            <div class="ai-manager-card">
+              <h3>Agent Departments</h3>
+              <div id="aiManagerAgents" class="ai-manager-agent-list"></div>
+              <h3 style="margin-top:20px">Proposed Tasks</h3>
+              <div id="aiManagerTasks" class="ai-manager-task-list"></div>
+            </div>
+          </div>
+          <div class="ai-manager-card">
+            <h3>Policies &amp; Knowledge</h3>
+            <p>Edit a studio policy, then approve the new version. Published policies
+              will be used by Customer Service on future chat turns. Core restrictions,
+              including no personal quotes or booking promises, cannot be overridden here.</p>
+            <form id="aiPolicyForm" class="ai-manager-policy-form">
+              <label for="aiPolicyKey">Policy</label>
+              <select id="aiPolicyKey"></select>
+              <label for="aiPolicyTitle">Title</label>
+              <input id="aiPolicyTitle" type="text" maxlength="100" required>
+              <label for="aiPolicyBody">Instructions and reference information</label>
+              <textarea id="aiPolicyBody" maxlength="8000" required></textarea>
+              <button id="aiPolicyPublish" type="submit">Review and publish policy version</button>
+              <p id="aiPolicyStatus" class="ai-manager-status" role="status"></p>
+            </form>
+          </div>
+        </section>
+
+        <section id="aiInboxPanel" class="admin-panel" aria-label="AI Inbox and quote requests">
+          <h2>AI Inbox &amp; Quote Review</h2>
+          <p>Review enquiries collected by the virtual chat assistants. You decide the
+             price and email wording. This preview does not send quote emails.</p>
+          <button type="button" id="aiInboxRefresh" class="admin-button small">Refresh queue</button>
+          <p class="ai-inbox-status" id="aiInboxMessage" role="status"></p>
+          <div class="ai-inbox-shell">
+            <div class="ai-inbox-queue">
+              <h3>Quote requests</h3>
+              <div id="aiInboxQueue" class="ai-inbox-queue-list"></div>
+            </div>
+            <div class="ai-inbox-editor">
+              <h3>Quote draft editor</h3>
+              <form id="aiQuoteDraftForm" hidden>
+                <p id="aiQuoteCustomer" class="ai-inbox-info"></p>
+                <label>Conversation context</label>
+                <p id="aiQuoteContext" class="ai-inbox-info"></p>
+                <label for="aiQuotePrice">Approved price (AUD)</label>
+                <input id="aiQuotePrice" type="number" min="0" max="100000" step=".01" inputmode="decimal"
+                  placeholder="Enter your personalised quote">
+                <label for="aiQuoteSubject">Email subject</label>
+                <input id="aiQuoteSubject" maxlength="150" type="text" required>
+                <label for="aiQuoteBody">Email content</label>
+                <textarea id="aiQuoteBody" maxlength="6000" required></textarea>
+                <p class="ai-inbox-note">Draft only. Quotes must be manually approved and sent
+                  after the outbound email integration has been configured and tested.</p>
+                <button id="aiQuoteDraftSave" class="admin-button" type="submit">Save draft for review</button>
+              </form>
+              <p class="ai-inbox-note">Your quote will not be displayed in live chat.</p>
+            </div>
+          </div>
+        </section>
 
         <section id="bookingsPanel" class="admin-panel active">
           <section class="stats-section" aria-label="Booking statistics">
@@ -2091,7 +2237,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase.js?v=20260624-free-portrait-date-match"></script>
-  <script src="js/admin.js?v=20260629-booking-service-filter"></script>
+  <script src="js/supabase.js?v=20261127-preview-staging"></script>
+  <script src="js/admin.js?v=20261127-preview-ai-login"></script>
+  <script src="js/ai-inbox.js?v=1"></script>
+  <script src="js/ai-manager.js?v=1"></script>
+  <script src="js/ai-dashboard.js?v=1"></script>
 </body>
 </html>

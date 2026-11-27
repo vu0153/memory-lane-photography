@@ -1,0 +1,22 @@
+/* Memory Lane AI Manager Console, staging only */
+.ai-manager-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr);gap:18px;margin:16px 0}
+.ai-manager-card{background:#fff;border:1px solid #d7e0dc;border-radius:12px;padding:18px;min-width:0}
+.ai-manager-card h3{margin:0 0 10px}.ai-manager-card p{color:#4b625b;line-height:1.5}
+.ai-manager-thread{height:340px;overflow-y:auto;border:1px solid #d9e2dd;background:#fafcfb;border-radius:9px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.ai-manager-msg{white-space:pre-wrap;overflow-wrap:anywhere;border-radius:10px;padding:10px 12px;max-width:90%;line-height:1.6}
+.ai-manager-msg.owner{align-self:flex-end;background:#24534a;color:white}
+.ai-manager-msg.manager{align-self:flex-start;background:#e7f0ec;color:#233b33}
+.ai-manager-form{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.ai-manager-form textarea,.ai-manager-policy-form input,.ai-manager-policy-form textarea,.ai-manager-policy-form select{box-sizing:border-box;width:100%;border:1px solid #b8c8c1;background:#fff;color:#213c32;border-radius:8px;padding:10px;font:inherit}
+.ai-manager-form textarea{min-height:80px;resize:vertical}.ai-manager-policy-form textarea{min-height:160px;resize:vertical}
+.ai-manager-form button,.ai-manager-policy-form button{background:#234b45;color:white;border:0;border-radius:8px;padding:11px 15px;cursor:pointer;font-weight:600}
+.ai-manager-form button:disabled,.ai-manager-policy-form button:disabled{opacity:.5;cursor:not-allowed}
+.ai-manager-status{min-height:22px;font-size:13px;color:#3f5d53}
+.ai-manager-agent-list,.ai-manager-task-list{display:flex;flex-direction:column;gap:8px}
+.ai-manager-item{background:#f2f6f3;border-radius:8px;padding:11px}
+.ai-manager-item strong{display:block;margin-bottom:3px}.ai-manager-item small{display:block;color:#536b61;overflow-wrap:anywhere}
+.ai-manager-badge{font-size:11px;background:#dfe8e3;padding:3px 7px;border-radius:99px;display:inline-block;margin-top:5px}
+.ai-manager-policy-form{display:flex;flex-direction:column;gap:7px}
+.ai-manager-policy-form label{font-size:12px;font-weight:700;margin-top:6px}
+.ai-manager-explainer{font-size:12px;color:#566b63}
+@media(max-width:850px){.ai-manager-layout{grid-template-columns:1fr}.ai-manager-thread{height:280px}}

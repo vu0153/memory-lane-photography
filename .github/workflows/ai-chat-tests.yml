@@ -1,0 +1,34 @@
+name: AI chat preview checks
+on:
+  push:
+    branches: [feature/ai-live-chat]
+  pull_request:
+    paths:
+      - 'functions/api/ai/**'
+      - 'js/ai-chat.js'
+      - 'js/ai-inbox.js'
+      - 'tests/**'
+      - '.github/workflows/ai-chat-tests.yml'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify JavaScript syntax
+        run: |
+          node --check js/ai-chat.js
+          node --check js/ai-inbox.js
+          node --check js/ai-manager.js
+          node --check js/ai-dashboard.js
+          node --check functions/api/ai/admin/overview.js
+          node --check functions/api/ai/admin/manager.js
+          node --check js/supabase.js
+          node --check js/main.js
+          node --check js/admin.js
+          node --check functions/api/ai/chat.js
+          node --check functions/api/ai/admin/quotes.js
+      - name: Test fail-closed API behavior
+        run: node --test tests/*.test.mjs

@@ -196,6 +196,12 @@ let monthlyEnquiriesChart = null;
 let monthlyIncomeChart = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // Preview Admin signs in against the separate staging project and only allows AI Inbox.
+  // Legacy booking/gallery/blog panels remain unavailable to prevent accidental writes.
+  if (window.memoryLaneIsBranchPreview) {
+    await initializePreviewAIAdmin();
+    return;
+  }
   createDetailsModal();
 
   await checkSession();
@@ -209,6 +215,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   galleryTabButton.addEventListener("click", () => switchAdminTab("gallery"));
   heroTabButton.addEventListener("click", () => switchAdminTab("hero"));
   freePortraitTabButton.addEventListener("click", () => switchAdminTab("freePortrait"));
+  document.getElementById("aiInboxTabButton").addEventListener("click", () => switchAdminTab("aiInbox"));
+  document.getElementById("aiManagerTabButton").addEventListener("click", () => switchAdminTab("aiManager"));
 
   bookingsTableBody.addEventListener("change", handleStatusChange);
   bookingsTableBody.addEventListener("click", handleBookingTableClick);
@@ -557,6 +565,59 @@ function createDetailsModal() {
   detailModal.addEventListener("click", handleDetailsModalClick);
 }
 
+/* Dedicated staging-only Admin flow.
+ * Backend independently verifies staging Auth AND membership in staging admin_users.
+ * No legacy production CRUD event listeners are registered in this mode.
+ */
+async function initializePreviewAIAdmin() {
+  // The Preview Admin is a separate, authenticated UI. Production remains untouched.
+  const dashboard = window.memoryLaneAIDashboard;
+  if (!dashboard) {
+    showLogin();
+    loginMessage.textContent = "The staging AI Dashboard could not be loaded.";
+    return;
+  }
+  const legacyRefresh = document.getElementById("refreshBookingsButton");
+  if (legacyRefresh) legacyRefresh.style.display = "none";
+  logoutButton.classList.add("hidden");
+  async function openVerifiedDashboard() {
+    try {
+      const allowed = await dashboard.activate();
+      if (allowed) {
+        loginSection.classList.add("hidden");
+        dashboardSection.classList.add("hidden");
+        loginMessage.textContent = "";
+        return;
+      }
+    } catch (_) { /* Keep sign-in form visible without leaking detail. */ }
+    await supabaseClient.auth.signOut();
+    showLogin();
+    loginMessage.textContent = "This account cannot access the staging Admin dashboard.";
+  }
+  loginForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    loginButton.disabled = true;
+    loginMessage.textContent = "Verifying staging Admin access...";
+    try {
+      const email = document.getElementById("adminEmail").value.trim();
+      const password = document.getElementById("adminPassword").value;
+      const {data,error} = await supabaseClient.auth.signInWithPassword({email,password});
+      if (error || !data.session) throw Error(error?.message || "Sign in failed.");
+      await openVerifiedDashboard();
+    } catch (error) {
+      loginMessage.textContent = error.message || "Unable to sign in.";
+    } finally {
+      loginButton.disabled = false;
+    }
+  });
+  const {data,error} = await supabaseClient.auth.getSession();
+  if (!error && data.session) await openVerifiedDashboard();
+  else {
+    showLogin();
+    loginMessage.textContent = "Sign in with your verified Memory Lane Staging Admin account.";
+  }
+}
+
 async function checkSession() {
   const { data, error } = await supabaseClient.auth.getSession();
 
@@ -683,12 +744,20 @@ function switchAdminTab(tabName) {
   const isGallery = tabName === "gallery";
   const isHero = tabName === "hero";
   const isFreePortrait = tabName === "freePortrait";
+  const isAIInbox = tabName === "aiInbox";
+  const isAIManager = tabName === "aiManager";
 
   bookingsTabButton.classList.toggle("active", isBookings);
   postsTabButton.classList.toggle("active", isPosts);
   galleryTabButton.classList.toggle("active", isGallery);
   heroTabButton.classList.toggle("active", isHero);
   freePortraitTabButton.classList.toggle("active", isFreePortrait);
+  document.getElementById("aiInboxTabButton").classList.toggle("active", isAIInbox);
+  document.getElementById("aiInboxPanel").classList.toggle("active", isAIInbox);
+  document.getElementById("aiManagerPanel").classList.toggle("active", isAIManager);
+  document.getElementById("aiManagerTabButton").classList.toggle("active", isAIManager);
+  if (isAIManager && window.memoryLaneAIManager) window.memoryLaneAIManager.refresh();
+  if (isAIInbox && window.memoryLaneAIInbox) window.memoryLaneAIInbox.refresh();
   bookingsPanel.classList.toggle("active", isBookings);
   postsPanel.classList.toggle("active", isPosts);
   galleryPanel.classList.toggle("active", isGallery);
@@ -697,6 +766,14 @@ function switchAdminTab(tabName) {
 }
 
 async function refreshCurrentTab() {
+  if (document.getElementById("aiManagerPanel").classList.contains("active")) {
+    if (window.memoryLaneAIManager) await window.memoryLaneAIManager.refresh();
+    return;
+  }
+  if (document.getElementById("aiInboxPanel").classList.contains("active")) {
+    if (window.memoryLaneAIInbox) await window.memoryLaneAIInbox.refresh();
+    return;
+  }
   if (freePortraitPanel.classList.contains("active")) {
     await loadFreePortraitEvent();
     return;
