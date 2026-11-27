@@ -6,7 +6,7 @@ import {onRequestGet as adminGet,onRequestPatch as adminPatch} from "../function
 const base = "https://feature-ai-live-chat.memory-lane-photography.pages.dev/api/ai/chat";
 const enabledEnv = {
  AI_CHAT_ENABLED:"true", OPENAI_API_KEY:"fake", SUPABASE_URL:"https://livorstsjtixdgksuzou.supabase.co",
- SUPABASE_SERVICE_ROLE_KEY:"fake", SUPABASE_ANON_KEY:"fake",
+ SUPABASE_SECRET_KEY:"fake", SUPABASE_PUBLISHABLE_KEY:"fake",
  TURNSTILE_SECRET_KEY:"fake", AI_CHAT_TURNSTILE_SITE_KEY:"fake"
 };
 
