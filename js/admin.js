@@ -570,54 +570,40 @@ function createDetailsModal() {
  * No legacy production CRUD event listeners are registered in this mode.
  */
 async function initializePreviewAIAdmin() {
-  const aiInboxTab = document.getElementById("aiInboxTabButton");
-  const managerTab = document.getElementById("aiManagerTabButton");
-  document.querySelectorAll(".admin-tab-button").forEach((button) => {
-    if (button !== aiInboxTab && button !== managerTab) button.style.display = "none";
-  });
-  document.querySelectorAll(".admin-panel").forEach((section) => section.classList.remove("active"));
-  document.querySelectorAll(".admin-tab-button").forEach((button) => button.classList.remove("active"));
-
-  const intro = document.querySelector(".dashboard-intro");
-  if (intro) intro.textContent = "Memory Lane AI staging. Talk to your Manager and review proposed tasks and policies. No real customer emails are sent.";
-  const heading = document.querySelector("#dashboardSection h1");
-  if (heading) heading.textContent = "Memory Lane AI Staging";
-  const refresh = document.getElementById("refreshBookingsButton");
-  if (refresh) refresh.style.display = "none";
-  const stats = document.querySelector(".stats-section");
-  if (stats) stats.style.display = "none";
-
-  function openSection(tab) {
-    const isManager = tab === "manager";
-    showDashboard();
-    document.querySelectorAll(".admin-tab-button").forEach(el => el.classList.remove("active"));
-    document.querySelectorAll(".admin-panel").forEach(el => el.classList.remove("active"));
-    const activeButton = isManager ? managerTab : aiInboxTab;
-    const activePanel = document.getElementById(isManager ? "aiManagerPanel" : "aiInboxPanel");
-    activeButton.classList.add("active");
-    activePanel.classList.add("active");
-    if (isManager && window.memoryLaneAIManager) window.memoryLaneAIManager.refresh();
-    if (!isManager && window.memoryLaneAIInbox) window.memoryLaneAIInbox.refresh();
+  // The Preview Admin is a separate, authenticated UI. Production remains untouched.
+  const dashboard = window.memoryLaneAIDashboard;
+  if (!dashboard) {
+    showLogin();
+    loginMessage.textContent = "The staging AI Dashboard could not be loaded.";
+    return;
   }
-  aiInboxTab.addEventListener("click", () => openSection("inbox"));
-  managerTab.addEventListener("click", () => openSection("manager"));
-
-  logoutButton.addEventListener("click", async () => {
+  const legacyRefresh = document.getElementById("refreshBookingsButton");
+  if (legacyRefresh) legacyRefresh.style.display = "none";
+  logoutButton.classList.add("hidden");
+  async function openVerifiedDashboard() {
+    try {
+      const allowed = await dashboard.activate();
+      if (allowed) {
+        loginSection.classList.add("hidden");
+        dashboardSection.classList.add("hidden");
+        loginMessage.textContent = "";
+        return;
+      }
+    } catch (_) { /* Keep sign-in form visible without leaking detail. */ }
     await supabaseClient.auth.signOut();
     showLogin();
-    loginMessage.textContent = "Logged out of the staging AI Inbox.";
-  });
-  loginForm.addEventListener("submit", async (event) => {
+    loginMessage.textContent = "This account cannot access the staging Admin dashboard.";
+  }
+  loginForm.addEventListener("submit", async event => {
     event.preventDefault();
     loginButton.disabled = true;
-    loginMessage.textContent = "Signing in to Supabase staging...";
+    loginMessage.textContent = "Verifying staging Admin access...";
     try {
       const email = document.getElementById("adminEmail").value.trim();
       const password = document.getElementById("adminPassword").value;
-      const { data, error } = await supabaseClient.auth.signInWithPassword({email,password});
+      const {data,error} = await supabaseClient.auth.signInWithPassword({email,password});
       if (error || !data.session) throw Error(error?.message || "Sign in failed.");
-      loginMessage.textContent = "";
-      openSection("manager");
+      await openVerifiedDashboard();
     } catch (error) {
       loginMessage.textContent = error.message || "Unable to sign in.";
     } finally {
@@ -625,10 +611,10 @@ async function initializePreviewAIAdmin() {
     }
   });
   const {data,error} = await supabaseClient.auth.getSession();
-  if (!error && data.session) openSection("manager");
+  if (!error && data.session) await openVerifiedDashboard();
   else {
     showLogin();
-    loginMessage.textContent = "Staging login only. Create a test user in the staging Supabase Auth dashboard, then add that user to the staging admin_users allowlist.";
+    loginMessage.textContent = "Sign in with your verified Memory Lane Staging Admin account.";
   }
 }
 
