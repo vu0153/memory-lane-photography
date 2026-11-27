@@ -48,3 +48,14 @@ GRANT USAGE,SELECT ON SEQUENCE public.ai_chat_messages_id_seq TO service_role;
 -- Intentional: no public/anon/authenticated policies on private AI tables.
 -- Access only through the authenticated Cloudflare server API.
 -- For production: add retention/deletion policy, email verification, export and backup.
+
+
+-- Staging admin allowlist. Populate only with the UUID of a separately
+-- created TEST user in staging Supabase Auth.
+CREATE TABLE IF NOT EXISTS public.admin_users (
+  user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.admin_users FROM anon,authenticated;
+GRANT SELECT,INSERT,UPDATE,DELETE ON public.admin_users TO service_role;
