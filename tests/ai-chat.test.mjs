@@ -48,3 +48,35 @@ test("admin draft changes reject cross-origin requests",async()=>{
  const response=await adminPatch({request,env:enabledEnv});
  assert.equal(response.status,403);
 });
+
+test("public production hostname cannot enable staged AI chat",async()=>{
+ const r=await chatGet({request:new Request("https://memorylaneadelaide.com/api/ai/chat"),env:enabledEnv});
+ assert.deepEqual(await r.json(),{enabled:false});
+});
+test("preview refuses accidentally configured production database",async()=>{
+ const r=await chatGet({request:new Request(base),env:{...enabledEnv,SUPABASE_URL:"https://dwqnbzugacobmmjbcswr.supabase.co"}});
+ assert.deepEqual(await r.json(),{enabled:false});
+});
+test("verified bot challenge still obeys an atomic per-IP rate limit before AI call",async()=>{
+ const original=globalThis.fetch;
+ const destinations=[];
+ try {
+   globalThis.fetch=async(input)=>{
+     const target=String(input);destinations.push(target);
+     if(target.includes("challenges.cloudflare.com/turnstile"))
+       return new Response(JSON.stringify({success:true,hostname:"feature-ai-live-chat.memory-lane-photography.pages.dev"}),{status:200});
+     if(target.endsWith("/rest/v1/rpc/ai_chat_claim_rate_limit"))
+       return new Response("false",{status:200});
+     throw Error("Unexpected network call: "+target);
+   };
+   const r=await chatPost({
+     request:new Request(base,{method:"POST",headers:{Origin:"https://feature-ai-live-chat.memory-lane-photography.pages.dev",
+       "Content-Type":"application/json","CF-Connecting-IP":"192.0.2.10"},
+       body:JSON.stringify({message:"Could you give me a quote?",turnstileToken:"A".repeat(60)})}),
+     env:enabledEnv
+   });
+   assert.equal(r.status,429);
+   assert.equal(destinations.length,2);
+   assert.equal(destinations.some(x=>x.includes("api.openai.com")),false);
+ } finally {globalThis.fetch=original;}
+});
