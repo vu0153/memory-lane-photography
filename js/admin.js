@@ -196,12 +196,10 @@ let monthlyEnquiriesChart = null;
 let monthlyIncomeChart = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // Prevent accidental production edits from Cloudflare branch previews.
-  // Preview Admin requires a separate staging Supabase Auth configuration.
-  if (window.location.hostname.endsWith(".memory-lane-photography.pages.dev")) {
-    const banner = document.getElementById("loginMessage");
-    if (banner) banner.textContent = "Admin is disabled on branch preview until staging credentials are configured. Do not edit production data from preview.";
-    document.querySelectorAll("#loginForm input, #loginForm button").forEach((el) => { el.disabled = true; });
+  // Preview Admin signs in against the separate staging project and only allows AI Inbox.
+  // Legacy booking/gallery/blog panels remain unavailable to prevent accidental writes.
+  if (window.memoryLaneIsBranchPreview) {
+    await initializePreviewAIAdmin();
     return;
   }
   createDetailsModal();
@@ -564,6 +562,65 @@ function createDetailsModal() {
   });
 
   detailModal.addEventListener("click", handleDetailsModalClick);
+}
+
+/* Dedicated staging-only Admin flow.
+ * Backend independently verifies staging Auth AND membership in staging admin_users.
+ * No legacy production CRUD event listeners are registered in this mode.
+ */
+async function initializePreviewAIAdmin() {
+  const allowedTab = document.getElementById("aiInboxTabButton");
+  document.querySelectorAll(".admin-tab-button").forEach((button) => {
+    if (button !== allowedTab) button.style.display = "none";
+  });
+  document.querySelectorAll(".admin-panel").forEach((section) => section.classList.remove("active"));
+  document.querySelectorAll(".admin-tab-button").forEach((button) => button.classList.remove("active"));
+
+  const intro = document.querySelector(".dashboard-intro");
+  if (intro) intro.textContent = "Memory Lane AI staging. Quote drafts only. No real bookings or customer emails.";
+  const heading = document.querySelector("#dashboardSection h1");
+  if (heading) heading.textContent = "Memory Lane AI Staging";
+  const refresh = document.getElementById("refreshBookingsButton");
+  if (refresh) refresh.style.display = "none";
+  const stats = document.querySelector(".stats-section");
+  if (stats) stats.style.display = "none";
+
+  function openAIInbox() {
+    showDashboard();
+    allowedTab.classList.add("active");
+    document.getElementById("aiInboxPanel").classList.add("active");
+    if (window.memoryLaneAIInbox) window.memoryLaneAIInbox.refresh();
+  }
+
+  allowedTab.addEventListener("click", openAIInbox);
+  logoutButton.addEventListener("click", async () => {
+    await supabaseClient.auth.signOut();
+    showLogin();
+    loginMessage.textContent = "Logged out of the staging AI Inbox.";
+  });
+  loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    loginButton.disabled = true;
+    loginMessage.textContent = "Signing in to Supabase staging...";
+    try {
+      const email = document.getElementById("adminEmail").value.trim();
+      const password = document.getElementById("adminPassword").value;
+      const { data, error } = await supabaseClient.auth.signInWithPassword({email,password});
+      if (error || !data.session) throw Error(error?.message || "Sign in failed.");
+      loginMessage.textContent = "";
+      openAIInbox();
+    } catch (error) {
+      loginMessage.textContent = error.message || "Unable to sign in.";
+    } finally {
+      loginButton.disabled = false;
+    }
+  });
+  const {data,error} = await supabaseClient.auth.getSession();
+  if (!error && data.session) openAIInbox();
+  else {
+    showLogin();
+    loginMessage.textContent = "Staging login only. Create a test user in the staging Supabase Auth dashboard, then add that user to the staging admin_users allowlist.";
+  }
 }
 
 async function checkSession() {
