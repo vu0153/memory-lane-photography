@@ -216,6 +216,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   heroTabButton.addEventListener("click", () => switchAdminTab("hero"));
   freePortraitTabButton.addEventListener("click", () => switchAdminTab("freePortrait"));
   document.getElementById("aiInboxTabButton").addEventListener("click", () => switchAdminTab("aiInbox"));
+  document.getElementById("aiManagerTabButton").addEventListener("click", () => switchAdminTab("aiManager"));
 
   bookingsTableBody.addEventListener("change", handleStatusChange);
   bookingsTableBody.addEventListener("click", handleBookingTableClick);
@@ -569,15 +570,16 @@ function createDetailsModal() {
  * No legacy production CRUD event listeners are registered in this mode.
  */
 async function initializePreviewAIAdmin() {
-  const allowedTab = document.getElementById("aiInboxTabButton");
+  const aiInboxTab = document.getElementById("aiInboxTabButton");
+  const managerTab = document.getElementById("aiManagerTabButton");
   document.querySelectorAll(".admin-tab-button").forEach((button) => {
-    if (button !== allowedTab) button.style.display = "none";
+    if (button !== aiInboxTab && button !== managerTab) button.style.display = "none";
   });
   document.querySelectorAll(".admin-panel").forEach((section) => section.classList.remove("active"));
   document.querySelectorAll(".admin-tab-button").forEach((button) => button.classList.remove("active"));
 
   const intro = document.querySelector(".dashboard-intro");
-  if (intro) intro.textContent = "Memory Lane AI staging. Quote drafts only. No real bookings or customer emails.";
+  if (intro) intro.textContent = "Memory Lane AI staging. Talk to your Manager and review proposed tasks and policies. No real customer emails are sent.";
   const heading = document.querySelector("#dashboardSection h1");
   if (heading) heading.textContent = "Memory Lane AI Staging";
   const refresh = document.getElementById("refreshBookingsButton");
@@ -585,14 +587,21 @@ async function initializePreviewAIAdmin() {
   const stats = document.querySelector(".stats-section");
   if (stats) stats.style.display = "none";
 
-  function openAIInbox() {
+  function openSection(tab) {
+    const isManager = tab === "manager";
     showDashboard();
-    allowedTab.classList.add("active");
-    document.getElementById("aiInboxPanel").classList.add("active");
-    if (window.memoryLaneAIInbox) window.memoryLaneAIInbox.refresh();
+    document.querySelectorAll(".admin-tab-button").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll(".admin-panel").forEach(el => el.classList.remove("active"));
+    const activeButton = isManager ? managerTab : aiInboxTab;
+    const activePanel = document.getElementById(isManager ? "aiManagerPanel" : "aiInboxPanel");
+    activeButton.classList.add("active");
+    activePanel.classList.add("active");
+    if (isManager && window.memoryLaneAIManager) window.memoryLaneAIManager.refresh();
+    if (!isManager && window.memoryLaneAIInbox) window.memoryLaneAIInbox.refresh();
   }
+  aiInboxTab.addEventListener("click", () => openSection("inbox"));
+  managerTab.addEventListener("click", () => openSection("manager"));
 
-  allowedTab.addEventListener("click", openAIInbox);
   logoutButton.addEventListener("click", async () => {
     await supabaseClient.auth.signOut();
     showLogin();
@@ -608,7 +617,7 @@ async function initializePreviewAIAdmin() {
       const { data, error } = await supabaseClient.auth.signInWithPassword({email,password});
       if (error || !data.session) throw Error(error?.message || "Sign in failed.");
       loginMessage.textContent = "";
-      openAIInbox();
+      openSection("manager");
     } catch (error) {
       loginMessage.textContent = error.message || "Unable to sign in.";
     } finally {
@@ -616,7 +625,7 @@ async function initializePreviewAIAdmin() {
     }
   });
   const {data,error} = await supabaseClient.auth.getSession();
-  if (!error && data.session) openAIInbox();
+  if (!error && data.session) openSection("manager");
   else {
     showLogin();
     loginMessage.textContent = "Staging login only. Create a test user in the staging Supabase Auth dashboard, then add that user to the staging admin_users allowlist.";
@@ -750,6 +759,7 @@ function switchAdminTab(tabName) {
   const isHero = tabName === "hero";
   const isFreePortrait = tabName === "freePortrait";
   const isAIInbox = tabName === "aiInbox";
+  const isAIManager = tabName === "aiManager";
 
   bookingsTabButton.classList.toggle("active", isBookings);
   postsTabButton.classList.toggle("active", isPosts);
@@ -758,6 +768,9 @@ function switchAdminTab(tabName) {
   freePortraitTabButton.classList.toggle("active", isFreePortrait);
   document.getElementById("aiInboxTabButton").classList.toggle("active", isAIInbox);
   document.getElementById("aiInboxPanel").classList.toggle("active", isAIInbox);
+  document.getElementById("aiManagerPanel").classList.toggle("active", isAIManager);
+  document.getElementById("aiManagerTabButton").classList.toggle("active", isAIManager);
+  if (isAIManager && window.memoryLaneAIManager) window.memoryLaneAIManager.refresh();
   if (isAIInbox && window.memoryLaneAIInbox) window.memoryLaneAIInbox.refresh();
   bookingsPanel.classList.toggle("active", isBookings);
   postsPanel.classList.toggle("active", isPosts);
@@ -767,6 +780,10 @@ function switchAdminTab(tabName) {
 }
 
 async function refreshCurrentTab() {
+  if (document.getElementById("aiManagerPanel").classList.contains("active")) {
+    if (window.memoryLaneAIManager) await window.memoryLaneAIManager.refresh();
+    return;
+  }
   if (document.getElementById("aiInboxPanel").classList.contains("active")) {
     if (window.memoryLaneAIInbox) await window.memoryLaneAIInbox.refresh();
     return;
