@@ -119,6 +119,10 @@
 @keyframes ml-rise{from{opacity:0;transform:translateY(11px)}to{opacity:1;transform:translateY(0)}}
 @keyframes ml-panel-in{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 @keyframes ml-sheen{from{transform:translateX(-70%)}to{transform:translateX(70%)}}
+@media(min-width:1250px){
+ #aiDashboardStage .ml-org-card{position:relative}
+ #aiDashboardStage .ml-detail{position:absolute;z-index:10;width:310px;max-height:min(370px,70vh);overflow-y:auto;box-shadow:0 18px 45px #1a4c8933;margin:0;background:#f7faff}
+}
 @media(max-width:1180px){
  #aiDashboardStage .ml-app{grid-template-columns:202px minmax(0,1fr)}
  #aiDashboardStage .ml-main{padding:21px}
