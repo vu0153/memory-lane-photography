@@ -142,6 +142,7 @@
  #aiDashboardStage .ml-side{padding:9px 12px;gap:6px;position:sticky;top:0;z-index:40}
  #aiDashboardStage .ml-brand,#aiDashboardStage .ml-side-bottom{display:none}
  #aiDashboardStage .ml-side-nav{flex-direction:row;justify-content:space-between;padding:0;gap:4px}
+ #aiDashboardStage .ml-side-link[disabled]{display:none}
  #aiDashboardStage .ml-side-link{width:auto;flex:1;border-radius:9px;padding:9px 4px}
  #aiDashboardStage .ml-main{padding:17px 13px 24px}
  #aiDashboardStage .ml-topbar{align-items:flex-start}
