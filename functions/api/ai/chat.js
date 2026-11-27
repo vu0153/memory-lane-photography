@@ -10,7 +10,7 @@ const stagingHost=request=>{const host=new URL(request.url).hostname;return host
 const ready=(env,request)=>stagingHost(request) &&
  env.SUPABASE_URL?.replace(/\/$/,"")==="https://livorstsjtixdgksuzou.supabase.co" &&
  env.AI_CHAT_ENABLED==="true" && !!env.OPENAI_API_KEY &&
- !!env.SUPABASE_URL && !!env.SUPABASE_SERVICE_ROLE_KEY &&
+ !!env.SUPABASE_URL && !!env.SUPABASE_SECRET_KEY &&
  !!env.TURNSTILE_SECRET_KEY && !!env.AI_CHAT_TURNSTILE_SITE_KEY;
 const isToken=value=>typeof value==="string"&&/^[A-Za-z0-9_-]{40,100}$/.test(value);
 function randomToken(){
@@ -25,9 +25,8 @@ async function hash(value){
 async function db(env,table,{method="GET",filters="",body}={}){
  const url=env.SUPABASE_URL.replace(/\/$/,"")+"/rest/v1/"+table+filters;
  const response=await fetch(url,{method,headers:{
- "apikey":env.SUPABASE_SERVICE_ROLE_KEY,
- "Authorization":"Bearer "+env.SUPABASE_SERVICE_ROLE_KEY,
- "Content-Type":"application/json",
+ "apikey":env.SUPABASE_SECRET_KEY,
+  "Content-Type":"application/json",
  "Prefer":"return=representation"
  },body:body===undefined?undefined:JSON.stringify(body)});
  if(!response.ok)throw Error("Database error "+response.status);
@@ -38,11 +37,10 @@ async function claimRateLimit(env,request){
   // Hash the Cloudflare-provided client IP with server-only material.
   // Do not persist raw IP addresses in the database.
   const ip=request.headers.get("CF-Connecting-IP")||"unknown";
-  const key=await hash("ml-chat-preview:"+env.SUPABASE_SERVICE_ROLE_KEY+":"+ip);
+  const key=await hash("ml-chat-preview:"+env.SUPABASE_SECRET_KEY+":"+ip);
   const response=await fetch(env.SUPABASE_URL.replace(/\/$/,"")+"/rest/v1/rpc/ai_chat_claim_rate_limit",{
-    method:"POST",headers:{"apikey":env.SUPABASE_SERVICE_ROLE_KEY,
-      "Authorization":"Bearer "+env.SUPABASE_SERVICE_ROLE_KEY,
-      "Content-Type":"application/json"},
+    method:"POST",headers:{"apikey":env.SUPABASE_SECRET_KEY,
+            "Content-Type":"application/json"},
     body:JSON.stringify({p_key_hash:key,p_max:24,p_window_seconds:3600})
   });
   if(!response.ok)throw Error("Rate limit service unavailable");
