@@ -6,7 +6,10 @@ const PERSONAS=["Sophie","Emma","Alex","Olivia"];
 const PRICE_RE=/\b(price|pricing|prices|cost|costs|how much|rate|rates|quote|quotation|fees|budget)\b/i;
 const EMAIL_RE=/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
 const json=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
-const ready=env=>env.AI_CHAT_ENABLED==="true" && !!env.OPENAI_API_KEY &&
+const stagingHost=request=>{const host=new URL(request.url).hostname;return host.endsWith(".memory-lane-photography.pages.dev") && host!=="memory-lane-photography.pages.dev";};
+const ready=(env,request)=>stagingHost(request) &&
+ env.SUPABASE_URL?.replace(/\/$/,"")==="https://livorstsjtixdgksuzou.supabase.co" &&
+ env.AI_CHAT_ENABLED==="true" && !!env.OPENAI_API_KEY &&
  !!env.SUPABASE_URL && !!env.SUPABASE_SERVICE_ROLE_KEY &&
  !!env.TURNSTILE_SECRET_KEY && !!env.AI_CHAT_TURNSTILE_SITE_KEY;
 const isToken=value=>typeof value==="string"&&/^[A-Za-z0-9_-]{40,100}$/.test(value);
@@ -82,7 +85,7 @@ async function generate(env,persona,messages){
  return text.slice(0,1700);
 }
 export async function onRequestGet({request,env}){
- if(!ready(env))return json({enabled:false});
+ if(!ready(env,request))return json({enabled:false});
  const raw=request.headers.get("X-ML-Chat-Token");
  if(!raw)return json({enabled:true,turnstileSiteKey:env.AI_CHAT_TURNSTILE_SITE_KEY});
  try{
@@ -93,7 +96,7 @@ export async function onRequestGet({request,env}){
  }catch(_){return json({error:"Unable to restore chat"},503);}
 }
 export async function onRequestPost({request,env}){
- if(!ready(env))return json({error:"Chat is not enabled"},503);
+ if(!ready(env,request))return json({error:"Chat is not enabled"},503);
  if(!validateOrigin(request))return json({error:"Invalid request origin"},403);
  if(!/^application\/json(?:;|$)/i.test(request.headers.get("Content-Type")||""))return json({error:"JSON required"},415);
  if(Number(request.headers.get("Content-Length")||0)>5000)return json({error:"Message too large"},413);
