@@ -148,6 +148,21 @@ function closeDetail(){
  activeDept=null;pinned=false;$("mlDepartmentDetail").hidden=true;
  for(const btn of stage.querySelectorAll(".ml-dept"))btn.setAttribute("aria-pressed","false");
 }
+function positionDetail(){
+ const panel=$("mlDepartmentDetail");
+ panel.style.left="";panel.style.top="";
+ if(panel.hidden||window.innerWidth<1250||!activeDept)return;
+ const org=panel.closest(".ml-org-card");
+ const button=stage.querySelector(".ml-dept[data-agent='"+activeDept+"']");
+ if(!org||!button)return;
+ const outer=org.getBoundingClientRect(),rect=button.getBoundingClientRect();
+ const width=Math.min(310,outer.width*.37);
+ let x=rect.right-outer.left+13;
+ if(x+width>outer.width-14)x=rect.left-outer.left-width-13;
+ x=Math.max(14,Math.min(x,outer.width-width-14));
+ const y=Math.max(72,Math.min(rect.top-outer.top-78,outer.height-panel.offsetHeight-12));
+ panel.style.left=x+"px";panel.style.top=y+"px";
+}
 function detail(slug,pin){
  const info=agentInfo.find(x=>x.slug===slug);
  if(!info)return;
@@ -171,6 +186,7 @@ function detail(slug,pin){
  action.textContent=t("Ask AI Manager about this department","Hỏi AI Manager về phòng ban này");
  action.addEventListener("click",()=>openSection("manager"));
  footer.append(badge,action);panel.appendChild(footer);
+ positionDetail();
 }
 function renderAgents(){
  const grid=$("mlDepartmentGrid");grid.textContent="";
@@ -262,5 +278,6 @@ $("mlUpload").addEventListener("click",()=>$("mlPortraitFile").click());
 $("mlPortraitFile").addEventListener("change",e=>uploadPortrait(e.target.files?.[0]));
 $("mlLogout").addEventListener("click",logout);
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&current==="overview"&&!$("mlDepartmentDetail").hidden)closeDetail();});
+window.addEventListener("resize",()=>{if(activeDept)positionDetail();});
 window.memoryLaneAIDashboard={activate,openSection,refresh,logout};
 })();
