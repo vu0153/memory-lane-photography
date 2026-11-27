@@ -2,7 +2,11 @@
  * No email is sent by this endpoint. The operator reviews and saves a draft.
  */
 const json=(v,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{"Content-Type":"application/json","Cache-Control":"no-store","X-Content-Type-Options":"nosniff"}});
-const configured=env=>!!env.SUPABASE_URL&&!!env.SUPABASE_SERVICE_ROLE_KEY&&!!env.SUPABASE_ANON_KEY;
+const configured=(env,request)=>{const host=new URL(request.url).hostname;
+ return host.endsWith(".memory-lane-photography.pages.dev") && host!=="memory-lane-photography.pages.dev" &&
+ env.SUPABASE_URL?.replace(/\/$/,"")==="https://livorstsjtixdgksuzou.supabase.co" &&
+ !!env.SUPABASE_SERVICE_ROLE_KEY&&!!env.SUPABASE_ANON_KEY;
+};
 async function adminUser(request,env){
  const h=request.headers.get("Authorization")||"";
  const m=h.match(/^Bearer\s+(.+)$/i);if(!m)return null;
@@ -24,7 +28,7 @@ async function data(env,table,method="GET",query="",body){
 }
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export async function onRequestGet({request,env}){
- if(!configured(env))return json({error:"Admin review not configured"},503);
+ if(!configured(env,request))return json({error:"Admin review not configured"},503);
  try{
   if(!await adminUser(request,env))return json({error:"Admin authorization required"},403);
   const quotes=await data(env,"ai_quote_requests","GET",
@@ -33,7 +37,7 @@ export async function onRequestGet({request,env}){
  }catch(_){return json({error:"Unable to load quote requests"},503);}
 }
 export async function onRequestPatch({request,env}){
- if(!configured(env))return json({error:"Admin review not configured"},503);
+ if(!configured(env,request))return json({error:"Admin review not configured"},503);
  if(request.headers.get("Origin")!==new URL(request.url).origin)return json({error:"Invalid origin"},403);
  try{
   const user=await adminUser(request,env);
