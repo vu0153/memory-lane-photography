@@ -34,6 +34,20 @@ async function db(env,table,{method="GET",filters="",body}={}){
  const result=await response.json();
  return result;
 }
+async function claimRateLimit(env,request){
+  // Hash the Cloudflare-provided client IP with server-only material.
+  // Do not persist raw IP addresses in the database.
+  const ip=request.headers.get("CF-Connecting-IP")||"unknown";
+  const key=await hash("ml-chat-preview:"+env.SUPABASE_SERVICE_ROLE_KEY+":"+ip);
+  const response=await fetch(env.SUPABASE_URL.replace(/\/$/,"")+"/rest/v1/rpc/ai_chat_claim_rate_limit",{
+    method:"POST",headers:{"apikey":env.SUPABASE_SERVICE_ROLE_KEY,
+      "Authorization":"Bearer "+env.SUPABASE_SERVICE_ROLE_KEY,
+      "Content-Type":"application/json"},
+    body:JSON.stringify({p_key_hash:key,p_max:24,p_window_seconds:3600})
+  });
+  if(!response.ok)throw Error("Rate limit service unavailable");
+  return (await response.json())===true;
+}
 async function loadSession(env,rawToken){
  if(!isToken(rawToken))return null;
  const rows=await db(env,"ai_chat_sessions",{filters:"?select=id,persona,quote_status,created_at&token_hash=eq."+encodeURIComponent(await hash(rawToken))+"&limit=1"});
@@ -106,6 +120,7 @@ export async function onRequestPost({request,env}){
  if(!message||message.length>1200)return json({error:"Please enter a shorter message"},400);
  try{
  if(!await verifyTurnstile(env,request,data.turnstileToken))return json({error:"Please complete the verification challenge"},403);
+ if(!await claimRateLimit(env,request))return json({error:"Too many messages. Please try later or use the booking form."},429);
  let rawToken=data.token,session=null;
  if(rawToken){session=await loadSession(env,rawToken);if(!session)return json({error:"Session expired. Clear chat storage to start again."},401);}
  else{
