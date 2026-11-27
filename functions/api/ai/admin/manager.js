@@ -46,6 +46,17 @@ async function dashboard(env,user){
  return {agents,policies,tasks,messages:recent.reverse(),
    managerEnabled:env.AI_MANAGER_ENABLED==="true" && !!env.OPENAI_API_KEY};
 }
+async function claimManagerBudget(env,userId){
+ // Separate per-admin limit prevents repeated paid model requests from one account.
+ const seed="ml-manager:"+env.SUPABASE_SECRET_KEY+":"+userId;
+ const bytes=new TextEncoder().encode(seed);
+ const digest=await crypto.subtle.digest("SHA-256",bytes);
+ const hash=[...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,"0")).join("");
+ const result=await database(env,"rpc/ai_chat_claim_rate_limit",{
+  method:"POST",body:{p_key_hash:hash,p_max:20,p_window_seconds:3600}
+ });
+ return result===true;
+}
 async function askManager(env,message,messages,policies,tasks){
  const hardRules=[
  "You are the Memory Lane Photo Studio AI Manager, the single internal point of contact for the studio owner.",
@@ -130,6 +141,8 @@ export async function onRequestPost({request,env}){
    return respond({error:"Invalid Manager request"},400);
   if(env.AI_MANAGER_ENABLED!=="true"||!env.OPENAI_API_KEY)
    return respond({error:"AI Manager is not enabled yet. Policies can still be reviewed."},503);
+  if(!await claimManagerBudget(env,user.id))
+    return respond({error:"Manager message limit reached. Please try later."},429);
   const state=await dashboard(env,user);
   const result=await askManager(env,body.message.trim(),state.messages,state.policies,state.tasks);
   // Stage 1: task delegation is a plan only. No tasks are executed automatically.
