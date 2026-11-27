@@ -144,7 +144,7 @@ function metricRow(parent,label,value,action){
  const right=document.createElement("strong");right.textContent=String(value);
  row.append(left,right);parent.appendChild(row);
 }
-function capped(n,key){return state.summary.countsCapped?.[key]?"100+":String(n);}
+function capped(n,key){return state.summary.countsCapped?.[key]?"≥"+n:String(n);}
 function renderSummary(){
  const s=state.summary,brief=$("mlBriefItems"),approvals=$("mlApprovals"),updates=$("mlUpdates");
  for(const el of [brief,approvals,updates])el.textContent="";
@@ -152,8 +152,8 @@ function renderSummary(){
  metricRow(brief,t("Quote requests pending review","Báo giá đang chờ xem xét"),capped(s.pendingQuoteRequests,"quotes"));
  metricRow(brief,t("Proposed department tasks","Nhiệm vụ mới được đề xuất"),capped(s.proposedTasks,"tasks"));
  set("mlHeroBriefing",t(
-  "Your studio preview has "+s.pendingQuoteRequests+" quote request(s) awaiting review and "+s.proposedTasks+" task proposal(s). Four departments are planned, not yet operating.",
-  "Studio thử nghiệm có "+s.pendingQuoteRequests+" yêu cầu báo giá chờ xem xét và "+s.proposedTasks+" nhiệm vụ đề xuất. Bốn phòng ban vẫn đang trong kế hoạch."
+  "Your studio preview has "+capped(s.pendingQuoteRequests,"quotes")+" quote request(s) awaiting review and "+capped(s.proposedTasks,"tasks")+" task proposal(s) in the recent records. Four departments are planned, not yet operating.",
+  "Dữ liệu gần đây của studio thử nghiệm có "+capped(s.pendingQuoteRequests,"quotes")+" yêu cầu báo giá chờ xem xét và "+capped(s.proposedTasks,"tasks")+" nhiệm vụ đề xuất. Bốn phòng ban vẫn đang trong kế hoạch."
  ));
  if(!state.approvals.length){
   metricRow(approvals,t("No quote requests awaiting review","Chưa có báo giá chờ phê duyệt"),"");
