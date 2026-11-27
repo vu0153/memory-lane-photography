@@ -13,6 +13,7 @@
 
   <link rel="stylesheet" href="css/style.css?v=20260629-admin-centered-duo" />
   <link rel="stylesheet" href="css/ai-inbox.css?v=1" />
+  <link rel="stylesheet" href="css/ai-manager.css?v=1" />
 
   <style>
     body {
@@ -1316,9 +1317,54 @@
 <button id="freePortraitTabButton" class="admin-tab-button" type="button" data-tab="freePortrait">
   Free Portrait
 </button>
+<button id="aiManagerTabButton" class="admin-tab-button" type="button" data-tab="aiManager">AI Manager</button>
 <button id="aiInboxTabButton" class="admin-tab-button" type="button" data-tab="aiInbox">AI Inbox</button>
 
         </nav>
+
+        <section id="aiManagerPanel" class="admin-panel" aria-label="AI Manager">
+          <h2>AI Manager Control Centre</h2>
+          <p>Speak to the AI Manager here. It coordinates department task proposals and
+             shares approved policies with the studio assistants. This staging version
+             does not execute tasks, approve bookings or send customer emails.</p>
+          <button type="button" id="aiManagerRefresh" class="admin-button small">Refresh Manager</button>
+          <p class="ai-manager-status" id="aiManagerStatus" role="status"></p>
+          <div class="ai-manager-layout">
+            <div class="ai-manager-card">
+              <h3>Speak to AI Manager</h3>
+              <div id="aiManagerThread" class="ai-manager-thread" role="log" aria-live="polite"></div>
+              <form id="aiManagerForm" class="ai-manager-form">
+                <label for="aiManagerInput">Your instruction</label>
+                <textarea id="aiManagerInput" maxlength="1500" required
+                  placeholder="Ví dụ: Hãy cập nhật hướng dẫn tư vấn khách chụp ảnh gia đình và giao nhiệm vụ cho bộ phận chăm sóc khách hàng."></textarea>
+                <button id="aiManagerSend" type="submit" disabled>Send to AI Manager</button>
+              </form>
+              <p class="ai-manager-explainer">This is an internal assistant. All department tasks remain proposals until implementation is reviewed.</p>
+            </div>
+            <div class="ai-manager-card">
+              <h3>Agent Departments</h3>
+              <div id="aiManagerAgents" class="ai-manager-agent-list"></div>
+              <h3 style="margin-top:20px">Proposed Tasks</h3>
+              <div id="aiManagerTasks" class="ai-manager-task-list"></div>
+            </div>
+          </div>
+          <div class="ai-manager-card">
+            <h3>Policies &amp; Knowledge</h3>
+            <p>Edit a studio policy, then approve the new version. Published policies
+              will be used by Customer Service on future chat turns. Core restrictions,
+              including no personal quotes or booking promises, cannot be overridden here.</p>
+            <form id="aiPolicyForm" class="ai-manager-policy-form">
+              <label for="aiPolicyKey">Policy</label>
+              <select id="aiPolicyKey"></select>
+              <label for="aiPolicyTitle">Title</label>
+              <input id="aiPolicyTitle" type="text" maxlength="100" required>
+              <label for="aiPolicyBody">Instructions and reference information</label>
+              <textarea id="aiPolicyBody" maxlength="8000" required></textarea>
+              <button id="aiPolicyPublish" type="submit">Review and publish policy version</button>
+              <p id="aiPolicyStatus" class="ai-manager-status" role="status"></p>
+            </form>
+          </div>
+        </section>
 
         <section id="aiInboxPanel" class="admin-panel" aria-label="AI Inbox and quote requests">
           <h2>AI Inbox &amp; Quote Review</h2>
@@ -2129,5 +2175,6 @@
   <script src="js/supabase.js?v=20261127-preview-staging"></script>
   <script src="js/admin.js?v=20261127-preview-ai-login"></script>
   <script src="js/ai-inbox.js?v=1"></script>
+  <script src="js/ai-manager.js?v=1"></script>
 </body>
 </html>
