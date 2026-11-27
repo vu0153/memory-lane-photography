@@ -75,11 +75,16 @@ function openSection(section){
   document.getElementById("aiPolicyForm")?.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth",block:"start"});
  },80);
 }
-function activate(){
- legacy.classList.add("hidden");
- stage.classList.remove("hidden");
- openSection("overview");
- return refresh();
+async function activate(){
+ // Validate permissions and fetch the owner's verified profile before showing dashboard.
+ try{
+  const result=await api();
+  state=result;renderProfile();renderAgents();renderSummary();
+  legacy.classList.add("hidden");
+  stage.classList.remove("hidden");
+  openSection("overview");
+  return true;
+ }catch(_){state=null;stage.classList.add("hidden");return false;}
 }
 function agentStatus(item){
  if(item.slug==="manager"&&!state?.managerEnabled)return "unavailable";
@@ -196,7 +201,7 @@ async function api(method="GET",body){
   ...(body?{body:JSON.stringify(body)}:{})
  });
  const out=await r.json();
- if(!r.ok)throw Error(out.error||"Unable to load dashboard.");
+ if(!r.ok){const err=new Error(out.error||"Unable to load dashboard.");err.status=r.status;throw err;}
  return out;
 }
 async function refresh(){
@@ -205,6 +210,7 @@ async function refresh(){
   const result=await api();state=result;
   renderProfile();renderAgents();renderSummary();
  }catch(error){
+  if(error.status===403){logout();return;}
   toast(error.message);
   if(!state){
    set("mlHeroBriefing",t("Dashboard data is unavailable. Check Preview configuration and Admin permissions.","Chưa thể tải dữ liệu. Hãy kiểm tra cấu hình Preview và quyền Admin."));
