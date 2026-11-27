@@ -5,13 +5,13 @@ const json=(v,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{"Content
 const configured=(env,request)=>{const host=new URL(request.url).hostname;
  return host.endsWith(".memory-lane-photography.pages.dev") && host!=="memory-lane-photography.pages.dev" &&
  env.SUPABASE_URL?.replace(/\/$/,"")==="https://livorstsjtixdgksuzou.supabase.co" &&
- !!env.SUPABASE_SERVICE_ROLE_KEY&&!!env.SUPABASE_ANON_KEY;
+ !!env.SUPABASE_SECRET_KEY&&!!env.SUPABASE_PUBLISHABLE_KEY;
 };
 async function adminUser(request,env){
  const h=request.headers.get("Authorization")||"";
  const m=h.match(/^Bearer\s+(.+)$/i);if(!m)return null;
  const response=await fetch(env.SUPABASE_URL.replace(/\/$/,"")+"/auth/v1/user",{
-   headers:{apikey:env.SUPABASE_ANON_KEY,Authorization:"Bearer "+m[1]}});
+   headers:{apikey:env.SUPABASE_PUBLISHABLE_KEY,Authorization:"Bearer "+m[1]}});
  if(!response.ok)return null;
  const user=await response.json();
  if(!user.id)return null;
@@ -20,7 +20,7 @@ async function adminUser(request,env){
 }
 async function data(env,table,method="GET",query="",body){
  const r=await fetch(env.SUPABASE_URL.replace(/\/$/,"")+"/rest/v1/"+table+query,{
-  method,headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,Authorization:"Bearer "+env.SUPABASE_SERVICE_ROLE_KEY,
+  method,headers:{apikey:env.SUPABASE_SECRET_KEY,
    "Content-Type":"application/json",Prefer:"return=representation"},
   body:body===undefined?undefined:JSON.stringify(body)});
  if(!r.ok)throw Error("Database operation failed");
